@@ -17,7 +17,6 @@
  */
 package org.sleeksnap;
 
-import java.awt.Desktop;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
@@ -128,6 +127,7 @@ public class ScreenSnapper {
 		private static final int CROP = 1;
 		private static final int FULL = 2;
 		private static final int CLIPBOARD = 3;
+		public static final int ACTIVE = 4;
 	}
 
 	/**
@@ -195,8 +195,14 @@ public class ScreenSnapper {
 	 */
 	private boolean optionsOpen;
 	
+	/**
+	 * The hotkey manager instance
+	 */
 	private HotkeyManager keyManager;
 	
+	/**
+	 * The history instance
+	 */
 	private History history;
 
 	public ScreenSnapper() {
@@ -342,6 +348,11 @@ public class ScreenSnapper {
 		return new File(directory, name + ".xml");
 	}
 
+	/**
+	 * Get the tray icon instance
+	 * @return
+	 * 		The instance of the Tray Icon
+	 */
 	public TrayIconAdapter getTrayIcon() {
 		return icon;
 	}
@@ -386,6 +397,9 @@ public class ScreenSnapper {
 				case ScreenshotAction.CLIPBOARD:
 					clipboard();
 					break;
+				case ScreenshotAction.ACTIVE:
+					active();
+					break;
 				}
 			}
 		});
@@ -397,45 +411,14 @@ public class ScreenSnapper {
 	private void initializeTray() {
 		// Add uploaders from the list we loaded earlier
 		PopupMenu tray = new PopupMenu();
-		Menu uploaderm = new Menu("Uploader");
-		for (final Entry<Class<?>, Map<String, Uploader<?>>> e : uploaders
-				.entrySet()) {
-			Menu menu = new Menu(names.containsKey(e.getKey()) ? names.get(e
-					.getKey()) : Util.formatClassName(e.getKey()));
-			for (final Uploader<?> u : e.getValue().values()) {
-				MenuItem i = new MenuItem(u.getName());
-				i.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						setDefaultUploader(u);
-					}
-				});
-				menu.add(i);
-			}
-			uploaderm.add(menu);
-		}
-		uploaderm.addSeparator();
-		// Add an option to open the directory!
-		MenuItem openDirectory = new MenuItem("Browse uploader directory");
-		openDirectory.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					Desktop.getDesktop().open(
-							new File(Util.getWorkingDirectory(), "uploaders"));
-				} catch (IOException e1) {
-					logger.log(Level.SEVERE, "Unable to open uploader directory", e);
-					showException(e1);
-				}
-			}
-		});
-		uploaderm.add(openDirectory);
-		tray.add(uploaderm);
 		// Add the action menu
 		Menu actions = new Menu("Actions");
 		actions.add(new ActionMenuItem("Crop", ScreenshotAction.CROP));
 		actions.add(new ActionMenuItem("Full", ScreenshotAction.FULL));
 		actions.add(new ActionMenuItem("Clipboard", ScreenshotAction.CLIPBOARD));
+		if(Platform.isWindows()) {
+			actions.add(new ActionMenuItem("Active", ScreenshotAction.ACTIVE));
+		}
 		tray.add(actions);
 		MenuItem settings = new MenuItem("Options");
 		settings.addActionListener(new ActionListener() {
@@ -454,8 +437,7 @@ public class ScreenSnapper {
 		exit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				keyManager.cleanupInput();
-				System.exit(0);
+				shutdown();
 			}
 
 		});
@@ -463,6 +445,15 @@ public class ScreenSnapper {
 		SystemTrayAdapter adapter = SystemTrayProvider.getSystemTray();
 		icon = adapter.createAndAddTrayIcon(Util.getResourceByName(Resources.ICON_PATH),
 				Application.NAME + " v" + Application.VERSION, tray);
+	}
+	
+	/**
+	 * Clean up and shut down
+	 */
+	private void shutdown() {
+		uploadService.shutdown();
+		keyManager.cleanupInput();
+		System.exit(0);
 	}
 
 	/**
@@ -717,8 +708,7 @@ public class ScreenSnapper {
 				Uploader uploader = uploaderAssociations.get(object.getClass());
 				if (uploader != null) {
 					try {
-						String url = uploader.upload(uploader.getUploadType()
-								.cast(object));
+						String url = uploader.upload(uploader.getUploadType().cast(object));
 						if (url != null) {
 							if (configuration.getBoolean("shortenurls")) {
 								Uploader shortener = uploaderAssociations
@@ -744,6 +734,9 @@ public class ScreenSnapper {
 									"Uploaded to " + url,
 									TrayIcon.MessageType.INFO);
 							logger.info("Upload completed, url: "+url);
+							if(object instanceof BufferedImage) {
+								((BufferedImage)object).flush();
+							}
 						} else {
 							icon.displayMessage("Upload failed",
 									"The upload failed to execute due to an unknown error",

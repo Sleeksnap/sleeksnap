@@ -128,6 +128,7 @@ public class SelectionWindow extends JWindow {
 			throw new RuntimeException("Unable to crop!");
 		}
 		snapper.upload(ImageUtil.toBufferedImage(sub));
+		sub.flush();
 		sub = null;
 		close();
 	}
@@ -151,6 +152,7 @@ public class SelectionWindow extends JWindow {
 		}
 	}
 
+	@Override
 	public void paint(Graphics gr) {
 		if (buffer == null) {
 			this.buffer = createImage(area.width, area.height);
@@ -160,8 +162,6 @@ public class SelectionWindow extends JWindow {
 		paint();
 		// draw the buffer
 		gr.drawImage(buffer, 0, 0, this);
-		
-		gr.dispose();
 	}
 
 	private void updateDrawableRect(int compWidth, int compHeight) {
@@ -202,13 +202,5 @@ public class SelectionWindow extends JWindow {
 		} else {
 			rectToDraw = new Rectangle(x, y, width, height);
 		}
-	}
-	
-	@Override
-	public void finalize() {
-		buffer = null;
-		g.dispose();
-		g = null;
-		image = null;
 	}
 }

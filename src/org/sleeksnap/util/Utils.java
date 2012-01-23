@@ -195,6 +195,19 @@ public class Utils {
 			}
 			return contents.toString();
 		}
+		
+		/**
+		 * Get the jar path
+		 * @param cl
+		 * 			The class to get the path from
+		 * @return
+		 * 			The path
+		 * @throws Exception
+		 * 			If the path is invalid
+		 */
+		public static String getJarPath(Class<?> cl) throws Exception {
+			return new File(cl.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
+		}
 	}
 
 	/**
@@ -311,6 +324,15 @@ public class Utils {
 			return bimage;
 		}
 
+		/**
+		 * Get an image as a ByteArrayInputStream
+		 * @param image
+		 * 			The image
+		 * @return
+		 * 			The inputstream
+		 * @throws IOException
+		 * 			If an error occurred while writing or reading
+		 */
 		public static InputStream toInputStream(BufferedImage image) throws IOException {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			ImageIO.write(image, "PNG", output);

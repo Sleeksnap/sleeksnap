@@ -66,7 +66,9 @@ import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.util.StreamUtils;
 import org.sleeksnap.util.Util;
 import org.sleeksnap.util.Utils.ClipboardUtil;
+import org.sleeksnap.util.Utils.FileUtils;
 import org.sleeksnap.util.Utils.SortingUtil;
+import org.sleeksnap.util.WinRegistry;
 
 import com.sun.jna.Platform;
 
@@ -218,9 +220,12 @@ public class OptionPanel extends JPanel {
 	private JButton saveAllButton;
 	private JCheckBox localCopyCheckbox;
 	private int previousTab = 0;
+	
+	private Configuration configuration;
 
 	public OptionPanel(ScreenSnapper snapper) {
 		this.snapper = snapper;
+		this.configuration = snapper.getConfiguration();
 		initComponents();
 	}
 	private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -233,6 +238,9 @@ public class OptionPanel extends JPanel {
 	}
 	
 	public void doneBuilding() {
+		if(configuration.contains("startOnStartup")) {
+			startOnStartup.setSelected(configuration.getBoolean("startOnStartup"));
+		}
 		saveButton.setEnabled(false);
 	}
 	
@@ -291,9 +299,9 @@ public class OptionPanel extends JPanel {
 		if(!options.equals("Not set")) {
 			keys.put("options", getFormattedKeyStroke(options));
 		}
-		snapper.getConfiguration().put("hotkeys", keys);
+		configuration.put("hotkeys", keys);
 		try {
-			snapper.getConfiguration().save();
+			configuration.save();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -384,7 +392,7 @@ public class OptionPanel extends JPanel {
 
 		versionLabel.setText("Version "+Constants.Application.VERSION);
 
-        startOnStartup.setText("Start Sleeksnap on startup (not implemented)");
+        startOnStartup.setText("Start Sleeksnap on startup (Windows only)");
 
         saveAllButton.setText("Save all");
         
@@ -392,7 +400,32 @@ public class OptionPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//Save startup options here... Windows we can add it to the registry, Linux.... dunno
-				
+				boolean start = startOnStartup.isSelected();
+				if(start) {
+					if(!configuration.contains("startOnStartup") || !configuration.getBoolean("startOnStartup")) {
+						if(Platform.isWindows()) {
+							try {
+								WinRegistry.writeStringValue(WinRegistry.HKEY_CURRENT_USER, WinRegistry.RUN_PATH, Constants.Application.NAME, FileUtils.getJarPath(OptionPanel.class));
+							} catch (Exception e1) {
+								//TODO problem, we couldn't add it!
+							}
+						}
+					}
+				} else {
+					if(Platform.isWindows()) {
+						try {
+							WinRegistry.deleteValue(WinRegistry.HKEY_CURRENT_USER, WinRegistry.RUN_PATH, Constants.Application.NAME);
+						} catch (Exception e1) {
+							//Doesn't exist, no problem.
+						}
+					}
+				}
+				configuration.put("startOnStartup", start);
+				try {
+					configuration.save();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 				//Save everything else
 				hotkeySaveButtonActionPerformed(e);
 				saveButtonActionPerformed(e);
@@ -459,18 +492,18 @@ public class OptionPanel extends JPanel {
 		});
 
 		automaticUpload.setText("Upload text files to text uploader");
-		if(snapper.getConfiguration().contains("plainTextUpload")) {
-			automaticUpload.setSelected(snapper.getConfiguration().getBoolean("plainTextUpload"));
+		if(configuration.contains("plainTextUpload")) {
+			automaticUpload.setSelected(configuration.getBoolean("plainTextUpload"));
 		}
 
 		shortenURLs.setText("Automatically shorten URLs");
-		if(snapper.getConfiguration().contains("shortenurls")) {
-			shortenURLs.setSelected(snapper.getConfiguration().getBoolean("shortenurls"));
+		if(configuration.contains("shortenurls")) {
+			shortenURLs.setSelected(configuration.getBoolean("shortenurls"));
 		}
 		
         localCopyCheckbox.setText("Keep a local copy of uploaded images");
-        if(snapper.getConfiguration().contains("savelocal")) {
-        	localCopyCheckbox.setSelected(snapper.getConfiguration().getBoolean("savelocal"));
+        if(configuration.contains("savelocal")) {
+        	localCopyCheckbox.setSelected(configuration.getBoolean("savelocal"));
         }
         
 		jLabel5.setText("URLs");
@@ -861,7 +894,7 @@ public class OptionPanel extends JPanel {
 	}
 	
 	private void loadCurrentHotkeys() {
-		Map<String, String> keys = snapper.getConfiguration().getMap("hotkeys");
+		Map<String, String> keys = configuration.getMap("hotkeys");
 		if(keys.containsKey("full")) {
 			fullHotkeyButton.setText(getButtonText(keys.get("full")));
 		} else {
