@@ -1,3 +1,20 @@
+/**
+ * Sleeksnap, the open source cross-platform screenshot uploader
+ * Copyright (C) 2012 Nicole Schuiteman
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.sleeksnap;
 
 import java.awt.Desktop;
@@ -35,8 +52,11 @@ import org.sleeksnap.Constants.Resources;
 import org.sleeksnap.gui.OptionPanel;
 import org.sleeksnap.gui.ParametersDialog;
 import org.sleeksnap.gui.SelectionWindow;
+import org.sleeksnap.impl.History;
+import org.sleeksnap.impl.HistoryEntry;
 import org.sleeksnap.impl.HotkeyManager;
 import org.sleeksnap.impl.LoggingManager;
+import org.sleeksnap.uploaders.FTPUploader;
 import org.sleeksnap.uploaders.GenericUploader;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
@@ -53,6 +73,7 @@ import org.sleeksnap.util.StreamUtils;
 import org.sleeksnap.util.Util;
 import org.sleeksnap.util.Utils.ClipboardUtil;
 import org.sleeksnap.util.Utils.ClipboardUtil.ClipboardException;
+import org.sleeksnap.util.Utils.DateUtil;
 import org.sleeksnap.util.Utils.DisplayUtil;
 import org.sleeksnap.util.Utils.FileUtils;
 import org.sleeksnap.util.Win32WindowUtil;
@@ -110,13 +131,6 @@ public class ScreenSnapper {
 	}
 
 	/**
-	 * Set the useragent so we don't have to monkey with it later
-	 */
-	static {
-		System.setProperty("http.agent", Util.getHttpUserAgent());
-	}
-
-	/**
 	 * A basic hack for class associations -> names
 	 */
 	private static HashMap<Class<?>, String> names = new HashMap<Class<?>, String>();
@@ -125,17 +139,19 @@ public class ScreenSnapper {
 	 * Load the names
 	 */
 	static {
+		System.setProperty("http.agent", Util.getHttpUserAgent());
+		
 		names.put(BufferedImage.class, "Images");
 		names.put(String.class, "Text");
 		names.put(URL.class, "Urls");
 		names.put(File.class, "Files");
 	}
 
+	private static final Logger logger = Logger.getLogger(ScreenSnapper.class.getName());
+
 	public static void main(String[] args) {
 		new ScreenSnapper();
 	}
-
-	private static final Logger logger = Logger.getLogger(ScreenSnapper.class.getName());
 	/**
 	 * A map which contains uploader classes -> a list of available uploaders
 	 */
@@ -180,6 +196,8 @@ public class ScreenSnapper {
 	private boolean optionsOpen;
 	
 	private HotkeyManager keyManager;
+	
+	private History history;
 
 	public ScreenSnapper() {
 		File local = Util.getWorkingDirectory();
@@ -199,10 +217,19 @@ public class ScreenSnapper {
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Failed to load settings!", e);
 		}
+		logger.info("Loading history...");
+		history = new History(new File(local, "history.yml"));
+		try {
+			history.load();
+		} catch (IOException e) {
+			logger.log(Level.WARNING, "Failed to load history", e);
+		}
+		logger.info("Registering keys...");
 		keyManager = new HotkeyManager(this);
 		keyManager.initializeInput();
 		logger.info("Opening tray icon...");
 		initializeTray();
+		logger.info("Ready.");
 	}
 
 	public void active() {
@@ -220,6 +247,9 @@ public class ScreenSnapper {
 	 */
 	public void clearWindow() {
 		window = null;
+		System.gc();
+		System.gc();
+		System.gc();
 	}
 
 	/**
@@ -296,13 +326,24 @@ public class ScreenSnapper {
 		return configuration;
 	}
 
+	public HotkeyManager getKeyManager() {
+		return keyManager;
+	}
+
 	public File getSettingsFile(Class<?> uploader) {
 		String name = uploader.getName();
+		if(name.contains("$")) {
+			name = name.substring(0, name.indexOf('$'));
+		}
 		File directory = new File(Util.getWorkingDirectory(), "config");
 		if (!directory.exists()) {
 			directory.mkdirs();
 		}
 		return new File(directory, name + ".xml");
+	}
+
+	public TrayIconAdapter getTrayIcon() {
+		return icon;
 	}
 
 	/**
@@ -459,6 +500,7 @@ public class ScreenSnapper {
 	public void loadUploaders() throws Exception {
 		// Register the default uploaders
 		// Generic uploaders
+		registerUploader(new FTPUploader());
 		// Image Uploaders
 		registerUploader(new ImgurUploader());
 		// Text uploaders
@@ -532,6 +574,7 @@ public class ScreenSnapper {
 		panel.setImageUploaders(uploaders.get(BufferedImage.class).values());
 		panel.setTextUploaders(uploaders.get(String.class).values());
 		panel.setURLUploaders(uploaders.get(URL.class).values());
+		panel.setHistory(history);
 		panel.doneBuilding();
 		frame.setResizable(false);
 		frame.add(panel);
@@ -589,7 +632,7 @@ public class ScreenSnapper {
 				setDefaultUploader(map.get(name));
 			} else {
 				throw new RuntimeException("Invalid uploader " + name
-						+ "! Possible choices: " + map);
+						+ "! Possible choices: " + map.values());
 			}
 		} else {
 			throw new RuntimeException("No uploaders set for " + type.getName());
@@ -604,7 +647,12 @@ public class ScreenSnapper {
 	 */
 	public void setDefaultUploader(final Uploader<?> uploader) {
 		final Class<?> type = uploader.getUploadType();
+
 		Settings settings = uploader.getClass().getAnnotation(Settings.class);
+		Class<?> enclosing = uploader.getClass().getEnclosingClass();
+		if(settings == null && enclosing != null) {
+			settings = enclosing.getAnnotation(Settings.class);
+		}
 		if (settings != null) {
 			final File file = getSettingsFile(uploader.getClass());
 			if (!file.exists()) {
@@ -614,7 +662,7 @@ public class ScreenSnapper {
 					public void actionPerformed(ActionEvent e) {
 						uploader.setProperties(dialog.toProperties());
 						uploaderAssociations.put(type, uploader);
-						// Finally, save the settings\
+						// Finally, save the settings
 						try {
 							FileOutputStream out = new FileOutputStream(file);
 							try {
@@ -635,12 +683,14 @@ public class ScreenSnapper {
 					}
 				});
 				dialog.setVisible(true);
+			} else {
+				uploaderAssociations.put(type, uploader);
 			}
 		} else {
 			uploaderAssociations.put(type, uploader);
 		}
 	}
-
+	
 	private void showException(Exception e) {
 		icon.displayMessage("An error occurred",
 				"An error occurred while performing the selected action, cause: "
@@ -677,8 +727,19 @@ public class ScreenSnapper {
 									url = shortener.upload(new URL(url));
 								}
 							}
+							if (object instanceof BufferedImage) {
+								if(configuration.getBoolean("savelocal")) {
+									FileOutputStream output = new FileOutputStream(getLocalFile(DateUtil.getCurrentDate()+".png"));
+									try {
+										ImageIO.write(((BufferedImage) object), "png", output);
+									} finally {
+										output.close();
+									}
+								}
+							}
 							url = url.trim();
 							ClipboardUtil.setClipboard(url);
+							history.addEntry(new HistoryEntry(url, uploader.getName()));
 							icon.displayMessage("Upload complete",
 									"Uploaded to " + url,
 									TrayIcon.MessageType.INFO);
@@ -701,11 +762,18 @@ public class ScreenSnapper {
 		});
 	}
 	
-	public HotkeyManager getKeyManager() {
-		return keyManager;
-	}
-
-	public TrayIconAdapter getTrayIcon() {
-		return icon;
+	/**
+	 * Get the local file for image archiving
+	 * @param fileName
+	 * 			The file name
+	 * @return
+	 * 			The constructed File object
+	 */
+	public File getLocalFile(String fileName) {
+		File dir = new File(Util.getWorkingDirectory(), "images");
+		if(!dir.exists()) {
+			dir.mkdirs();
+		}
+		return new File(dir, fileName);
 	}
 }

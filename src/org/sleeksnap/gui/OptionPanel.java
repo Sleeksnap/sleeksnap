@@ -1,3 +1,20 @@
+/**
+ * Sleeksnap, the open source cross-platform screenshot uploader
+ * Copyright (C) 2012 Nicole Schuiteman
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.sleeksnap.gui;
 
 import java.awt.Desktop;
@@ -8,6 +25,8 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -34,12 +54,18 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
+import org.sleeksnap.Configuration;
 import org.sleeksnap.Constants;
 import org.sleeksnap.ScreenSnapper;
+import org.sleeksnap.impl.History;
+import org.sleeksnap.impl.HistoryEntry;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.util.StreamUtils;
 import org.sleeksnap.util.Util;
+import org.sleeksnap.util.Utils.ClipboardUtil;
 import org.sleeksnap.util.Utils.SortingUtil;
 
 import com.sun.jna.Platform;
@@ -190,7 +216,9 @@ public class OptionPanel extends JPanel {
 	
 	private JCheckBox startOnStartup;
 	private JButton saveAllButton;
+	private JCheckBox localCopyCheckbox;
 	private int previousTab = 0;
+
 	public OptionPanel(ScreenSnapper snapper) {
 		this.snapper = snapper;
 		initComponents();
@@ -213,15 +241,32 @@ public class OptionPanel extends JPanel {
 	}
 	
 	private void historyCopyActionPerformed(java.awt.event.ActionEvent evt) {
-		// TODO add your handling code here:
+		String text = linkField.getText();
+		if(!text.equals("")) {
+			ClipboardUtil.setClipboard(text);
+		}
 	}
 	
 	private void historyOpenActionPerformed(java.awt.event.ActionEvent evt) {
-		// TODO add your handling code here:
+		String text = linkField.getText();
+		if(!text.equals("")) {
+			try {
+				Desktop.getDesktop().browse(new URL(text).toURI());
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	private void historySelectActionPerformed(java.awt.event.ActionEvent evt) {
-		// TODO add your handling code here:
+		String text = linkField.getText();
+		if(!text.equals("")) {
+			linkField.select(0, text.length());
+		}
 	}
 
 	private void hotkeySaveButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -274,6 +319,7 @@ public class OptionPanel extends JPanel {
         shortenURLs = new JCheckBox();
         jLabel5 = new JLabel();
         urlShortener = new JComboBox();
+        localCopyCheckbox = new JCheckBox();
         hotkeyPanel = new JPanel();
         jLabel6 = new JLabel();
         fullHotkeyButton = new JButton();
@@ -308,7 +354,7 @@ public class OptionPanel extends JPanel {
 		fileModel = new DefaultComboBoxModel();
 		urlModel = new DefaultComboBoxModel();
 		
-		ActionListener test = new ActionListener() {
+		ActionListener changeListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(!saveButton.isEnabled()) {
@@ -317,12 +363,13 @@ public class OptionPanel extends JPanel {
 			}
 		};
 		
-		imageUploader.addActionListener(test);
-		textUploader.addActionListener(test);
-		fileUploader.addActionListener(test);
-		shortenURLs.addActionListener(test);
-		automaticUpload.addActionListener(test);
-		urlShortener.addActionListener(test);
+		imageUploader.addActionListener(changeListener);
+		textUploader.addActionListener(changeListener);
+		fileUploader.addActionListener(changeListener);
+		shortenURLs.addActionListener(changeListener);
+		automaticUpload.addActionListener(changeListener);
+		localCopyCheckbox.addActionListener(changeListener);
+		urlShortener.addActionListener(changeListener);
 
 		setMinimumSize(new java.awt.Dimension(500, 300));
 
@@ -337,7 +384,7 @@ public class OptionPanel extends JPanel {
 
 		versionLabel.setText("Version "+Constants.Application.VERSION);
 
-        startOnStartup.setText("Start Sleeksnap on startup");
+        startOnStartup.setText("Start Sleeksnap on startup (not implemented)");
 
         saveAllButton.setText("Save all");
         
@@ -420,167 +467,80 @@ public class OptionPanel extends JPanel {
 		if(snapper.getConfiguration().contains("shortenurls")) {
 			shortenURLs.setSelected(snapper.getConfiguration().getBoolean("shortenurls"));
 		}
-
+		
+        localCopyCheckbox.setText("Keep a local copy of uploaded images");
+        if(snapper.getConfiguration().contains("savelocal")) {
+        	localCopyCheckbox.setSelected(snapper.getConfiguration().getBoolean("savelocal"));
+        }
+        
 		jLabel5.setText("URLs");
 
 		urlShortener.setModel(urlModel);
 
-		GroupLayout uploaderPanelLayout = new GroupLayout(
-				uploaderPanel);
-		uploaderPanel.setLayout(uploaderPanelLayout);
-		uploaderPanelLayout
-				.setHorizontalGroup(uploaderPanelLayout
-						.createParallelGroup(
-								GroupLayout.Alignment.LEADING)
-						.addGroup(
-								uploaderPanelLayout
-										.createSequentialGroup()
-										.addContainerGap()
-										.addGroup(
-												uploaderPanelLayout
-														.createParallelGroup(
-																GroupLayout.Alignment.LEADING)
-														.addGroup(
-																GroupLayout.Alignment.TRAILING,
-																uploaderPanelLayout
-																		.createSequentialGroup()
-																		.addComponent(
-																				browseButton)
-																		.addPreferredGap(
-																				LayoutStyle.ComponentPlacement.RELATED,
-																				226,
-																				Short.MAX_VALUE)
-																		.addComponent(
-																				saveButton,
-																				GroupLayout.PREFERRED_SIZE,
-																				70,
-																				GroupLayout.PREFERRED_SIZE))
-														.addGroup(
-																uploaderPanelLayout
-																		.createParallelGroup(
-																				GroupLayout.Alignment.TRAILING,
-																				false)
-																		.addGroup(
-																				uploaderPanelLayout
-																						.createSequentialGroup()
-																						.addGap(10,
-																								10,
-																								10)
-																						.addComponent(
-																								urlShortener,
-																								0,
-																								GroupLayout.DEFAULT_SIZE,
-																								Short.MAX_VALUE))
-																		.addGroup(
-																				uploaderPanelLayout
-																						.createSequentialGroup()
-																						.addGap(10,
-																								10,
-																								10)
-																						.addComponent(
-																								imageUploader,
-																								0,
-																								198,
-																								Short.MAX_VALUE))
-																		.addComponent(
-																				jLabel1,
-																				GroupLayout.Alignment.LEADING)
-																		.addComponent(
-																				jLabel2,
-																				GroupLayout.Alignment.LEADING)
-																		.addComponent(
-																				jLabel3,
-																				GroupLayout.Alignment.LEADING)
-																		.addGroup(
-																				uploaderPanelLayout
-																						.createSequentialGroup()
-																						.addGap(10,
-																								10,
-																								10)
-																						.addComponent(
-																								fileUploader,
-																								0,
-																								GroupLayout.DEFAULT_SIZE,
-																								Short.MAX_VALUE))
-																		.addGroup(
-																				uploaderPanelLayout
-																						.createSequentialGroup()
-																						.addGap(10,
-																								10,
-																								10)
-																						.addComponent(
-																								textUploader,
-																								0,
-																								GroupLayout.DEFAULT_SIZE,
-																								Short.MAX_VALUE)))
-														.addComponent(jLabel5)
-														.addComponent(
-																shortenURLs)
-														.addComponent(
-																automaticUpload))
-										.addContainerGap()));
-		uploaderPanelLayout
-				.setVerticalGroup(uploaderPanelLayout
-						.createParallelGroup(
-								GroupLayout.Alignment.LEADING)
-						.addGroup(
-								uploaderPanelLayout
-										.createSequentialGroup()
-										.addContainerGap()
-										.addComponent(jLabel1)
-										.addPreferredGap(
-												LayoutStyle.ComponentPlacement.RELATED)
-										.addComponent(
-												imageUploader,
-												GroupLayout.PREFERRED_SIZE,
-												GroupLayout.DEFAULT_SIZE,
-												GroupLayout.PREFERRED_SIZE)
-										.addGap(11, 11, 11)
-										.addComponent(jLabel2)
-										.addPreferredGap(
-												LayoutStyle.ComponentPlacement.RELATED)
-										.addComponent(
-												textUploader,
-												GroupLayout.PREFERRED_SIZE,
-												GroupLayout.DEFAULT_SIZE,
-												GroupLayout.PREFERRED_SIZE)
-										.addPreferredGap(
-												LayoutStyle.ComponentPlacement.UNRELATED)
-										.addComponent(jLabel3)
-										.addPreferredGap(
-												LayoutStyle.ComponentPlacement.RELATED)
-										.addComponent(
-												fileUploader,
-												GroupLayout.PREFERRED_SIZE,
-												GroupLayout.DEFAULT_SIZE,
-												GroupLayout.PREFERRED_SIZE)
-										.addPreferredGap(
-												LayoutStyle.ComponentPlacement.UNRELATED)
-										.addComponent(jLabel5)
-										.addPreferredGap(
-												LayoutStyle.ComponentPlacement.RELATED)
-										.addComponent(
-												urlShortener,
-												GroupLayout.PREFERRED_SIZE,
-												GroupLayout.DEFAULT_SIZE,
-												GroupLayout.PREFERRED_SIZE)
-										.addGap(18, 18, 18)
-										.addComponent(shortenURLs)
-										.addPreferredGap(
-												LayoutStyle.ComponentPlacement.RELATED)
-										.addComponent(automaticUpload)
-										.addPreferredGap(
-												LayoutStyle.ComponentPlacement.RELATED,
-												163, Short.MAX_VALUE)
-										.addGroup(
-												uploaderPanelLayout
-														.createParallelGroup(
-																GroupLayout.Alignment.BASELINE)
-														.addComponent(
-																saveButton)
-														.addComponent(
-																browseButton))
-										.addContainerGap()));
+        javax.swing.GroupLayout uploaderPanelLayout = new javax.swing.GroupLayout(uploaderPanel);
+        uploaderPanel.setLayout(uploaderPanelLayout);
+        uploaderPanelLayout.setHorizontalGroup(
+            uploaderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(uploaderPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(uploaderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(localCopyCheckbox)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, uploaderPanelLayout.createSequentialGroup()
+                        .addComponent(browseButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 226, Short.MAX_VALUE)
+                        .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(uploaderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(uploaderPanelLayout.createSequentialGroup()
+                            .addGap(10, 10, 10)
+                            .addComponent(urlShortener, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(uploaderPanelLayout.createSequentialGroup()
+                            .addGap(10, 10, 10)
+                            .addComponent(imageUploader, 0, 198, Short.MAX_VALUE))
+                        .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(uploaderPanelLayout.createSequentialGroup()
+                            .addGap(10, 10, 10)
+                            .addComponent(fileUploader, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(uploaderPanelLayout.createSequentialGroup()
+                            .addGap(10, 10, 10)
+                            .addComponent(textUploader, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(jLabel5)
+                    .addComponent(shortenURLs)
+                    .addComponent(automaticUpload))
+                .addContainerGap())
+        );
+        uploaderPanelLayout.setVerticalGroup(
+            uploaderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(uploaderPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(imageUploader, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(11, 11, 11)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(textUploader, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fileUploader, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(urlShortener, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(shortenURLs)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(automaticUpload)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(localCopyCheckbox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 140, Short.MAX_VALUE)
+                .addGroup(uploaderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(saveButton)
+                    .addComponent(browseButton))
+                .addContainerGap())
+        );
 
 		jTabbedPane1.addTab("Uploaders", uploaderPanel);
 		
@@ -715,6 +675,20 @@ public class OptionPanel extends JPanel {
 
 		historyList
 				.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		historyList.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				if(!e.getValueIsAdjusting()) {
+					Object value = historyList.getSelectedValue();
+					if(value != null) {
+						HistoryEntry entry = (HistoryEntry) value;
+						linkField.setText(entry.getUrl());
+					}
+				}
+			}
+		});
+		
 		jScrollPane1.setViewportView(historyList);
 
 		jLabel4.setText("Link:");
@@ -885,6 +859,7 @@ public class OptionPanel extends JPanel {
 		//Do any loading/initializing
 		loadCurrentHotkeys();
 	}
+	
 	private void loadCurrentHotkeys() {
 		Map<String, String> keys = snapper.getConfiguration().getMap("hotkeys");
 		if(keys.containsKey("full")) {
@@ -918,7 +893,7 @@ public class OptionPanel extends JPanel {
 			activeHotkeyButton.setEnabled(false);
 		}
 	}
-
+	
 	private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		if(imageUploader.getSelectedItem() != null) {
 			Uploader<?> imageSelection = ((UploaderWrapper) imageUploader.getSelectedItem()).getUploader();
@@ -943,15 +918,25 @@ public class OptionPanel extends JPanel {
 			}
 			uploaders.put(entry.getKey().getName(), entry.getValue().getClass().getName());
 		}
-		snapper.getConfiguration().put("uploaders", uploaders);
-		snapper.getConfiguration().put("shortenurls", shortenURLs.isSelected());
-		snapper.getConfiguration().put("plainTextUpload", automaticUpload.isSelected());
+		Configuration config = snapper.getConfiguration();
+		config.put("uploaders", uploaders);
+		config.put("shortenurls", shortenURLs.isSelected());
+		config.put("plainTextUpload", automaticUpload.isSelected());
+		config.put("savelocal", localCopyCheckbox.isSelected());
 		try {
-			snapper.getConfiguration().save();
+			config.save();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		saveButton.setEnabled(false);
+	}
+
+	public void setHistory(History history) {
+		DefaultListModel model = new DefaultListModel();
+		for(HistoryEntry entry : history.getHistory()) {
+			model.addElement(entry);
+		}
+		historyList.setModel(model);
 	}
 	
 	public void setImageUploaders(Collection<Uploader<?>> uploaders) {

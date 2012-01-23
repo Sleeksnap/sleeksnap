@@ -1,3 +1,20 @@
+/**
+ * Sleeksnap, the open source cross-platform screenshot uploader
+ * Copyright (C) 2012 Nicole Schuiteman
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.sleeksnap.gui;
 
 import java.awt.Color;
@@ -6,7 +23,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.CropImageFilter;
@@ -59,7 +75,11 @@ public class SelectionWindow extends JWindow {
 				return;
 			}
 			updateSize(e);
-			capture();
+			try {
+				capture();
+			} catch(Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 
 		/*
@@ -71,9 +91,7 @@ public class SelectionWindow extends JWindow {
 		 * the painting region using arguments to the repaint() call.
 		 */
 		void updateSize(MouseEvent e) {
-			int x = e.getX();
-			int y = e.getY();
-			currentRect.setSize(x - currentRect.x, y - currentRect.y);
+			currentRect.setSize(e.getX() - currentRect.x, e.getY() - currentRect.y);
 			updateDrawableRect(getWidth(), getHeight());
 			repaint();
 		}
@@ -84,8 +102,6 @@ public class SelectionWindow extends JWindow {
 	private Rectangle area;
 	private Rectangle currentRect;
 	private Rectangle rectToDraw = null;
-
-	private Rectangle previousRectDrawn = new Rectangle();
 
 	private ScreenSnapper snapper;
 
@@ -105,13 +121,14 @@ public class SelectionWindow extends JWindow {
 	}
 	
 	public void capture() {
-		Image sub = Toolkit.getDefaultToolkit().createImage(new FilteredImageSource(image.getSource(),
+		Image sub = createImage(new FilteredImageSource(image.getSource(),
 				new CropImageFilter(rectToDraw.x, rectToDraw.y,
 						rectToDraw.width, rectToDraw.height)));
 		if(sub == null) {
 			throw new RuntimeException("Unable to crop!");
 		}
 		snapper.upload(ImageUtil.toBufferedImage(sub));
+		sub = null;
 		close();
 	}
 	
@@ -143,6 +160,8 @@ public class SelectionWindow extends JWindow {
 		paint();
 		// draw the buffer
 		gr.drawImage(buffer, 0, 0, this);
+		
+		gr.dispose();
 	}
 
 	private void updateDrawableRect(int compWidth, int compHeight) {
@@ -179,11 +198,17 @@ public class SelectionWindow extends JWindow {
 
 		// Update rectToDraw after saving old value.
 		if (rectToDraw != null) {
-			previousRectDrawn.setBounds(rectToDraw.x, rectToDraw.y,
-					rectToDraw.width, rectToDraw.height);
 			rectToDraw.setBounds(x, y, width, height);
 		} else {
 			rectToDraw = new Rectangle(x, y, width, height);
 		}
+	}
+	
+	@Override
+	public void finalize() {
+		buffer = null;
+		g.dispose();
+		g = null;
+		image = null;
 	}
 }

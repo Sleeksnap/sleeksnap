@@ -1,3 +1,20 @@
+/**
+ * Sleeksnap, the open source cross-platform screenshot uploader
+ * Copyright (C) 2012 Nicole Schuiteman
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.sleeksnap.impl;
 
 import java.awt.TrayIcon;
@@ -18,14 +35,26 @@ public class HotkeyManager {
 	 * The hotkey provider
 	 */
 	private HotkeyProvider provider;
+	
+	/**
+	 * The screensnapper instance
+	 */
 	private ScreenSnapper snapper;
 	
+	/**
+	 * Whether the input has been initialized or disabled
+	 */
 	private boolean initialized = false;
 	
+	/**
+	 * Construct a new hotkey manager
+	 * @param snapper
+	 * 			The screensnapper instance
+	 */
 	public HotkeyManager(ScreenSnapper snapper) {
 		this.snapper = snapper;
 		this.provider = HotkeyProvider.getCurrentProvider(false);
-		
+		//Register a shutdown hook just in case
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				cleanupInput();
@@ -103,6 +132,9 @@ public class HotkeyManager {
 		provider.stop();
 	}
 	
+	/**
+	 * Reset the bound keys and let other classes know that they are not set
+	 */
 	public void resetKeys() {
 		try {
 			provider.reset();
@@ -111,6 +143,11 @@ public class HotkeyManager {
 		}
 	}
 
+	/**
+	 * Get whether this class has been initialized/keys have been bound
+	 * @return
+	 * 		The value of <code>initialized</code>
+	 */
 	public boolean hasKeysBound() {
 		return initialized;
 	}

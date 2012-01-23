@@ -1,3 +1,20 @@
+/**
+ * Sleeksnap, the open source cross-platform screenshot uploader
+ * Copyright (C) 2012 Nicole Schuiteman
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.sleeksnap.util;
 
 import java.awt.Graphics;
@@ -17,15 +34,19 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.PixelGrabber;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.FileNameMap;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -289,6 +310,12 @@ public class Utils {
 
 			return bimage;
 		}
+
+		public static InputStream toInputStream(BufferedImage image) throws IOException {
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			ImageIO.write(image, "PNG", output);
+			return new ByteArrayInputStream(output.toByteArray());
+		}
 	}
 	
 	/**
@@ -337,6 +364,29 @@ public class Utils {
 						screenBounds.height);
 			}
 			return allScreenBounds;
+		}
+	}
+	
+	/**
+	 * A utility class used for formatting Dates
+	 * 
+	 * @author Nikki
+	 *
+	 */
+	public static class DateUtil {
+		
+		/**
+		 * The date format
+		 */
+		private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss");
+		
+		/**
+		 * Gets a filename friendly date
+		 * @return
+		 * 		The formatted date
+		 */
+		public static String getCurrentDate() {
+			return dateFormat.format(new Date());
 		}
 	}
 }
