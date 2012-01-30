@@ -68,7 +68,7 @@ public class HotkeyManager {
 	 */
 	public void initializeInput() {
 		Map<String, String> keys = snapper.getConfiguration().getMap("hotkeys");
-		if (keys.containsKey("crop")) {
+		if (keys.containsKey("crop")) { 
 			provider.register(KeyStroke.getKeyStroke(keys.get("crop")),
 					new HotKeyListener() {
 						@Override
@@ -109,8 +109,8 @@ public class HotkeyManager {
 						}
 					});
 		}
-		// We support active windows only on windows operating systems
-		if (Platform.isWindows() && keys.containsKey("active")) {
+		// We support active windows only on windows/linux, but OSX SOON!
+		if ((Platform.isWindows() || Platform.isLinux()) && keys.containsKey("active")) {
 			provider.register(
 					KeyStroke.getKeyStroke(keys.get("active")),
 					new HotKeyListener() {

@@ -30,6 +30,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -915,7 +916,7 @@ public class OptionPanel extends JPanel {
 		} else {
 			optionsHotkeyButton.setText("Not set");
 		}
-		if(Platform.isWindows()) {
+		if(Platform.isWindows() || Platform.isLinux()) {
 			if(keys.containsKey("active")) {
 				activeHotkeyButton.setText(getButtonText(keys.get("active")));
 			} else {
@@ -966,8 +967,9 @@ public class OptionPanel extends JPanel {
 
 	public void setHistory(History history) {
 		DefaultListModel model = new DefaultListModel();
-		for(HistoryEntry entry : history.getHistory()) {
-			model.addElement(entry);
+		List<HistoryEntry> list = history.getHistory();  
+		for(int i = list.size()-1; i >= 0; i--) {
+			model.addElement(list.get(i));
 		}
 		historyList.setModel(model);
 	}

@@ -75,7 +75,7 @@ import org.sleeksnap.util.Utils.ClipboardUtil.ClipboardException;
 import org.sleeksnap.util.Utils.DateUtil;
 import org.sleeksnap.util.Utils.DisplayUtil;
 import org.sleeksnap.util.Utils.FileUtils;
-import org.sleeksnap.util.Win32WindowUtil;
+import org.sleeksnap.util.active.WindowUtilProvider;
 
 import tray.SystemTrayAdapter;
 import tray.SystemTrayProvider;
@@ -240,8 +240,7 @@ public class ScreenSnapper {
 
 	public void active() {
 		try {
-			upload(ScreenshotUtil.capture(Win32WindowUtil.getActiveWindow()
-					.getBounds()));
+			upload(ScreenshotUtil.capture(WindowUtilProvider.getWindowUtil().getActiveWindow().getBounds()));
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Unable to take the active window screenshot", e);
 			showException(e);
@@ -416,7 +415,7 @@ public class ScreenSnapper {
 		actions.add(new ActionMenuItem("Crop", ScreenshotAction.CROP));
 		actions.add(new ActionMenuItem("Full", ScreenshotAction.FULL));
 		actions.add(new ActionMenuItem("Clipboard", ScreenshotAction.CLIPBOARD));
-		if(Platform.isWindows()) {
+		if(Platform.isWindows() || Platform.isLinux()) {
 			actions.add(new ActionMenuItem("Active", ScreenshotAction.ACTIVE));
 		}
 		tray.add(actions);
@@ -768,5 +767,9 @@ public class ScreenSnapper {
 			dir.mkdirs();
 		}
 		return new File(dir, fileName);
+	}
+
+	public boolean hasUploaderFor(Class<? extends Object> class1) {
+		return uploaderAssociations.containsKey(class1);
 	}
 }
