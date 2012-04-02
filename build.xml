@@ -50,7 +50,7 @@
 	<target name="rebuild" depends="clean, build" />
 
 	<target name="doc" depends="build">
-		<javadoc sourcepath="${src}" classpathref="libraries" access="private" destdir="${doc}" windowtitle="JScreenSnapper">
+		<javadoc sourcepath="${src}" classpathref="libraries" access="private" destdir="${doc}" windowtitle="SleekSnap">
 			<doctitle>
 				<![CDATA[<h1>SleekSnap</h1>]]>
 			</doctitle>
