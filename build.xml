@@ -71,6 +71,5 @@
 				</zips>
 			</archives>
 		</jar>
-		<launch4j configFile="${dist}/sleeksnap.xml" jarPath="jar/SleekSnap-b${buildnum}.jar" outfile="${dist}/exe/Sleeksnap.exe"/>
 	</target>
 </project>
