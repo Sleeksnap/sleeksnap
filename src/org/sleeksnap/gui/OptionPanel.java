@@ -77,7 +77,7 @@ import com.sun.jna.Platform;
  * 
  * @author Nikki
  */
-@SuppressWarnings({"serial", "rawtypes", "unchecked"})
+@SuppressWarnings({"serial"})
 public class OptionPanel extends JPanel {
 
 	public class HotkeyChangeListener extends KeyAdapter {

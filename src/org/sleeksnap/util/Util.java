@@ -50,6 +50,10 @@ public class Util {
 	 * The saved working directory
 	 */
 	private static File workDir;
+	
+	public static long currentTimeSeconds() {
+		return (System.currentTimeMillis()/1000);
+	}
 
 	/**
 	 * Get the last part of a class name
@@ -93,6 +97,31 @@ public class Util {
 	}
 
 	/**
+	 * Get a resource, allows us to run it from source or jar
+	 * @param name
+	 * 			The resource name
+	 * @return
+	 * 			The URL of the resource, either in-jar or on the filesystem
+	 */
+	public static URL getResourceByName(String name) {
+		if(Utils.class.getResource(name) != null) {
+			return Utils.class.getResource(name);
+		} else {
+			File file = new File("resources"+name);
+			if(file.exists()) {
+				try {
+					return file.toURI().toURL();
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			} else {
+				System.out.println("File does not exist : "+file.getAbsolutePath());
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Get the system architecture
 	 * @return
 	 * 		The system architecture integer
@@ -112,7 +141,7 @@ public class Util {
 			workDir = getWorkingDirectory(Constants.Application.NAME.toLowerCase());
 		return workDir;
 	}
-
+	
 	/**
 	 * Get the AppData directory
 	 * @param applicationName
@@ -152,30 +181,37 @@ public class Util {
 		return workingDirectory;
 	}
 	
-	public static HashMap<Object, Object> parseJSON(String json) {
-		HashMap<Object, Object> map = new HashMap<Object, Object>();
-		String[] split = json.split(",");
-		for(int i = 0; i < split.length; i++) {
-			String line = trim(split[i], '{');
-			line = trim(line, '}');
-			line = line.trim();
-			if(line.contains(":")) {
-				String key = trim(line.substring(0, line.indexOf(':')), '"');
-				System.out.println("Key:"+line.substring(0, line.indexOf(':')));
-				String value = line.substring(line.indexOf(':')+1).trim();
-				if(value.charAt(0) == '"') {
-					value = value.substring(1, value.length()-1);
-					map.put(key, value);
-				} else {
-					Class<?> cast = Integer.class;
-					if(value.equals("true") || value.equals("false")) {
-						cast = Boolean.class;
-					}
-					map.put(key, cast.cast(value));
-				}
+	/**
+	 * Parse commandline arguments
+	 * @param args
+	 * 			The arg array from the main method, or manual args
+	 * @return
+	 * 			The map containing the args
+	 */
+	public static HashMap<String, Object> parseArguments(String[] args) {
+		HashMap<String, Object> arguments = new HashMap<String, Object>();
+		for(String s : args) {
+			if(s.startsWith("--")) {
+				s = s.substring(2);
 			}
+			int eqIdx = s.indexOf('=');
+			String key = s.substring(0, eqIdx != -1 ? eqIdx : s.length());
+			Object value = true;
+			if(eqIdx != -1) {
+				value = s.substring(s.indexOf('=')+1);
+			}
+			arguments.put(key, value);
 		}
-		return map;
+		return arguments;
+	}
+	
+	/**
+	 * Set the working directory, used when Sleeksnap is self-contained (Uses a directory which you can have on a flash drive)
+	 * @param workingDirectory
+	 * 			The directory
+	 */
+	public static void setWorkingDirectory(File workingDirectory) {
+		workDir = workingDirectory;
 	}
 	
 	/**
@@ -204,6 +240,13 @@ public class Util {
 		}
 	}
 	
+	/**
+	 * Make each word in a string uppercase
+	 * @param string
+	 * 			The string to parse
+	 * @return
+	 * 			The formatted string
+	 */
 	public static String ucwords(String string) {
 		StringBuilder out = new StringBuilder();
 		String[] split = string.split(" ");
@@ -218,27 +261,5 @@ public class Util {
 			}
 		}
 		return out.toString();
-	}
-	
-	public static URL getResourceByName(String name) {
-		if(Utils.class.getResource(name) != null) {
-			return Utils.class.getResource(name);
-		} else {
-			File file = new File("resources"+name);
-			if(file.exists()) {
-				try {
-					return file.toURI().toURL();
-				} catch(Exception e) {
-					e.printStackTrace();
-				}
-			} else {
-				System.out.println("File does not exist : "+file.getAbsolutePath());
-			}
-		}
-		return null;
-	}
-	
-	public static long currentTimeSeconds() {
-		return (System.currentTimeMillis()/1000);
 	}
 }

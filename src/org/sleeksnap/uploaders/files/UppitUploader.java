@@ -17,21 +17,20 @@
  */
 package org.sleeksnap.uploaders.files;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.util.HttpUtil;
 import org.sleeksnap.util.MultipartPostMethod;
+import org.sleeksnap.util.MultipartPostMethod.FileUpload;
 
 /**
  * An uploader for http://uppit.com
  * @author Nikki
  *
  */
-public class UppitUploader extends Uploader<File> {
+public class UppitUploader extends Uploader<FileUpload> {
 	
 	private static Pattern urlPattern = Pattern.compile("action=\"(.*?)\"");
 	private static Pattern paramPattern = Pattern.compile("<input type=\"hidden\" name=\"(.*?)\" value=\"(.*?)\">");
@@ -44,11 +43,11 @@ public class UppitUploader extends Uploader<File> {
 
 	@Override
 	public Class<?> getUploadType() {
-		return File.class;
+		return FileUpload.class;
 	}
 
 	@Override
-	public String upload(File t) throws Exception {
+	public String upload(FileUpload t) throws Exception {
 		String contents = HttpUtil.executeGet("http://uppit.com/");
 		Matcher matcher = urlPattern.matcher(contents);
 		if(matcher.find()) {
@@ -58,7 +57,7 @@ public class UppitUploader extends Uploader<File> {
 				method.setParameter(matcher.group(1), matcher.group(2));
 			}
 			method.setParameter("tos", "1");
-			method.setParameter("file_1", new MultipartPostMethod.FileUpload(t.getName(), new FileInputStream(t)));
+			method.setParameter("file_1", t);
 			
 			method.execute();
 			try {

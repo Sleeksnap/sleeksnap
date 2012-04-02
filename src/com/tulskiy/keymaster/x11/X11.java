@@ -63,6 +63,8 @@ public interface X11 extends Library {
     public XErrorHandler XSetErrorHandler(XErrorHandler errorHandler);
 
     public int XGetErrorText(Pointer display, int code, byte[] buffer, int len);
+    
+    public int XInitThreads();
 
     public interface XErrorHandler extends Callback {
         public int apply(Pointer display, XErrorEvent errorEvent);

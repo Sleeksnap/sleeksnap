@@ -67,6 +67,7 @@ import org.sleeksnap.uploaders.text.PastieUploader;
 import org.sleeksnap.uploaders.url.GoogleShortener;
 import org.sleeksnap.uploaders.url.TUrlShortener;
 import org.sleeksnap.uploaders.url.TinyURLShortener;
+import org.sleeksnap.util.MultipartPostMethod.FileUpload;
 import org.sleeksnap.util.ScreenshotUtil;
 import org.sleeksnap.util.StreamUtils;
 import org.sleeksnap.util.Util;
@@ -82,6 +83,7 @@ import tray.SystemTrayProvider;
 import tray.TrayIconAdapter;
 
 import com.sun.jna.Platform;
+import com.tulskiy.keymaster.x11.X11;
 
 /**
  * The main Uploader Utility class
@@ -144,12 +146,22 @@ public class ScreenSnapper {
 		names.put(BufferedImage.class, "Images");
 		names.put(String.class, "Text");
 		names.put(URL.class, "Urls");
-		names.put(File.class, "Files");
+		names.put(FileUpload.class, "Files");
 	}
 
 	private static final Logger logger = Logger.getLogger(ScreenSnapper.class.getName());
 
 	public static void main(String[] args) {
+		//Parse arguments, could be the directory, which can be set to "." for the current directory, or "./bla" to change
+		HashMap<String, Object> map = Util.parseArguments(args);
+		if(map.containsKey("dir")) {
+			File file = new File(map.get("dir").toString());
+			if(!file.exists()) {
+				file.mkdirs();
+			}
+			Util.setWorkingDirectory(file);
+		}
+		//Initialize
 		new ScreenSnapper();
 	}
 	/**
@@ -210,6 +222,9 @@ public class ScreenSnapper {
 		if (!local.exists()) {
 			local.mkdirs();
 		}
+		//Call XInitThreads FIRST
+		X11.Lib.XInitThreads();
+		//Then start
 		LoggingManager.configure();
 		logger.info("Loading uploaders...");
 		try {
@@ -252,9 +267,6 @@ public class ScreenSnapper {
 	 */
 	public void clearWindow() {
 		window = null;
-		System.gc();
-		System.gc();
-		System.gc();
 	}
 
 	/**
@@ -275,7 +287,6 @@ public class ScreenSnapper {
 				// TODO we could also trigger a file uploader for other files...
 				File file = (File) clipboard;
 				String mime = FileUtils.getMimeType(file.getAbsolutePath());
-				System.out.println("Mime: " + mime);
 				// A better way to upload images, it'll check the mime type!
 				if (mime.startsWith("image")) {
 					upload(ImageIO.read(file));
@@ -283,7 +294,7 @@ public class ScreenSnapper {
 						&& configuration.getBoolean("plainTextUpload")) {
 					upload(FileUtils.readFile(file));
 				} else {
-					upload(file);
+					upload(FileUpload.create(file));
 				}
 			} else if (clipboard instanceof String) {
 				String string = clipboard.toString();

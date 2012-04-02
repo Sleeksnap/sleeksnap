@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<project name="Sleeksnap" default="build" basedir=".">
+	<property name="root" location="." />
+	<property name="src" location="src" />
+	<property name="bin" location="bin" />
+	<property name="lib" location="lib" />
+	<property name="dist" value="dist" />
+	
+	<path id="binaries">
+		<pathelement path="${bin}" />
+	</path>
+
+	<path id="libraries">
+		<fileset dir="${lib}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="master">
+		<path refid="binaries" />
+		<path refid="libraries" />
+	</path>
+
+	<fileset id="sources" dir="${src}">
+		<include name="**/*.java" />
+	</fileset>
+
+	<target name="init">
+		<mkdir dir="${bin}" />
+		<mkdir dir="${doc}" />
+		<mkdir dir="${dist}" />
+	</target>
+
+	<target name="build" depends="init">
+		<javac srcdir="${src}" destdir="${bin}" includeantruntime="false">
+			<classpath refid="libraries" />
+		</javac>
+		<tstamp/>
+	</target>
+
+	<target name="clean">
+		<delete dir="${bin}" />
+		<delete dir="${doc}" />
+	</target>
+
+	<target name="rebuild" depends="clean, build" />
+
+	<target name="doc" depends="build">
+		<javadoc sourcepath="${src}" classpathref="libraries" access="private" destdir="${doc}" windowtitle="JScreenSnapper">
+			<doctitle>
+				<![CDATA[<h1>SleekSnap</h1>]]>
+			</doctitle>
+		</javadoc>
+	</target>
+
+	<target name="dist" description="generate the distribution">		
+		<jar jarfile="${dist}/jar/Sleeksnap.jar">
+			<fileset dir="${bin}" />
+			<fileset dir="resources" />
+			<manifest>
+				<!-- Main class attribute -->
+				<attribute name="Main-Class" value="org.sleeksnap.ScreenSnapper"/>
+			</manifest>
+			<archives>
+				<zips>
+					<fileset dir="lib" includes="*.jar" />
+				</zips>
+			</archives>
+		</jar>
+	</target>
+</project>

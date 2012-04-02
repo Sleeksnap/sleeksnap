@@ -21,8 +21,9 @@ import java.awt.AWTException;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Robot;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+
+import org.sleeksnap.util.Utils.DisplayUtil;
 
 /**
  * A basic screenshot utility
@@ -44,7 +45,7 @@ public class ScreenshotUtil {
 		try {
 			robot = new Robot();
 		} catch (AWTException e) {
-			e.printStackTrace();
+			
 		}
 	}
 
@@ -54,7 +55,7 @@ public class ScreenshotUtil {
 	 * 		The screenshot
 	 */
 	public static BufferedImage capture() {
-		return capture(Toolkit.getDefaultToolkit().getScreenSize());
+		return capture(DisplayUtil.getRealScreenSize());
 	}
 
 	/**
