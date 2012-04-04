@@ -58,7 +58,7 @@
 	</target>
 
 	<target name="dist" description="generate the distribution">		
-		<jar jarfile="${dist}/Sleeksnap.jar">
+		<jar jarfile="${dist}/Sleeksnap-${GIT_COMMIT}.jar">
 			<fileset dir="${bin}" />
 			<fileset dir="resources" />
 			<manifest>
