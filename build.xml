@@ -48,7 +48,7 @@
 	<target name="doc" depends="build">
 		<javadoc sourcepath="${src}" classpathref="libraries" access="private" destdir="${doc}" windowtitle="SleekSnap">
 			<doctitle>
-				<![CDATA[<h1>SleekSnap</h1>]]>
+				<![CDATA[<h1>Sleeksnap</h1>]]>
 			</doctitle>
 		</javadoc>
 	</target>
