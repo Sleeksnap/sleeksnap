@@ -6,10 +6,6 @@
 	<property name="lib" location="lib" />
 	<property name="dist" value="dist" />
 	
-	<propertyfile file="${dist}/build.properties">
-		<entry key="buildnum" type="int" operation="+" value="1" pattern="0" />
-	</propertyfile>
-			
 	<path id="binaries">
 		<pathelement path="${bin}" />
 	</path>
