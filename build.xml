@@ -58,7 +58,7 @@
 	</target>
 
 	<target name="dist" description="generate the distribution">		
-		<jar jarfile="${dist}/Sleeksnap-b${BUILD_NUMBER}-jenkins.jar">
+		<jar jarfile="${dist}/Sleeksnap-b${build}-jenkins.jar">
 			<fileset dir="${bin}" />
 			<fileset dir="resources" />
 			<manifest>
