@@ -60,9 +60,9 @@ public class FTPUploader extends GenericUploader {
 	 */
 	public String ftpUpload(String fileName, InputStream input) throws IOException {
 		SimpleFTP ftp = new SimpleFTP();
-		ftp.connect(properties.getProperty("hostname"), Integer.parseInt(properties.getProperty("port", "21")));
-		if(properties.containsKey("remotedir")) {
-			ftp.cwd(properties.getProperty("remotedir"));
+		ftp.connect(settings.getProperty("hostname"), Integer.parseInt(settings.getProperty("port", "21")));
+		if(settings.containsKey("remotedir")) {
+			ftp.cwd(settings.getProperty("remotedir"));
 		}
 		try {
 			ftp.stor(input, fileName);
@@ -70,7 +70,7 @@ public class FTPUploader extends GenericUploader {
 			ftp.disconnect();
 			input.close();
 		}
-		return String.format(properties.getProperty("baseurl", "%s"), fileName);
+		return String.format(settings.getProperty("baseurl", "%s"), fileName);
 	}
 	
 	/**

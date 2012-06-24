@@ -36,6 +36,8 @@ import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 
 import org.sleeksnap.uploaders.Settings;
+import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.util.Utils.ClassUtil;
 
 /**
  * The dialog which shows the simulation's parameters before it is ran.
@@ -92,19 +94,32 @@ public class ParametersDialog extends JFrame {
 	private Map<String, JTextField> fieldMap = new HashMap<String, JTextField>();
 
 	/**
+	 * The uploader name
+	 */
+	private Uploader<?> uploader;
+
+	/**
 	 * Creates a new parameters dialog with the specified parent and array of
 	 * parameters.
 	 * 
-	 * @param parent
-	 *            The parent.
-	 * @param simulation
+	 * @param name
+	 *            The name of the uploader
+	 * @param 
 	 *            The simulation.
 	 */
-	public ParametersDialog(Settings settings) {
+	public ParametersDialog(Uploader<?> uploader, Settings settings) {
+		this.uploader = uploader;
 		this.settings = settings;
-		length = settings.required().length;
-		length += settings.optional().length;
-		length += 2;
+		int requiredLength = settings.required().length;
+		int optionalLength = settings.optional().length;
+		length = requiredLength + optionalLength;
+		//Check the length for labels
+		if(requiredLength != 0) {
+			length++;
+		}
+		if(optionalLength != 0) {
+			length++;
+		}
 		this.labels = new JLabel[length]; // TODO refactor
 		this.components = createComponentArray();
 
@@ -119,6 +134,8 @@ public class ParametersDialog extends JFrame {
 	private JComponent[] createComponentArray() {
 		JComponent[] components = new JComponent[length];
 
+		Properties properties = uploader.getSettings();
+		
 		int i = 0;
 		if(settings.required().length != 0) {
 			labels[i] = new JLabel("Required settings");
@@ -126,11 +143,13 @@ public class ParametersDialog extends JFrame {
 			i++;
 			
 			for (String s : settings.required()) {
-	
 				labels[i] = new JLabel(s + ": ");
 	
 				JTextField component = new JTextField();
 				components[i] = component;
+				if(properties.containsKey(s)) {
+					component.setText(properties.getProperty(s));
+				}
 				component.setMinimumSize(new Dimension(200, 0)); // TODO better way?
 				
 				fieldMap.put(s, component);
@@ -149,6 +168,9 @@ public class ParametersDialog extends JFrame {
 	
 				JTextField component = new JTextField();
 				components[i] = component;
+				if(properties.containsKey(s)) {
+					component.setText(properties.getProperty(s));
+				}
 				component.setMinimumSize(new Dimension(200, 0)); // TODO better way?
 				
 				fieldMap.put(s, component);
@@ -165,7 +187,7 @@ public class ParametersDialog extends JFrame {
 	 */
 	private void initComponents() {
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setTitle("Uploader Settings");
+		setTitle(ClassUtil.formatName(uploader.getClass())+" Settings");
 		setResizable(false);
 
 		GroupLayout layout = new GroupLayout(getContentPane());
@@ -324,12 +346,6 @@ public class ParametersDialog extends JFrame {
 			props.put(entry.getKey(), entry.getValue().getText());
 		}
 		return props;
-	}
-
-	
-	public static void main(String[] args) {
-		ParametersDialog dialog = new ParametersDialog(ParametersDialog.class.getAnnotation(Settings.class));
-		dialog.setVisible(true);
 	}
 
 	public void setOkAction(ActionListener actionListener) {

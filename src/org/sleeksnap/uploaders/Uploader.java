@@ -17,6 +17,10 @@
  */
 package org.sleeksnap.uploaders;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Properties;
 
 /**
@@ -33,7 +37,7 @@ public abstract class Uploader<T> {
 	/**
 	 * The properties instance
 	 */
-	protected Properties properties = new Properties();
+	protected Properties settings = new Properties();
 
 	/**
 	 * Get the uploader name
@@ -59,12 +63,47 @@ public abstract class Uploader<T> {
 	public abstract String upload(T t) throws Exception;
 	
 	/**
+	 * Load the settings from the specified file
+	 * @param file
+	 * 			The file to load from
+	 * @throws IOException
+	 * 			If an error occurred while loading
+	 */
+	public void loadSettings(File file) throws IOException {
+		FileInputStream input = new FileInputStream(file);
+		try {
+			settings.loadFromXML(input);
+		} finally {
+			input.close();
+		}
+	}
+	
+	/**
+	 * Save the settings to the specified file
+	 * @param file
+	 * 			The file to save to
+	 * @throws IOException
+	 * 			If an error occurred while saving
+	 */
+	public void saveSettings(File file) throws IOException {
+		FileOutputStream out = new FileOutputStream(file);
+		try {
+			settings.storeToXML(
+							out,
+							"Uploader settings for "
+									+ getClass().getName());
+		} finally {
+			out.close();
+		}
+	}
+	
+	/**
 	 * Set this uploader's settings
 	 * @param settings
 	 * 			The Properties object containing the settings
 	 */
-	public void setProperties(Properties settings) {
-		this.properties = settings;
+	public void setSettings(Properties settings) {
+		this.settings = settings;
 	}
 
 	/**
@@ -72,7 +111,7 @@ public abstract class Uploader<T> {
 	 * @return
 	 * 		The properties
 	 */
-	public Properties getProperties() {
-		return properties;
+	public Properties getSettings() {
+		return settings;
 	}
 }

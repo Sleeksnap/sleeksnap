@@ -62,6 +62,7 @@ import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.files.UppitUploader;
 import org.sleeksnap.uploaders.images.ImgurUploader;
 import org.sleeksnap.uploaders.images.KsnpUploader;
+import org.sleeksnap.uploaders.images.PuushUploader;
 import org.sleeksnap.uploaders.text.PastebinUploader;
 import org.sleeksnap.uploaders.text.PastebincaUploader;
 import org.sleeksnap.uploaders.text.PasteeUploader;
@@ -517,6 +518,7 @@ public class ScreenSnapper {
 		registerUploader(new FTPUploader());
 		// Image Uploaders
 		registerUploader(new ImgurUploader());
+		registerUploader(new PuushUploader());
 		registerUploader(new KsnpUploader());
 		// Text uploaders
 		registerUploader(new PasteeUploader());
@@ -546,19 +548,7 @@ public class ScreenSnapper {
 					Uploader<?> uploader = (Uploader<?>) c.newInstance();
 					if (uploader == null)
 						throw new Exception();
-					File uploaderSettings = new File(
-							Util.getWorkingDirectory(), "config/"
-									+ name.substring(0, name.lastIndexOf('.'))
-									+ ".xml");
-					if (uploaderSettings.exists()) {
-						FileInputStream input = new FileInputStream(
-								uploaderSettings);
-						try {
-							uploader.getProperties().loadFromXML(input);
-						} finally {
-							input.close();
-						}
-					}
+					
 					registerUploader(uploader);
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(null,
@@ -567,6 +557,27 @@ public class ScreenSnapper {
 							"Could not load uploader : " + name,
 							JOptionPane.ERROR_MESSAGE);
 				}
+			}
+		}
+	}
+	
+	/**
+	 * Load the settings for an uploader
+	 * @param uploader
+	 * 			The uploader
+	 */
+	private void loadUploaderSettings(Uploader<?> uploader) {
+		File file = getSettingsFile(uploader.getClass());
+		if(file.exists()) {
+			try {
+				FileInputStream input = new FileInputStream(file);
+				try {
+					uploader.getSettings().loadFromXML(input);
+				} finally {
+					input.close();
+				}
+			} catch(IOException e) {
+				file.delete();
 			}
 		}
 	}
@@ -633,6 +644,9 @@ public class ScreenSnapper {
 		if (!uploaders.containsKey(type)) {
 			uploaders.put(type, new HashMap<String, Uploader<?>>());
 		}
+		//Load the settings, this method should only be called once per uploader, so it's the only place that is really 'right'
+		loadUploaderSettings(uploader);
+		
 		uploaders.get(type).put(uploader.getClass().getName(), uploader);
 	}
 
@@ -648,7 +662,7 @@ public class ScreenSnapper {
 		if (uploaders.containsKey(type)) {
 			Map<String, Uploader<?>> map = uploaders.get(type);
 			if (map.containsKey(name)) {
-				setDefaultUploader(map.get(name));
+				setDefaultUploader(map.get(name), false);
 			} else {
 				throw new RuntimeException("Invalid uploader " + name
 						+ "! Possible choices: " + map.values());
@@ -659,12 +673,14 @@ public class ScreenSnapper {
 	}
 
 	/**
-	 * Set a default uploader
+	 * Set a default uploader, includes loading the settings
 	 * 
-	 * @param type
 	 * @param uploader
+	 * 			The uploader
+	 * @param settingsOverride
+	 * 			Whether to override the settings even if required fields aren't set
 	 */
-	public void setDefaultUploader(final Uploader<?> uploader) {
+	public void setDefaultUploader(final Uploader<?> uploader, boolean settingsOverride) {
 		final Class<?> type = uploader.getUploadType();
 
 		Settings settings = uploader.getClass().getAnnotation(Settings.class);
@@ -674,26 +690,22 @@ public class ScreenSnapper {
 		}
 		if (settings != null) {
 			final File file = getSettingsFile(uploader.getClass());
-			if (!file.exists()) {
-				final ParametersDialog dialog = new ParametersDialog(settings);
+			//It'll delete the file if it had an error loading, as a failsafe.
+			if (!file.exists() || settingsOverride) {
+				if(settings.required().length == 0 && !settingsOverride) {
+					//Ignore it, no required settings from the user, but it'll still show when it's saved via the option panel
+					setUploader(type, uploader);
+					return;
+				}
+				final ParametersDialog dialog = new ParametersDialog(uploader, settings);
 				dialog.setOkAction(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						uploader.setProperties(dialog.toProperties());
+						uploader.setSettings(dialog.toProperties());
 						uploaderAssociations.put(type, uploader);
 						// Finally, save the settings
 						try {
-							FileOutputStream out = new FileOutputStream(file);
-							try {
-								uploader.getProperties()
-										.storeToXML(
-												out,
-												"Uploader settings for "
-														+ uploader.getClass()
-																.getName());
-							} finally {
-								out.close();
-							}
+							uploader.saveSettings(file);
 						} catch (Exception ex) {
 							JOptionPane.showMessageDialog(null,
 									"Save failed! Caused by: " + ex,
@@ -703,17 +715,33 @@ public class ScreenSnapper {
 				});
 				dialog.setVisible(true);
 			} else {
-				uploaderAssociations.put(type, uploader);
+				setUploader(type, uploader);
 			}
 		} else {
-			uploaderAssociations.put(type, uploader);
+			setUploader(type, uploader);
 		}
 	}
 	
+	/**
+	 * The lowest level of the setDefaultUploader methods
+	 * @param type
+	 * 			The class
+	 * @param uploader
+	 * 			The uploader
+	 */
+	public void setUploader(Class<?> type, Uploader<?> uploader) {
+		uploaderAssociations.put(type, uploader);
+	}
+	
+	/**
+	 * Show a TrayIcon message for an exception
+	 * @param e
+	 *			The exception
+	 */
 	private void showException(Exception e) {
 		icon.displayMessage("An error occurred",
 				"An error occurred while performing the selected action, cause: "
-						+ e, MessageType.ERROR);
+						+ e.getMessage(), MessageType.ERROR);
 	}
 
 	/**

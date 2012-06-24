@@ -56,9 +56,19 @@ import javax.swing.ImageIcon;
 import org.apache.commons.codec.binary.Base64;
 import org.sleeksnap.uploaders.Uploader;
 
+/**
+ * A class containing many utility classes which would be wasteful to put in a real class.
+ * @author Nikki
+ *
+ */
 public class Utils {
 	
-	
+	/**
+	 * Formatting utils
+	 * 
+	 * @author Nikki
+	 *
+	 */
 	public static class FormatUtil {
 		public static String formatLowercaseName(String name) {
 			name = Character.toUpperCase(name.charAt(0)) + name.substring(1);
@@ -66,6 +76,36 @@ public class Utils {
 			return name;
 		}
 	}
+	
+	/**
+	 * A class which provides functions related to the use of Class elements
+	 * 
+	 * @author Nikki
+	 *
+	 */
+	public static class ClassUtil {
+		
+		/**
+		 * Format a class name to get only the real name, not the package
+		 * @param clazz
+		 * 			The class
+		 * @return
+		 * 			The name
+		 */
+		public static String formatName(Class<?> clazz) {
+			String name = clazz.getName();
+			int packageIndex = name.lastIndexOf(".");
+			if(packageIndex != -1) {
+				name = name.substring(packageIndex+1);
+			}
+			int subIndex = name.lastIndexOf("$");
+			if(subIndex != -1) {
+				name = name.substring(0, subIndex);
+			}
+			return name;
+		}
+	}
+	
 	/**
 	 * A basic class to use clipboard related functions
 	 * 

@@ -1,3 +1,5 @@
+package org.sleeksnap.util;
+
 /**
  * Sleeksnap, the open source cross-platform screenshot uploader
  * Copyright (C) 2012 Nikki <nikki@nikkii.us>
@@ -15,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.sleeksnap.util;
+
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -152,18 +154,25 @@ public class MultipartPostMethod {
 					os.flush();
 					input.close();
 				}
-				// Write a final newline
-				writer.write("\r\n");
 			} else {
-				// Write a newline
-				writer.write("\r\n");
+				// Write a newline before the content
+				writer.write("\r\n\r\n");
 				// Write the data
 				writer.write(entry.getValue().toString());
 			}
+			// Write a final newline
+			writer.write("\r\n");
 		}
+		
+		//Set the final boundary
+		boundary = boundary + "--";
 		// Write a boundary to let the server know the previous content area is
 		// finished
 		writer.write(boundary);
+		// Write a final newline
+		writer.write("\r\n");
+		
+		//Flush and close the output
 		writer.flush();
 		writer.close();
 	}

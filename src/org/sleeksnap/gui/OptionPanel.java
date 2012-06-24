@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -931,19 +932,27 @@ public class OptionPanel extends JPanel {
 	private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		if(imageUploader.getSelectedItem() != null) {
 			Uploader<?> imageSelection = ((UploaderWrapper) imageUploader.getSelectedItem()).getUploader();
-			snapper.setDefaultUploader(imageSelection);
+			if(imageSelection != snapper.getUploaderFor(BufferedImage.class)) {
+				snapper.setDefaultUploader(imageSelection, true);
+			}
 		}
 		if(textUploader.getSelectedItem() != null) {
 			Uploader<?> textSelection = ((UploaderWrapper) textUploader.getSelectedItem()).getUploader();
-			snapper.setDefaultUploader(textSelection);
+			if(textSelection != snapper.getUploaderFor(String.class)) {
+				snapper.setDefaultUploader(textSelection, true);
+			}
 		}
 		if(fileUploader.getSelectedItem() != null) {
 			Uploader<?> fileSelection = ((UploaderWrapper) fileUploader.getSelectedItem()).getUploader();
-			snapper.setDefaultUploader(fileSelection);
+			if(fileSelection != snapper.getUploaderFor(File.class)) {
+				snapper.setDefaultUploader(fileSelection, true);
+			}
 		}
 		if(urlShortener.getSelectedItem() != null) {
 			Uploader<?> urlSelection = ((UploaderWrapper) urlShortener.getSelectedItem()).getUploader();
-			snapper.setDefaultUploader(urlSelection);
+			if(urlSelection != snapper.getUploaderFor(URL.class)) {
+				snapper.setDefaultUploader(urlSelection, true);
+			}
 		}
 		HashMap<String, String> uploaders = new HashMap<String, String>();
 		for(Entry<Class<?>, Uploader<?>> entry : snapper.getUploaderAssociations().entrySet()) {
