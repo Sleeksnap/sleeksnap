@@ -77,7 +77,7 @@ import com.sun.jna.Platform;
  * 
  * @author Nikki
  */
-@SuppressWarnings({"serial"})
+@SuppressWarnings({"serial", "unchecked", "rawtypes"})
 public class OptionPanel extends JPanel {
 
 	public class HotkeyChangeListener extends KeyAdapter {
@@ -141,6 +141,7 @@ public class OptionPanel extends JPanel {
 		}
 		return out.toString();
 	}
+	
 	public static String getFormattedKeyStroke(String s) {
 		String[] split = s.split(" \\+ ");
 		StringBuilder out = new StringBuilder();
@@ -403,13 +404,12 @@ public class OptionPanel extends JPanel {
 				//Save startup options here... Windows we can add it to the registry, Linux.... dunno
 				boolean start = startOnStartup.isSelected();
 				if(start) {
-					if(!configuration.contains("startOnStartup") || !configuration.getBoolean("startOnStartup")) {
-						if(Platform.isWindows()) {
-							try {
-								WinRegistry.writeStringValue(WinRegistry.HKEY_CURRENT_USER, WinRegistry.RUN_PATH, Constants.Application.NAME, FileUtils.getJarPath(OptionPanel.class));
-							} catch (Exception e1) {
-								//TODO problem, we couldn't add it!
-							}
+					//Overwrite the old key, in case it's a new version.
+					if(Platform.isWindows()) {
+						try {
+							WinRegistry.writeStringValue(WinRegistry.HKEY_CURRENT_USER, WinRegistry.RUN_PATH, Constants.Application.NAME, FileUtils.getJarPath(OptionPanel.class));
+						} catch (Exception e1) {
+							//TODO problem, we couldn't add it!
 						}
 					}
 				} else {
@@ -1003,6 +1003,17 @@ public class OptionPanel extends JPanel {
 			urlModel.addElement(wrapper);
 			if(basic == uploader) {
 				urlModel.setSelectedItem(wrapper);
+			}
+		}
+	}
+	
+	public void setFileUploaders(Collection<Uploader<?>> uploaders) {
+		Uploader<?> basic = snapper.getUploaderFor(File.class);
+		for(Uploader<?> uploader : SortingUtil.sortUploaders(uploaders)) {
+			UploaderWrapper wrapper = new UploaderWrapper(uploader);
+			fileModel.addElement(wrapper);
+			if(basic == uploader) {
+				fileModel.setSelectedItem(wrapper);
 			}
 		}
 	}

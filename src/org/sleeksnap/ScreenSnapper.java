@@ -61,8 +61,10 @@ import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.files.UppitUploader;
 import org.sleeksnap.uploaders.images.ImgurUploader;
+import org.sleeksnap.uploaders.images.KsnpUploader;
 import org.sleeksnap.uploaders.text.PastebinUploader;
 import org.sleeksnap.uploaders.text.PastebincaUploader;
+import org.sleeksnap.uploaders.text.PasteeUploader;
 import org.sleeksnap.uploaders.text.PastieUploader;
 import org.sleeksnap.uploaders.url.GoogleShortener;
 import org.sleeksnap.uploaders.url.TUrlShortener;
@@ -83,7 +85,6 @@ import tray.SystemTrayProvider;
 import tray.TrayIconAdapter;
 
 import com.sun.jna.Platform;
-import com.tulskiy.keymaster.x11.X11;
 
 /**
  * The main Uploader Utility class
@@ -138,7 +139,7 @@ public class ScreenSnapper {
 	private static HashMap<Class<?>, String> names = new HashMap<Class<?>, String>();
 
 	/**
-	 * Load the names
+	 * Load the names and set the useragent
 	 */
 	static {
 		System.setProperty("http.agent", Util.getHttpUserAgent());
@@ -222,8 +223,6 @@ public class ScreenSnapper {
 		if (!local.exists()) {
 			local.mkdirs();
 		}
-		//Call XInitThreads FIRST
-		X11.Lib.XInitThreads();
 		//Then start
 		LoggingManager.configure();
 		logger.info("Loading uploaders...");
@@ -253,6 +252,9 @@ public class ScreenSnapper {
 		logger.info("Ready.");
 	}
 
+	/**
+	 * Perform a capture of the active window
+	 */
 	public void active() {
 		try {
 			upload(ScreenshotUtil.capture(WindowUtilProvider.getWindowUtil().getActiveWindow().getBounds()));
@@ -294,7 +296,7 @@ public class ScreenSnapper {
 						&& configuration.getBoolean("plainTextUpload")) {
 					upload(FileUtils.readFile(file));
 				} else {
-					upload(FileUpload.create(file));
+					upload(file);
 				}
 			} else if (clipboard instanceof String) {
 				String string = clipboard.toString();
@@ -455,6 +457,17 @@ public class ScreenSnapper {
 		SystemTrayAdapter adapter = SystemTrayProvider.getSystemTray();
 		icon = adapter.createAndAddTrayIcon(Util.getResourceByName(Resources.ICON_PATH),
 				Application.NAME + " v" + Application.VERSION, tray);
+		icon.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!openSettings()) {
+					icon.displayMessage(
+							"Error",
+							"Could not open settings, is there another window open?",
+							TrayIcon.MessageType.ERROR);
+				}
+			}
+		});
 	}
 	
 	/**
@@ -475,7 +488,6 @@ public class ScreenSnapper {
 		if (!configFile.exists()) {
 			String name = "/" + Application.NAME.toLowerCase()
 					+ (Platform.isMac() ? "_mac" : "") + ".conf";
-			System.out.println("File: "+name);
 			StreamUtils.writeStreamToFile(getClass().getResourceAsStream(name),
 					configFile);
 		}
@@ -500,11 +512,14 @@ public class ScreenSnapper {
 	 */
 	public void loadUploaders() throws Exception {
 		// Register the default uploaders
+		
 		// Generic uploaders
 		registerUploader(new FTPUploader());
 		// Image Uploaders
 		registerUploader(new ImgurUploader());
+		registerUploader(new KsnpUploader());
 		// Text uploaders
+		registerUploader(new PasteeUploader());
 		registerUploader(new PastebinUploader());
 		registerUploader(new PastebincaUploader());
 		registerUploader(new PastieUploader());
@@ -514,6 +529,7 @@ public class ScreenSnapper {
 		registerUploader(new TUrlShortener());
 		// File uploaders
 		registerUploader(new UppitUploader());
+		
 		// Load custom uploaders
 		File dir = new File(Util.getWorkingDirectory(), "uploaders");
 		if (!dir.exists()) {
@@ -571,13 +587,15 @@ public class ScreenSnapper {
 			e.printStackTrace();
 		}
 		JFrame frame = new JFrame("Sleeksnap Settings");
+		
 		OptionPanel panel = new OptionPanel(this);
 		panel.setImageUploaders(uploaders.get(BufferedImage.class).values());
 		panel.setTextUploaders(uploaders.get(String.class).values());
 		panel.setURLUploaders(uploaders.get(URL.class).values());
+		panel.setFileUploaders(uploaders.get(File.class).values());
 		panel.setHistory(history);
 		panel.doneBuilding();
-		frame.setResizable(false);
+		
 		frame.add(panel);
 		frame.pack();
 		frame.setVisible(true);

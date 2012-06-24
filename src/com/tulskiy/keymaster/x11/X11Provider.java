@@ -61,6 +61,11 @@ public class X11Provider extends HotkeyProvider {
     private final Object lock = new Object();
     private Queue<X11HotKey> registerQueue = new LinkedList<X11HotKey>();
     private List<X11HotKey> hotKeys = new ArrayList<X11HotKey>();
+    
+    public X11Provider() {
+    	//Call XInitThreads FIRST
+		Lib.XInitThreads();
+    }
 
     public void init() {
         Runnable runnable = new Runnable() {

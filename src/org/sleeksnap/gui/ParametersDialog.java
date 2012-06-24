@@ -41,6 +41,7 @@ import org.sleeksnap.uploaders.Settings;
  * The dialog which shows the simulation's parameters before it is ran.
  * 
  * @author Graham Edgecombe
+ * @author Nikki
  */
 @Settings(required = {"Username", "Password"}, optional = {"Optional 1", "Optional 2"})
 public class ParametersDialog extends JFrame {
@@ -70,12 +71,24 @@ public class ParametersDialog extends JFrame {
 	 */
 	private final JButton btnCancel = new JButton("Cancel");
 
+	/**
+	 * The settings instance
+	 */
 	private Settings settings;
 
+	/**
+	 * The settings array length
+	 */
 	private int length;
 
+	/**
+	 * The action listener
+	 */
 	private ActionListener actionListener;
 	
+	/**
+	 * The map of name => field
+	 */
 	private Map<String, JTextField> fieldMap = new HashMap<String, JTextField>();
 
 	/**
@@ -107,7 +120,7 @@ public class ParametersDialog extends JFrame {
 		JComponent[] components = new JComponent[length];
 
 		int i = 0;
-		if(settings.required() != null) {
+		if(settings.required().length != 0) {
 			labels[i] = new JLabel("Required settings");
 			components[i] = new JLabel();
 			i++;
@@ -126,7 +139,7 @@ public class ParametersDialog extends JFrame {
 			}
 		}
 		
-		if(settings.optional() != null) {
+		if(settings.optional().length != 0) {
 			labels[i] = new JLabel("Optional settings");
 			components[i] = new JLabel();
 			i++;
