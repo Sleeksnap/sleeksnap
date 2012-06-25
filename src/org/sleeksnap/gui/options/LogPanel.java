@@ -48,6 +48,8 @@ public class LogPanel extends OptionSubPanel {
 
         logArea.setColumns(20);
         logArea.setRows(5);
+        logArea.setEditable(false);
+        
         logScroll.setViewportView(logArea);
 
         GroupLayout logPanelLayout = new GroupLayout(this);
