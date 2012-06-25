@@ -26,7 +26,7 @@ package org.sleeksnap;
 public class Constants {
 	public static class Application {
 		public static final String NAME = "Sleeksnap";
-		public static final double VERSION = 1.0;
+		public static final double VERSION = 1.1;
 	}
 
 	public static class Configuration {
