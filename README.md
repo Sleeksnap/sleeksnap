@@ -1,8 +1,14 @@
-SleekSnap version 1.0 BETA
+Sleeksnap
+---------
 
 This is still in the Beta testing phase, it will be updated, configuration files will be changed and no guarantees of the quality of this application are available.
 
 This project is licensed with the standard GNU GPL
 
-TODO:
-- Re-do GUI to be resizable, or add "Options" buttons on uploaders
+### Changelog ###
+
+- 6/25/2012 - GUI Overhaul, Settings fixed, Added new exception which uploaders should use for configuration errors
+
+### TODO ###
+
+- ???

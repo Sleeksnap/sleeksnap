@@ -6,6 +6,7 @@ import java.io.InputStream;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.uploaders.UploaderConfigurationException;
 import org.sleeksnap.util.MultipartPostMethod;
 import org.sleeksnap.util.MultipartPostMethod.FileUpload;
 import org.sleeksnap.util.Utils.DateUtil;
@@ -28,6 +29,10 @@ public class PuushUploader extends Uploader<BufferedImage> {
 
 	@Override
 	public String upload(BufferedImage t) throws Exception {
+		if(!settings.containsKey("apikey")) {
+			throw new UploaderConfigurationException("API Key is not set!");
+		}
+		
 		MultipartPostMethod post = new MultipartPostMethod(API_UPLOAD_URL);
 		
 		InputStream input = ImageUtil.toInputStream(t);

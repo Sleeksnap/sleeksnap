@@ -49,7 +49,6 @@ import javax.swing.UIManager;
 import org.sleeksnap.Constants.Application;
 import org.sleeksnap.Constants.Resources;
 import org.sleeksnap.gui.OptionPanel;
-import org.sleeksnap.gui.ParametersDialog;
 import org.sleeksnap.gui.SelectionWindow;
 import org.sleeksnap.impl.History;
 import org.sleeksnap.impl.HistoryEntry;
@@ -59,6 +58,7 @@ import org.sleeksnap.uploaders.FTPUploader;
 import org.sleeksnap.uploaders.GenericUploader;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.uploaders.UploaderConfigurationException;
 import org.sleeksnap.uploaders.files.UppitUploader;
 import org.sleeksnap.uploaders.images.ImgurUploader;
 import org.sleeksnap.uploaders.images.KsnpUploader;
@@ -600,10 +600,10 @@ public class ScreenSnapper {
 		JFrame frame = new JFrame("Sleeksnap Settings");
 		
 		OptionPanel panel = new OptionPanel(this);
-		panel.setImageUploaders(uploaders.get(BufferedImage.class).values());
-		panel.setTextUploaders(uploaders.get(String.class).values());
-		panel.setURLUploaders(uploaders.get(URL.class).values());
-		panel.setFileUploaders(uploaders.get(File.class).values());
+		panel.getUploaderPanel().setImageUploaders(uploaders.get(BufferedImage.class).values());
+		panel.getUploaderPanel().setTextUploaders(uploaders.get(String.class).values());
+		panel.getUploaderPanel().setURLUploaders(uploaders.get(URL.class).values());
+		panel.getUploaderPanel().setFileUploaders(uploaders.get(File.class).values());
 		panel.setHistory(history);
 		panel.doneBuilding();
 		
@@ -681,56 +681,41 @@ public class ScreenSnapper {
 	 * 			Whether to override the settings even if required fields aren't set
 	 */
 	public void setDefaultUploader(final Uploader<?> uploader, boolean settingsOverride) {
-		final Class<?> type = uploader.getUploadType();
-
+		uploaderAssociations.put(uploader.getUploadType(), uploader);
+	}
+	
+	/**
+	 * Get the Settings annotation from an uploader
+	 * @param uploader
+	 *			The uploader
+	 * @return
+	 * 			The settings, or null if it doesn't have any
+	 */
+	public Settings getSettings(Uploader<?> uploader) {
 		Settings settings = uploader.getClass().getAnnotation(Settings.class);
 		Class<?> enclosing = uploader.getClass().getEnclosingClass();
 		if(settings == null && enclosing != null) {
 			settings = enclosing.getAnnotation(Settings.class);
 		}
-		if (settings != null) {
-			final File file = getSettingsFile(uploader.getClass());
-			//It'll delete the file if it had an error loading, as a failsafe.
-			if (!file.exists() || settingsOverride) {
-				if(settings.required().length == 0 && !settingsOverride) {
-					//Ignore it, no required settings from the user, but it'll still show when it's saved via the option panel
-					setUploader(type, uploader);
-					return;
-				}
-				final ParametersDialog dialog = new ParametersDialog(uploader, settings);
-				dialog.setOkAction(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						uploader.setSettings(dialog.toProperties());
-						uploaderAssociations.put(type, uploader);
-						// Finally, save the settings
-						try {
-							uploader.saveSettings(file);
-						} catch (Exception ex) {
-							JOptionPane.showMessageDialog(null,
-									"Save failed! Caused by: " + ex,
-									"Save failed", JOptionPane.ERROR_MESSAGE);
-						}
-					}
-				});
-				dialog.setVisible(true);
-			} else {
-				setUploader(type, uploader);
-			}
-		} else {
-			setUploader(type, uploader);
-		}
+		return settings;
 	}
 	
 	/**
-	 * The lowest level of the setDefaultUploader methods
-	 * @param type
-	 * 			The class
+	 * Get the Settings annotation from an uploader
 	 * @param uploader
-	 * 			The uploader
+	 *			The uploader
+	 * @return
+	 * 			The settings, or null if it doesn't have any
 	 */
-	public void setUploader(Class<?> type, Uploader<?> uploader) {
-		uploaderAssociations.put(type, uploader);
+	public boolean hasSettings(Uploader<?> uploader) {
+		boolean classHas = uploader.getClass().isAnnotationPresent(Settings.class);
+		if(classHas)
+			return true;
+		Class<?> enclosing = uploader.getClass().getEnclosingClass();
+		if(enclosing != null) {
+			return enclosing.isAnnotationPresent(Settings.class);
+		}
+		return false;
 	}
 	
 	/**
@@ -799,6 +784,8 @@ public class ScreenSnapper {
 									TrayIcon.MessageType.ERROR);
 							logger.severe("Upload failed to execute due to an unknown error");
 						}
+					} catch (UploaderConfigurationException e) {
+						icon.displayMessage("Uploader Configuration error", "You must configure this uploader before using it!", TrayIcon.MessageType.ERROR);
 					} catch (Exception e) {
 						e.printStackTrace();
 						icon.displayMessage("Upload failed",

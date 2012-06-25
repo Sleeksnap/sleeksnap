@@ -58,7 +58,10 @@ public class FTPUploader extends GenericUploader {
 	 * @throws IOException
 	 * 			If an error occurred
 	 */
-	public String ftpUpload(String fileName, InputStream input) throws IOException {
+	public String ftpUpload(String fileName, InputStream input) throws IOException, UploaderConfigurationException {
+		if(!settings.containsKey("hostname") || !settings.containsKey("username") || !settings.containsKey("password") || !settings.containsKey("baseurl")) {
+			throw new UploaderConfigurationException("Missing hostname, username, password or baseurl!");
+		}
 		SimpleFTP ftp = new SimpleFTP();
 		ftp.connect(settings.getProperty("hostname"), Integer.parseInt(settings.getProperty("port", "21")));
 		if(settings.containsKey("remotedir")) {

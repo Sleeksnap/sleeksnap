@@ -29,6 +29,7 @@ import java.util.Properties;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -46,7 +47,7 @@ import org.sleeksnap.util.Utils.ClassUtil;
  * @author Nikki
  */
 @Settings(required = {"Username", "Password"}, optional = {"Optional 1", "Optional 2"})
-public class ParametersDialog extends JFrame {
+public class ParametersDialog extends JDialog {
 
 	/**
 	 * The serial version unique id for this class.
@@ -107,7 +108,8 @@ public class ParametersDialog extends JFrame {
 	 * @param 
 	 *            The simulation.
 	 */
-	public ParametersDialog(Uploader<?> uploader, Settings settings) {
+	public ParametersDialog(JFrame parent, Uploader<?> uploader, Settings settings) {
+		super(parent);
 		this.uploader = uploader;
 		this.settings = settings;
 		int requiredLength = settings.required().length;
