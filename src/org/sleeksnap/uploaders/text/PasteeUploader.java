@@ -19,6 +19,6 @@ public class PasteeUploader extends Uploader<String> {
 
 	@Override
 	public String upload(String t) throws Exception {
-		return HttpUtil.executePost("http://paste.ee/api", "key="+settings.getProperty("apikey", "public")+"&language=plain&format=simple&paste="+t);
+		return HttpUtil.executePost("http://paste.ee/api", "key="+settings.getProperty("apikey", "public")+"&language=plain&format=simple&paste="+HttpUtil.encode(t));
 	}
 }
