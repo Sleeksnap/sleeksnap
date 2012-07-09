@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 public @interface Settings {
 
 	String[] required();
-	
+
 	String[] optional();
-	
+
 }

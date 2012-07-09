@@ -144,28 +144,31 @@ public class ScreenSnapper {
 	 */
 	static {
 		System.setProperty("http.agent", Util.getHttpUserAgent());
-		
+
 		names.put(BufferedImage.class, "Images");
 		names.put(String.class, "Text");
 		names.put(URL.class, "Urls");
 		names.put(FileUpload.class, "Files");
 	}
 
-	private static final Logger logger = Logger.getLogger(ScreenSnapper.class.getName());
+	private static final Logger logger = Logger.getLogger(ScreenSnapper.class
+			.getName());
 
 	public static void main(String[] args) {
-		//Parse arguments, could be the directory, which can be set to "." for the current directory, or "./bla" to change
+		// Parse arguments, could be the directory, which can be set to "." for
+		// the current directory, or "./bla" to change
 		HashMap<String, Object> map = Util.parseArguments(args);
-		if(map.containsKey("dir")) {
+		if (map.containsKey("dir")) {
 			File file = new File(map.get("dir").toString());
-			if(!file.exists()) {
+			if (!file.exists()) {
 				file.mkdirs();
 			}
 			Util.setWorkingDirectory(file);
 		}
-		//Initialize
+		// Initialize
 		new ScreenSnapper();
 	}
+
 	/**
 	 * A map which contains uploader classes -> a list of available uploaders
 	 */
@@ -208,12 +211,12 @@ public class ScreenSnapper {
 	 * Defines whether the options panel is open
 	 */
 	private boolean optionsOpen;
-	
+
 	/**
 	 * The hotkey manager instance
 	 */
 	private HotkeyManager keyManager;
-	
+
 	/**
 	 * The history instance
 	 */
@@ -224,7 +227,7 @@ public class ScreenSnapper {
 		if (!local.exists()) {
 			local.mkdirs();
 		}
-		//Then start
+		// Then start
 		LoggingManager.configure();
 		logger.info("Loading uploaders...");
 		try {
@@ -258,9 +261,11 @@ public class ScreenSnapper {
 	 */
 	public void active() {
 		try {
-			upload(ScreenshotUtil.capture(WindowUtilProvider.getWindowUtil().getActiveWindow().getBounds()));
+			upload(ScreenshotUtil.capture(WindowUtilProvider.getWindowUtil()
+					.getActiveWindow().getBounds()));
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Unable to take the active window screenshot", e);
+			logger.log(Level.SEVERE,
+					"Unable to take the active window screenshot", e);
 			showException(e);
 		}
 	}
@@ -351,7 +356,7 @@ public class ScreenSnapper {
 
 	public File getSettingsFile(Class<?> uploader) {
 		String name = uploader.getName();
-		if(name.contains("$")) {
+		if (name.contains("$")) {
 			name = name.substring(0, name.indexOf('$'));
 		}
 		File directory = new File(Util.getWorkingDirectory(), "config");
@@ -363,8 +368,8 @@ public class ScreenSnapper {
 
 	/**
 	 * Get the tray icon instance
-	 * @return
-	 * 		The instance of the Tray Icon
+	 * 
+	 * @return The instance of the Tray Icon
 	 */
 	public TrayIconAdapter getTrayIcon() {
 		return icon;
@@ -429,7 +434,7 @@ public class ScreenSnapper {
 		actions.add(new ActionMenuItem("Crop", ScreenshotAction.CROP));
 		actions.add(new ActionMenuItem("Full", ScreenshotAction.FULL));
 		actions.add(new ActionMenuItem("Clipboard", ScreenshotAction.CLIPBOARD));
-		if(Platform.isWindows() || Platform.isLinux()) {
+		if (Platform.isWindows() || Platform.isLinux()) {
 			actions.add(new ActionMenuItem("Active", ScreenshotAction.ACTIVE));
 		}
 		tray.add(actions);
@@ -456,8 +461,9 @@ public class ScreenSnapper {
 		});
 		tray.add(exit);
 		SystemTrayAdapter adapter = SystemTrayProvider.getSystemTray();
-		icon = adapter.createAndAddTrayIcon(Util.getResourceByName(Resources.ICON_PATH),
-				Application.NAME + " v" + Application.VERSION, tray);
+		icon = adapter.createAndAddTrayIcon(
+				Util.getResourceByName(Resources.ICON_PATH), Application.NAME
+						+ " v" + Application.VERSION, tray);
 		icon.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -470,7 +476,7 @@ public class ScreenSnapper {
 			}
 		});
 	}
-	
+
 	/**
 	 * Clean up and shut down
 	 */
@@ -513,7 +519,7 @@ public class ScreenSnapper {
 	 */
 	public void loadUploaders() throws Exception {
 		// Register the default uploaders
-		
+
 		// Generic uploaders
 		registerUploader(new FTPUploader());
 		// Image Uploaders
@@ -531,7 +537,7 @@ public class ScreenSnapper {
 		registerUploader(new TUrlShortener());
 		// File uploaders
 		registerUploader(new UppitUploader());
-		
+
 		// Load custom uploaders
 		File dir = new File(Util.getWorkingDirectory(), "uploaders");
 		if (!dir.exists()) {
@@ -548,7 +554,7 @@ public class ScreenSnapper {
 					Uploader<?> uploader = (Uploader<?>) c.newInstance();
 					if (uploader == null)
 						throw new Exception();
-					
+
 					registerUploader(uploader);
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(null,
@@ -560,15 +566,16 @@ public class ScreenSnapper {
 			}
 		}
 	}
-	
+
 	/**
 	 * Load the settings for an uploader
+	 * 
 	 * @param uploader
-	 * 			The uploader
+	 *            The uploader
 	 */
 	private void loadUploaderSettings(Uploader<?> uploader) {
 		File file = getSettingsFile(uploader.getClass());
-		if(file.exists()) {
+		if (file.exists()) {
 			try {
 				FileInputStream input = new FileInputStream(file);
 				try {
@@ -576,7 +583,7 @@ public class ScreenSnapper {
 				} finally {
 					input.close();
 				}
-			} catch(IOException e) {
+			} catch (IOException e) {
 				file.delete();
 			}
 		}
@@ -598,20 +605,25 @@ public class ScreenSnapper {
 			e.printStackTrace();
 		}
 		JFrame frame = new JFrame("Sleeksnap Settings");
-		
+
 		OptionPanel panel = new OptionPanel(this);
-		panel.getUploaderPanel().setImageUploaders(uploaders.get(BufferedImage.class).values());
-		panel.getUploaderPanel().setTextUploaders(uploaders.get(String.class).values());
-		panel.getUploaderPanel().setURLUploaders(uploaders.get(URL.class).values());
-		panel.getUploaderPanel().setFileUploaders(uploaders.get(File.class).values());
+		panel.getUploaderPanel().setImageUploaders(
+				uploaders.get(BufferedImage.class).values());
+		panel.getUploaderPanel().setTextUploaders(
+				uploaders.get(String.class).values());
+		panel.getUploaderPanel().setURLUploaders(
+				uploaders.get(URL.class).values());
+		panel.getUploaderPanel().setFileUploaders(
+				uploaders.get(File.class).values());
 		panel.setHistory(history);
 		panel.doneBuilding();
-		
+
 		frame.add(panel);
 		frame.pack();
 		frame.setVisible(true);
 		try {
-			frame.setIconImage(ImageIO.read(Util.getResourceByName("/icon32x32.png")));
+			frame.setIconImage(ImageIO.read(Util
+					.getResourceByName("/icon32x32.png")));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -644,9 +656,10 @@ public class ScreenSnapper {
 		if (!uploaders.containsKey(type)) {
 			uploaders.put(type, new HashMap<String, Uploader<?>>());
 		}
-		//Load the settings, this method should only be called once per uploader, so it's the only place that is really 'right'
+		// Load the settings, this method should only be called once per
+		// uploader, so it's the only place that is really 'right'
 		loadUploaderSettings(uploader);
-		
+
 		uploaders.get(type).put(uploader.getClass().getName(), uploader);
 	}
 
@@ -676,52 +689,56 @@ public class ScreenSnapper {
 	 * Set a default uploader, includes loading the settings
 	 * 
 	 * @param uploader
-	 * 			The uploader
+	 *            The uploader
 	 * @param settingsOverride
-	 * 			Whether to override the settings even if required fields aren't set
+	 *            Whether to override the settings even if required fields
+	 *            aren't set
 	 */
-	public void setDefaultUploader(final Uploader<?> uploader, boolean settingsOverride) {
+	public void setDefaultUploader(final Uploader<?> uploader,
+			boolean settingsOverride) {
 		uploaderAssociations.put(uploader.getUploadType(), uploader);
 	}
-	
+
 	/**
 	 * Get the Settings annotation from an uploader
+	 * 
 	 * @param uploader
-	 *			The uploader
-	 * @return
-	 * 			The settings, or null if it doesn't have any
+	 *            The uploader
+	 * @return The settings, or null if it doesn't have any
 	 */
 	public Settings getSettings(Uploader<?> uploader) {
 		Settings settings = uploader.getClass().getAnnotation(Settings.class);
 		Class<?> enclosing = uploader.getClass().getEnclosingClass();
-		if(settings == null && enclosing != null) {
+		if (settings == null && enclosing != null) {
 			settings = enclosing.getAnnotation(Settings.class);
 		}
 		return settings;
 	}
-	
+
 	/**
 	 * Get the Settings annotation from an uploader
+	 * 
 	 * @param uploader
-	 *			The uploader
-	 * @return
-	 * 			The settings, or null if it doesn't have any
+	 *            The uploader
+	 * @return The settings, or null if it doesn't have any
 	 */
 	public boolean hasSettings(Uploader<?> uploader) {
-		boolean classHas = uploader.getClass().isAnnotationPresent(Settings.class);
-		if(classHas)
+		boolean classHas = uploader.getClass().isAnnotationPresent(
+				Settings.class);
+		if (classHas)
 			return true;
 		Class<?> enclosing = uploader.getClass().getEnclosingClass();
-		if(enclosing != null) {
+		if (enclosing != null) {
 			return enclosing.isAnnotationPresent(Settings.class);
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Show a TrayIcon message for an exception
+	 * 
 	 * @param e
-	 *			The exception
+	 *            The exception
 	 */
 	private void showException(Exception e) {
 		icon.displayMessage("An error occurred",
@@ -749,7 +766,8 @@ public class ScreenSnapper {
 				Uploader uploader = uploaderAssociations.get(object.getClass());
 				if (uploader != null) {
 					try {
-						String url = uploader.upload(uploader.getUploadType().cast(object));
+						String url = uploader.upload(uploader.getUploadType()
+								.cast(object));
 						if (url != null) {
 							if (configuration.getBoolean("shortenurls")) {
 								Uploader shortener = uploaderAssociations
@@ -759,10 +777,13 @@ public class ScreenSnapper {
 								}
 							}
 							if (object instanceof BufferedImage) {
-								if(configuration.getBoolean("savelocal")) {
-									FileOutputStream output = new FileOutputStream(getLocalFile(DateUtil.getCurrentDate()+".png"));
+								if (configuration.getBoolean("savelocal")) {
+									FileOutputStream output = new FileOutputStream(
+											getLocalFile(DateUtil
+													.getCurrentDate() + ".png"));
 									try {
-										ImageIO.write(((BufferedImage) object), "png", output);
+										ImageIO.write(((BufferedImage) object),
+												"png", output);
 									} finally {
 										output.close();
 									}
@@ -770,22 +791,27 @@ public class ScreenSnapper {
 							}
 							url = url.trim();
 							ClipboardUtil.setClipboard(url);
-							history.addEntry(new HistoryEntry(url, uploader.getName()));
+							history.addEntry(new HistoryEntry(url, uploader
+									.getName()));
 							icon.displayMessage("Upload complete",
 									"Uploaded to " + url,
 									TrayIcon.MessageType.INFO);
-							logger.info("Upload completed, url: "+url);
-							if(object instanceof BufferedImage) {
-								((BufferedImage)object).flush();
+							logger.info("Upload completed, url: " + url);
+							if (object instanceof BufferedImage) {
+								((BufferedImage) object).flush();
 							}
 						} else {
-							icon.displayMessage("Upload failed",
+							icon.displayMessage(
+									"Upload failed",
 									"The upload failed to execute due to an unknown error",
 									TrayIcon.MessageType.ERROR);
 							logger.severe("Upload failed to execute due to an unknown error");
 						}
 					} catch (UploaderConfigurationException e) {
-						icon.displayMessage("Uploader Configuration error", "You must configure this uploader before using it!", TrayIcon.MessageType.ERROR);
+						icon.displayMessage(
+								"Uploader Configuration error",
+								"You must configure this uploader before using it!",
+								TrayIcon.MessageType.ERROR);
 					} catch (Exception e) {
 						e.printStackTrace();
 						icon.displayMessage("Upload failed",
@@ -797,17 +823,17 @@ public class ScreenSnapper {
 			}
 		});
 	}
-	
+
 	/**
 	 * Get the local file for image archiving
+	 * 
 	 * @param fileName
-	 * 			The file name
-	 * @return
-	 * 			The constructed File object
+	 *            The file name
+	 * @return The constructed File object
 	 */
 	public File getLocalFile(String fileName) {
 		File dir = new File(Util.getWorkingDirectory(), "images");
-		if(!dir.exists()) {
+		if (!dir.exists()) {
 			dir.mkdirs();
 		}
 		return new File(dir, fileName);

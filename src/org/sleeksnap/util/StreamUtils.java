@@ -29,24 +29,24 @@ import java.io.InputStreamReader;
  * Basic file/stream utilities
  * 
  * @author Nikki
- *
+ * 
  */
 public class StreamUtils {
 
 	/**
 	 * Copy a file from an InputStream to a temporary file
+	 * 
 	 * @param in
-	 * 			The input stream
+	 *            The input stream
 	 * @param fileNamePrefix
-	 * 			The name prefix
+	 *            The name prefix
 	 * @param extension
-	 * 			The extension
-	 * @return
-	 * 			The newly created file object
+	 *            The extension
+	 * @return The newly created file object
 	 * @throws IOException
-	 * 			If an error occurred when writing
+	 *             If an error occurred when writing
 	 * @throws FileNotFoundException
-	 * 			If we could not find the new file
+	 *             If we could not find the new file
 	 */
 	public static File getStreamAsTempFile(InputStream in,
 			final String fileNamePrefix, final String extension)
@@ -60,12 +60,12 @@ public class StreamUtils {
 
 	/**
 	 * Get a stream as a temporary file...
+	 * 
 	 * @param in
-	 * 			The input stream
+	 *            The input stream
 	 * @param fileNamePrefix
-	 * 			The file name
-	 * @return
-	 * 			???
+	 *            The file name
+	 * @return ???
 	 */
 	public static File getStreamAsTempFileOrCry(InputStream in,
 			String fileNamePrefix) {
@@ -78,12 +78,14 @@ public class StreamUtils {
 		}
 	}
 
-	public static String readContents(InputStream inputStream) throws IOException {
+	public static String readContents(InputStream inputStream)
+			throws IOException {
 		StringBuilder contents = new StringBuilder();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(
+				inputStream));
 		try {
 			String line;
-			while((line = reader.readLine()) != null) {
+			while ((line = reader.readLine()) != null) {
 				contents.append(line).append("\n");
 			}
 		} finally {
@@ -91,20 +93,21 @@ public class StreamUtils {
 		}
 		return contents.toString();
 	}
-	
+
 	/**
 	 * Write a stream to a file
+	 * 
 	 * @param inputStream
-	 * 				The stream
+	 *            The stream
 	 * @param targetFile
-	 * 				The file
+	 *            The file
 	 * @throws FileNotFoundException
-	 * 				If the file was not found
+	 *             If the file was not found
 	 * @throws IOException
-	 * 				If an error occurred writing
+	 *             If an error occurred writing
 	 */
-	public static void writeStreamToFile(InputStream inputStream, File targetFile)
-			throws FileNotFoundException, IOException {
+	public static void writeStreamToFile(InputStream inputStream,
+			File targetFile) throws FileNotFoundException, IOException {
 		FileOutputStream out = new FileOutputStream(targetFile);
 		int count;
 		byte[] buffer = new byte[1024];

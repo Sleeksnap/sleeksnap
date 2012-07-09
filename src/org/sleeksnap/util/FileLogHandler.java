@@ -25,10 +25,11 @@ import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 
 /**
- * A simple java logging handler to log to a BufferedWriter, the file is retained after application shutdown for debugging purposes
+ * A simple java logging handler to log to a BufferedWriter, the file is
+ * retained after application shutdown for debugging purposes
  * 
  * @author Nikki
- *
+ * 
  */
 public class FileLogHandler extends java.util.logging.Handler {
 

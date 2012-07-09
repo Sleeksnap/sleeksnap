@@ -18,29 +18,28 @@
 package org.sleeksnap.uploaders.images;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 
-import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.codec.binary.Base64;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.util.Util;
+import org.sleeksnap.util.Utils.ImageUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * An uploader to upload images to imgur.com
- * The included API Key is for use by Sleeksnap ONLY, If you would like a key you may register one at imgur's website
+ * An uploader to upload images to imgur.com The included API Key is for use by
+ * Sleeksnap ONLY, If you would like a key you may register one at imgur's
+ * website
  * 
  * @author Nikki
- *
+ * 
  */
 public class ImgurUploader extends Uploader<BufferedImage> {
 
@@ -57,16 +56,11 @@ public class ImgurUploader extends Uploader<BufferedImage> {
 	@Override
 	public String upload(BufferedImage image) throws Exception {
 		URL url = new URL("http://api.imgur.com/2/upload.xml");
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		ImageIO.write(image, "PNG", output);
 		/**
 		 * Encode the image into a base64 string using apache commons codec
 		 */
-		String data = URLEncoder.encode("image", "UTF-8")
-				+ "="
-				+ URLEncoder.encode(
-						Base64.encodeBase64String(output.toByteArray()),
-						"UTF-8");
+		String data = URLEncoder.encode("image", "UTF-8") + "="
+				+ URLEncoder.encode(ImageUtil.toBase64(image), "UTF-8");
 		data += "&key=a071fe99cee17999a8ff93b282cd602f";
 		URLConnection connection = url.openConnection();
 		connection.setDoOutput(true);
@@ -79,10 +73,13 @@ public class ImgurUploader extends Uploader<BufferedImage> {
 		writer.flush();
 		writer.close();
 
-		int remainingUploads = Integer.parseInt(connection.getHeaderField("X-RateLimit-Remaining"));
-		long resetTime = Long.parseLong(connection.getHeaderField("X-RateLimit-Reset"));
-		if(remainingUploads <= 50 && (resetTime - Util.currentTimeSeconds()) >= 600) {
-			//TODO show a warning about remaining uploads
+		int remainingUploads = Integer.parseInt(connection
+				.getHeaderField("X-RateLimit-Remaining"));
+		long resetTime = Long.parseLong(connection
+				.getHeaderField("X-RateLimit-Reset"));
+		if (remainingUploads <= 50
+				&& (resetTime - Util.currentTimeSeconds()) >= 600) {
+			// TODO show a warning about remaining uploads
 		}
 		/**
 		 * Parse the URL from the response

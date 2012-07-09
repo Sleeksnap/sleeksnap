@@ -43,31 +43,30 @@ import org.sleeksnap.util.Util;
  * 
  * @author Nikki
  */
-@SuppressWarnings({"serial"})
+@SuppressWarnings({ "serial" })
 public class OptionPanel extends JPanel {
-	
+
 	private ScreenSnapper snapper;
 
 	private JTabbedPane jTabbedPane1;
-	
+
 	private int previousTab = 0;
-	
+
 	private InfoPanel infoPanel;
 
 	private UploaderPanel uploaderPanel;
-	
+
 	private HotkeyPanel hotkeyPanel;
 
 	private HistoryPanel historyPanel;
-	
+
 	private LogPanel logPanel;
 
 	public OptionPanel(ScreenSnapper snapper) {
 		this.snapper = snapper;
 		initComponents();
 	}
-	
-	
+
 	public void doneBuilding() {
 		infoPanel.doneBuilding();
 		uploaderPanel.doneBuilding();
@@ -75,27 +74,26 @@ public class OptionPanel extends JPanel {
 		historyPanel.doneBuilding();
 		logPanel.doneBuilding();
 	}
-	
-	
+
 	private void initComponents() {
 
 		jTabbedPane1 = new JTabbedPane();
-		
-		//New panels
-        infoPanel = new InfoPanel(this);
-        infoPanel.initComponents();
-		
+
+		// New panels
+		infoPanel = new InfoPanel(this);
+		infoPanel.initComponents();
+
 		uploaderPanel = new UploaderPanel(this);
 		uploaderPanel.initComponents();
 
-        hotkeyPanel = new HotkeyPanel(this);
-        hotkeyPanel.initComponents();
-        
-        historyPanel = new HistoryPanel(this);
-        historyPanel.initComponents();
-        
-        logPanel = new LogPanel(this);
-        logPanel.initComponents();
+		hotkeyPanel = new HotkeyPanel(this);
+		hotkeyPanel.initComponents();
+
+		historyPanel = new HistoryPanel(this);
+		historyPanel.initComponents();
+
+		logPanel = new LogPanel(this);
+		logPanel.initComponents();
 
 		setMinimumSize(new java.awt.Dimension(500, 300));
 
@@ -103,61 +101,60 @@ public class OptionPanel extends JPanel {
 		jTabbedPane1.setCursor(new java.awt.Cursor(
 				java.awt.Cursor.DEFAULT_CURSOR));
 
-
 		jTabbedPane1.addTab("Main", infoPanel);
 
 		jTabbedPane1.addTab("Uploaders", uploaderPanel);
 
-        jTabbedPane1.addTab("Hotkeys", hotkeyPanel);
+		jTabbedPane1.addTab("Hotkeys", hotkeyPanel);
 
 		jTabbedPane1.addTab("History", historyPanel);
 
-        jTabbedPane1.addTab("Log", logPanel);
-        
+		jTabbedPane1.addTab("Log", logPanel);
+
 		GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
 		layout.setHorizontalGroup(layout.createParallelGroup(
-				GroupLayout.Alignment.LEADING).addComponent(
-				jTabbedPane1, GroupLayout.PREFERRED_SIZE, 500,
-				GroupLayout.PREFERRED_SIZE));
+				GroupLayout.Alignment.LEADING).addComponent(jTabbedPane1,
+				GroupLayout.PREFERRED_SIZE, 500, GroupLayout.PREFERRED_SIZE));
 		layout.setVerticalGroup(layout.createParallelGroup(
-				GroupLayout.Alignment.LEADING).addComponent(
-				jTabbedPane1, GroupLayout.PREFERRED_SIZE, 470,
-				GroupLayout.PREFERRED_SIZE));
-		
+				GroupLayout.Alignment.LEADING).addComponent(jTabbedPane1,
+				GroupLayout.PREFERRED_SIZE, 470, GroupLayout.PREFERRED_SIZE));
+
 		jTabbedPane1.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				int index = jTabbedPane1.getSelectedIndex();
-				if(index == 4) {
-					//Load the log
+				if (index == 4) {
+					// Load the log
 					File file = new File(Util.getWorkingDirectory(), "log.txt");
 					try {
-						String contents = StreamUtils.readContents(new FileInputStream(file));
+						String contents = StreamUtils
+								.readContents(new FileInputStream(file));
 						logPanel.setContents(contents);
-					} catch(IOException ex) {
+					} catch (IOException ex) {
 						ex.printStackTrace();
 					}
 				}
-				if(previousTab == 2) {
-					Logger.getAnonymousLogger().info("Tab changed from hotkey settings, attempting to rebind..");
-					//Restart our input manager if we disabled it
-					if(!snapper.getKeyManager().hasKeysBound()) {
+				if (previousTab == 2) {
+					Logger.getAnonymousLogger()
+							.info("Tab changed from hotkey settings, attempting to rebind..");
+					// Restart our input manager if we disabled it
+					if (!snapper.getKeyManager().hasKeysBound()) {
 						snapper.getKeyManager().initializeInput();
 					}
 				}
 				previousTab = index;
 			}
 		});
-		
-		//Do any loading/initializing
+
+		// Do any loading/initializing
 		hotkeyPanel.loadCurrentHotkeys();
 	}
 
 	public void setHistory(History history) {
 		historyPanel.setHistory(history);
 	}
-	
+
 	public UploaderPanel getUploaderPanel() {
 		return uploaderPanel;
 	}

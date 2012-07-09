@@ -26,10 +26,10 @@ import org.sleeksnap.util.HttpUtil;
  * A url shortener for http://turl.ca
  * 
  * @author Nikki
- *
+ * 
  */
 public class TUrlShortener extends Uploader<URL> {
-	
+
 	/**
 	 * The base URL
 	 */
@@ -47,10 +47,11 @@ public class TUrlShortener extends Uploader<URL> {
 
 	@Override
 	public String upload(URL url) throws Exception {
-		String resp = HttpUtil.executeGet(TURL_BASE+"api.php?url="+url);
-		if(resp.contains("ERROR")) {
-			throw new Exception("An error was reported from the URL Shortening service");
+		String resp = HttpUtil.executeGet(TURL_BASE + "api.php?url=" + url);
+		if (resp.contains("ERROR")) {
+			throw new Exception(
+					"An error was reported from the URL Shortening service");
 		}
-		return TURL_BASE + resp.substring(resp.indexOf(':')+1);
+		return TURL_BASE + resp.substring(resp.indexOf(':') + 1);
 	}
 }

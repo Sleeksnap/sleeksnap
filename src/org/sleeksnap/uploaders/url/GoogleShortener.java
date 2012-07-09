@@ -30,7 +30,7 @@ import org.sleeksnap.util.StreamUtils;
  * A URL Shortener for http://goo.gl
  * 
  * @author Nikki
- *
+ * 
  */
 public class GoogleShortener extends Uploader<URL> {
 
@@ -45,7 +45,6 @@ public class GoogleShortener extends Uploader<URL> {
 	 */
 	private static final String PAGE_URL = "https://www.googleapis.com/urlshortener/v1/url";
 
-	
 	@Override
 	public String getName() {
 		return "Goo.gl";

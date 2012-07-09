@@ -25,56 +25,61 @@ import java.util.Date;
  * A simple class to wrap a History entry
  * 
  * @author Nikki
- *
+ * 
  */
 public class HistoryEntry {
-	
+
 	/**
 	 * The date format used for the toString function
 	 */
-	private static DateFormat format = new SimpleDateFormat("E, MMM d yyyy hh:mm:ss a");
-	
+	private static DateFormat format = new SimpleDateFormat(
+			"E, MMM d yyyy hh:mm:ss a");
+
 	/**
 	 * The uploaded file URL
 	 */
 	private String url;
-	
+
 	/**
 	 * The name of the uploader used
 	 */
 	private String uploader;
-	
+
 	/**
 	 * The date/time uploaded
 	 */
 	private Date date;
-	
+
 	/**
 	 * A blank constructor... used for serialization beans
 	 */
 	public HistoryEntry() {
-		
+
 	}
 
 	/**
-	 * Constructs a new HistoryEntry object with the specified URL and uploader, and a new date object
+	 * Constructs a new HistoryEntry object with the specified URL and uploader,
+	 * and a new date object
+	 * 
 	 * @param url
-	 * 			The upload url
+	 *            The upload url
 	 * @param uploader
-	 * 			The uploader name
+	 *            The uploader name
 	 */
 	public HistoryEntry(String url, String uploader) {
 		this(url, uploader, new Date());
 	}
 
 	/**
-	 * Constructs a new HistoryEntry object with the specified URL, uploader and date
+	 * Constructs a new HistoryEntry object with the specified URL, uploader and
+	 * date
+	 * 
 	 * @param url
-	 * 			The URL
+	 *            The URL
 	 * @param uploader
-	 * 			The uploader name
+	 *            The uploader name
 	 * @param date
-	 * 			The date that the entry was made
+	 *            The date that the entry was made
 	 */
 	public HistoryEntry(String url, String uploader, Date date) {
 		this.url = url;
@@ -84,26 +89,26 @@ public class HistoryEntry {
 
 	/**
 	 * Get the upload date
-	 * @return
-	 * 		The date
+	 * 
+	 * @return The date
 	 */
 	public Date getDate() {
 		return date;
 	}
-	
+
 	/**
 	 * Get the uploader name
-	 * @return
-	 * 		The uploader name
+	 * 
+	 * @return The uploader name
 	 */
 	public String getUploader() {
 		return uploader;
 	}
-	
+
 	/**
 	 * Get the uploaded file URL
-	 * @return
-	 * 		The URL
+	 * 
+	 * @return The URL
 	 */
 	public String getUrl() {
 		return url;
@@ -111,8 +116,9 @@ public class HistoryEntry {
 
 	/**
 	 * Set the date
+	 * 
 	 * @param date
-	 * 			The date object to set it to
+	 *            The date object to set it to
 	 */
 	public void setDate(Date date) {
 		this.date = date;
@@ -120,8 +126,9 @@ public class HistoryEntry {
 
 	/**
 	 * Set the uploader name
+	 * 
 	 * @param uploader
-	 * 			The uploader name
+	 *            The uploader name
 	 */
 	public void setUploader(String uploader) {
 		this.uploader = uploader;
@@ -129,15 +136,16 @@ public class HistoryEntry {
 
 	/**
 	 * Set the URL
+	 * 
 	 * @param url
-	 * 			The URL
+	 *            The URL
 	 */
 	public void setUrl(String url) {
 		this.url = url;
 	}
-	
+
 	@Override
 	public String toString() {
-		return format.format(date)+" - "+url;
+		return format.format(date) + " - " + url;
 	}
 }

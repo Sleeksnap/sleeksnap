@@ -23,28 +23,29 @@ import org.sleeksnap.util.active.linux.XPropWindowUtil;
 import com.sun.jna.Platform;
 
 /**
- * A simple class which contains a cached WindowUtil and a method to set it/get it
+ * A simple class which contains a cached WindowUtil and a method to set it/get
+ * it
  * 
  * @author Nikki
- *
+ * 
  */
 public class WindowUtilProvider {
 	/**
 	 * The WindowUtil currently in use
 	 */
 	private static WindowUtil cachedUtil = null;
-	
+
 	/**
 	 * Get the current WindowUtil
-	 * @return
-	 * 		The WindowUtil for the OS
+	 * 
+	 * @return The WindowUtil for the OS
 	 */
 	public static WindowUtil getWindowUtil() {
-		if(cachedUtil == null) {
-			if(Platform.isWindows()) {
+		if (cachedUtil == null) {
+			if (Platform.isWindows()) {
 				cachedUtil = new Win32WindowUtil();
-			} else if(Platform.isLinux()) {
-				if(GnomeWindowUtil.isValid()) {
+			} else if (Platform.isLinux()) {
+				if (GnomeWindowUtil.isValid()) {
 					cachedUtil = new GnomeWindowUtil();
 				} else {
 					cachedUtil = new XPropWindowUtil();

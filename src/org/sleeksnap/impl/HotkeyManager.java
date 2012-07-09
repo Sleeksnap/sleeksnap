@@ -35,40 +35,41 @@ public class HotkeyManager {
 	 * The hotkey provider
 	 */
 	private HotkeyProvider provider;
-	
+
 	/**
 	 * The screensnapper instance
 	 */
 	private ScreenSnapper snapper;
-	
+
 	/**
 	 * Whether the input has been initialized or disabled
 	 */
 	private boolean initialized = false;
-	
+
 	/**
 	 * Construct a new hotkey manager
+	 * 
 	 * @param snapper
-	 * 			The screensnapper instance
+	 *            The screensnapper instance
 	 */
 	public HotkeyManager(ScreenSnapper snapper) {
 		this.snapper = snapper;
 		this.provider = HotkeyProvider.getCurrentProvider(false);
-		//Register a shutdown hook just in case
+		// Register a shutdown hook just in case
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				cleanupInput();
 			}
 		});
 	}
-	
+
 	/**
 	 * Initialize the inputs, using JIntellitype for Windows and JXGrabKey for
 	 * Linux
 	 */
 	public void initializeInput() {
 		Map<String, String> keys = snapper.getConfiguration().getMap("hotkeys");
-		if (keys.containsKey("crop")) { 
+		if (keys.containsKey("crop")) {
 			provider.register(KeyStroke.getKeyStroke(keys.get("crop")),
 					new HotKeyListener() {
 						@Override
@@ -101,18 +102,19 @@ public class HotkeyManager {
 						@Override
 						public void onHotKey(HotKey hotKey) {
 							if (!snapper.openSettings()) {
-								snapper.getTrayIcon().displayMessage(
-										"Error",
-										"Could not open settings, is there another window open?",
-										TrayIcon.MessageType.ERROR);
+								snapper.getTrayIcon()
+										.displayMessage(
+												"Error",
+												"Could not open settings, is there another window open?",
+												TrayIcon.MessageType.ERROR);
 							}
 						}
 					});
 		}
 		// We support active windows only on windows/linux, but OSX SOON!
-		if ((Platform.isWindows() || Platform.isLinux()) && keys.containsKey("active")) {
-			provider.register(
-					KeyStroke.getKeyStroke(keys.get("active")),
+		if ((Platform.isWindows() || Platform.isLinux())
+				&& keys.containsKey("active")) {
+			provider.register(KeyStroke.getKeyStroke(keys.get("active")),
 					new HotKeyListener() {
 						@Override
 						public void onHotKey(HotKey hotKey) {
@@ -123,7 +125,6 @@ public class HotkeyManager {
 		initialized = true;
 	}
 
-
 	/**
 	 * Clean up the input bindings
 	 */
@@ -131,7 +132,7 @@ public class HotkeyManager {
 		resetKeys();
 		provider.stop();
 	}
-	
+
 	/**
 	 * Reset the bound keys and let other classes know that they are not set
 	 */
@@ -145,8 +146,8 @@ public class HotkeyManager {
 
 	/**
 	 * Get whether this class has been initialized/keys have been bound
-	 * @return
-	 * 		The value of <code>initialized</code>
+	 * 
+	 * @return The value of <code>initialized</code>
 	 */
 	public boolean hasKeysBound() {
 		return initialized;

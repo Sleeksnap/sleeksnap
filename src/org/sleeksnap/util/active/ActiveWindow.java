@@ -23,7 +23,7 @@ import java.awt.Rectangle;
  * Represents an Active window
  * 
  * @author Nikki
- *
+ * 
  */
 public class ActiveWindow {
 	private String name;
@@ -42,9 +42,10 @@ public class ActiveWindow {
 	public String getName() {
 		return name;
 	}
-	
+
 	@Override
 	public String toString() {
-		return name+" [x="+bounds.x+",y="+bounds.y+",width="+bounds.width+",height="+bounds.height+"]";
+		return name + " [x=" + bounds.x + ",y=" + bounds.y + ",width="
+				+ bounds.width + ",height=" + bounds.height + "]";
 	}
 }

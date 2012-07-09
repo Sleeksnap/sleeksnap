@@ -46,7 +46,8 @@ import org.sleeksnap.util.Utils.ClassUtil;
  * @author Graham Edgecombe
  * @author Nikki
  */
-@Settings(required = {"Username", "Password"}, optional = {"Optional 1", "Optional 2"})
+@Settings(required = { "Username", "Password" }, optional = { "Optional 1",
+		"Optional 2" })
 public class ParametersDialog extends JDialog {
 
 	/**
@@ -88,7 +89,7 @@ public class ParametersDialog extends JDialog {
 	 * The action listener
 	 */
 	private ActionListener actionListener;
-	
+
 	/**
 	 * The map of name => field
 	 */
@@ -105,21 +106,22 @@ public class ParametersDialog extends JDialog {
 	 * 
 	 * @param name
 	 *            The name of the uploader
-	 * @param 
-	 *            The simulation.
+	 * @param The
+	 *            simulation.
 	 */
-	public ParametersDialog(JFrame parent, Uploader<?> uploader, Settings settings) {
+	public ParametersDialog(JFrame parent, Uploader<?> uploader,
+			Settings settings) {
 		super(parent);
 		this.uploader = uploader;
 		this.settings = settings;
 		int requiredLength = settings.required().length;
 		int optionalLength = settings.optional().length;
 		length = requiredLength + optionalLength;
-		//Check the length for labels
-		if(requiredLength != 0) {
+		// Check the length for labels
+		if (requiredLength != 0) {
 			length++;
 		}
-		if(optionalLength != 0) {
+		if (optionalLength != 0) {
 			length++;
 		}
 		this.labels = new JLabel[length]; // TODO refactor
@@ -137,59 +139,61 @@ public class ParametersDialog extends JDialog {
 		JComponent[] components = new JComponent[length];
 
 		Properties properties = uploader.getSettings();
-		
+
 		int i = 0;
-		if(settings.required().length != 0) {
+		if (settings.required().length != 0) {
 			labels[i] = new JLabel("Required settings");
 			components[i] = new JLabel();
 			i++;
-			
+
 			for (String s : settings.required()) {
 				labels[i] = new JLabel(s + ": ");
-	
+
 				JTextField component = new JTextField();
 				components[i] = component;
-				if(properties.containsKey(s)) {
+				if (properties.containsKey(s)) {
 					component.setText(properties.getProperty(s));
 				}
-				component.setMinimumSize(new Dimension(200, 0)); // TODO better way?
-				
+				component.setMinimumSize(new Dimension(200, 0)); // TODO better
+																	// way?
+
 				fieldMap.put(s, component);
-				
+
 				i++;
 			}
 		}
-		
-		if(settings.optional().length != 0) {
+
+		if (settings.optional().length != 0) {
 			labels[i] = new JLabel("Optional settings");
 			components[i] = new JLabel();
 			i++;
-			
-			for(String s : settings.optional()) {
+
+			for (String s : settings.optional()) {
 				labels[i] = new JLabel(s + ": ");
-	
+
 				JTextField component = new JTextField();
 				components[i] = component;
-				if(properties.containsKey(s)) {
+				if (properties.containsKey(s)) {
 					component.setText(properties.getProperty(s));
 				}
-				component.setMinimumSize(new Dimension(200, 0)); // TODO better way?
-				
+				component.setMinimumSize(new Dimension(200, 0)); // TODO better
+																	// way?
+
 				fieldMap.put(s, component);
-				
+
 				i++;
 			}
 		}
 
 		return components;
 	}
-	
+
 	/**
 	 * Initialises the components.
 	 */
 	private void initComponents() {
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setTitle(ClassUtil.formatName(uploader.getClass())+" Settings");
+		setTitle(ClassUtil.formatName(uploader.getClass()) + " Settings");
 		setResizable(false);
 
 		GroupLayout layout = new GroupLayout(getContentPane());
@@ -313,13 +317,16 @@ public class ParametersDialog extends JDialog {
 	 *            The event.
 	 */
 	private void btnOkActionPerformed(ActionEvent evt) {
-		if(!validateProperties()) {
-			JOptionPane.showMessageDialog(this, "Some required settings are empty, please fill them out", "Fields missing", JOptionPane.ERROR_MESSAGE);
+		if (!validateProperties()) {
+			JOptionPane.showMessageDialog(this,
+					"Some required settings are empty, please fill them out",
+					"Fields missing", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		// everything is valid, let the caller know, then go ahead and close the window
+		// everything is valid, let the caller know, then go ahead and close the
+		// window
 		actionListener.actionPerformed(evt);
-		
+
 		dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 	}
 
@@ -332,19 +339,19 @@ public class ParametersDialog extends JDialog {
 	private void btnCancelActionPerformed(ActionEvent evt) {
 		dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 	}
-	
+
 	public boolean validateProperties() {
-		for(String s : settings.required()) {
-			if(fieldMap.get(s).getText().equals("")) {
+		for (String s : settings.required()) {
+			if (fieldMap.get(s).getText().equals("")) {
 				return false;
 			}
 		}
 		return true;
 	}
-	
+
 	public Properties toProperties() {
 		Properties props = new Properties();
-		for(Entry<String, JTextField> entry : fieldMap.entrySet()) {
+		for (Entry<String, JTextField> entry : fieldMap.entrySet()) {
 			props.put(entry.getKey(), entry.getValue().getText());
 		}
 		return props;

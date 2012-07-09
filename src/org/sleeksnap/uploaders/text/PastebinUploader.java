@@ -26,10 +26,10 @@ import org.sleeksnap.util.HttpUtil;
  * A text uploader for Pastebin.com
  * 
  * @author Nikki
- *
+ * 
  */
 public class PastebinUploader extends Uploader<String> {
-	
+
 	/**
 	 * The URL of the API page
 	 */
@@ -47,6 +47,7 @@ public class PastebinUploader extends Uploader<String> {
 
 	@Override
 	public String upload(String contents) throws IOException {
-		return HttpUtil.executePost(URL, "paste_code="+HttpUtil.encode(contents));
+		return HttpUtil.executePost(URL,
+				"paste_code=" + HttpUtil.encode(contents));
 	}
 }

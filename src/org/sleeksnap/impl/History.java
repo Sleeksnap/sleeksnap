@@ -30,76 +30,82 @@ import org.yaml.snakeyaml.Yaml;
  * A basic history manager loading and saving to YAML
  * 
  * @author Nikki
- *
+ * 
  */
 public class History {
-	
+
 	/**
 	 * The static YAML instance
 	 */
 	private static Yaml yaml = new Yaml();
-	
+
 	/**
 	 * The history storage class
 	 */
 	private List<HistoryEntry> history = new LinkedList<HistoryEntry>();
-	
+
 	/**
 	 * The file to load/save to
 	 */
 	private File file;
-	
+
 	/**
 	 * Initialize a new instance with the specified file
+	 * 
 	 * @param file
-	 * 			The file to use for storage
+	 *            The file to use for storage
 	 */
 	public History(File file) {
 		this.file = file;
 	}
-	
+
 	/**
 	 * Add an entry, forcing a save
+	 * 
 	 * @param entry
-	 * 			The entry
+	 *            The entry
+	 * @throws IOException
+	 *             Thrown if an error occurred while saving, notify that local
+	 *             history is disabled?
 	 */
-	public void addEntry(HistoryEntry entry) {
+	public void addEntry(HistoryEntry entry) throws IOException {
 		addEntry(entry, true);
 	}
-	
+
 	/**
 	 * Add an entry
+	 * 
 	 * @param entry
-	 * 			The entry
+	 *            The entry
 	 * @param save
-	 * 			True if a save is required
+	 *            True if a save is required
+	 * @throws IOException
+	 *             Thrown if an error occurred while saving, notify that local
+	 *             history is disabled?
 	 */
-	public void addEntry(HistoryEntry entry, boolean save) {
-		synchronized(history) {
+	public void addEntry(HistoryEntry entry, boolean save) throws IOException {
+		synchronized (history) {
 			history.add(entry);
-			if(save) {
-				try {
-					save();
-				} catch (IOException e) {
-				}
+			if (save) {
+				save();
 			}
 		}
 	}
-	
 
 	/**
 	 * Get the history list
-	 * @return
-	 * 		The list
+	 * 
+	 * @return The list
 	 */
 	public List<HistoryEntry> getHistory() {
 		return history;
 	}
-	
+
 	/**
 	 * Load the history from the specified file
+	 * 
 	 * @throws IOException
-	 * 			If an error occurs reading the file
+	 *             If an error occurs reading the file
 	 */
 	@SuppressWarnings("unchecked")
 	public void load() throws IOException {
@@ -110,11 +116,12 @@ public class History {
 			input.close();
 		}
 	}
-	
+
 	/**
 	 * Save the history to a file
+	 * 
 	 * @throws IOException
-	 * 			If an error occurs saving the file
+	 *             If an error occurs saving the file
 	 */
 	private void save() throws IOException {
 		FileWriter writer = new FileWriter(file);

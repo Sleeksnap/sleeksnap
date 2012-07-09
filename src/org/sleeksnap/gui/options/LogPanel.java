@@ -27,43 +27,43 @@ import org.sleeksnap.gui.OptionPanel;
  * An OptionSubPanel for the Log panel
  * 
  * @author Nikki
- *
+ * 
  */
-@SuppressWarnings({"serial", "unused"})
+@SuppressWarnings({ "serial", "unused" })
 public class LogPanel extends OptionSubPanel {
-	
+
 	private OptionPanel parent;
 
 	private JScrollPane logScroll;
 	private JTextArea logArea;
-	
+
 	public LogPanel(OptionPanel parent) {
 		this.parent = parent;
 	}
 
 	@Override
 	public void initComponents() {
-        logScroll = new JScrollPane();
-        logArea = new JTextArea();
+		logScroll = new JScrollPane();
+		logArea = new JTextArea();
 
-        logArea.setColumns(20);
-        logArea.setRows(5);
-        logArea.setEditable(false);
-        
-        logScroll.setViewportView(logArea);
+		logArea.setColumns(20);
+		logArea.setRows(5);
+		logArea.setEditable(false);
 
-        GroupLayout logPanelLayout = new GroupLayout(this);
-        this.setLayout(logPanelLayout);
-        logPanelLayout.setHorizontalGroup(
-            logPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(logScroll, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
-        );
-        logPanelLayout.setVerticalGroup(
-            logPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(logScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE)
-        );
+		logScroll.setViewportView(logArea);
+
+		GroupLayout logPanelLayout = new GroupLayout(this);
+		this.setLayout(logPanelLayout);
+		logPanelLayout.setHorizontalGroup(logPanelLayout.createParallelGroup(
+				javax.swing.GroupLayout.Alignment.LEADING).addComponent(
+				logScroll, javax.swing.GroupLayout.Alignment.TRAILING,
+				javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE));
+		logPanelLayout.setVerticalGroup(logPanelLayout.createParallelGroup(
+				javax.swing.GroupLayout.Alignment.LEADING).addComponent(
+				logScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 465,
+				Short.MAX_VALUE));
 	}
-	
+
 	public void setContents(String contents) {
 		logArea.setText(contents);
 		logArea.setCaretPosition(contents.length());

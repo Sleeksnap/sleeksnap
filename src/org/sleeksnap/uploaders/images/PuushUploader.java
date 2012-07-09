@@ -12,9 +12,9 @@ import org.sleeksnap.util.MultipartPostMethod.FileUpload;
 import org.sleeksnap.util.Utils.DateUtil;
 import org.sleeksnap.util.Utils.ImageUtil;
 
-@Settings(required = {"apikey"}, optional = {})
+@Settings(required = { "apikey" }, optional = {})
 public class PuushUploader extends Uploader<BufferedImage> {
-	
+
 	private static final String API_UPLOAD_URL = "http://puush.me/api/up";
 
 	@Override
@@ -29,25 +29,27 @@ public class PuushUploader extends Uploader<BufferedImage> {
 
 	@Override
 	public String upload(BufferedImage t) throws Exception {
-		if(!settings.containsKey("apikey")) {
+		if (!settings.containsKey("apikey")) {
 			throw new UploaderConfigurationException("API Key is not set!");
 		}
-		
+
 		MultipartPostMethod post = new MultipartPostMethod(API_UPLOAD_URL);
-		
+
 		InputStream input = ImageUtil.toInputStream(t);
-		
+
 		post.setParameter("k", settings.getProperty("apikey"));
-		
+
 		post.setParameter("z", "sleeksnap");
 
-		post.setParameter("f", new FileUpload("Sleeksnap-"+DateUtil.getCurrentDate()+".png", input));
+		post.setParameter("f",
+				new FileUpload("Sleeksnap-" + DateUtil.getCurrentDate()
+						+ ".png", input));
 
 		post.execute();
-		
+
 		String[] fields = post.getResponse().split(",");
-		
-		if(fields.length == 1) {
+
+		if (fields.length == 1) {
 			throw new UploadException("Puu.sh returned the wrong data!");
 		}
 		return fields[1];

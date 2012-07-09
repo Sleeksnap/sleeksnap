@@ -21,10 +21,10 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
 public abstract class OptionSubPanel extends JPanel {
-	
+
 	public abstract void initComponents();
-	
+
 	public void doneBuilding() {
-		//Nothing
+		// Nothing
 	}
 }

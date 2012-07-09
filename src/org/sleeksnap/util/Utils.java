@@ -52,22 +52,24 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.xml.bind.DatatypeConverter;
 
-import org.apache.commons.codec.binary.Base64;
 import org.sleeksnap.uploaders.Uploader;
 
 /**
- * A class containing many utility classes which would be wasteful to put in a real class.
+ * A class containing many utility classes which would be wasteful to put in a
+ * real class.
+ * 
  * @author Nikki
- *
+ * 
  */
 public class Utils {
-	
+
 	/**
 	 * Formatting utils
 	 * 
 	 * @author Nikki
-	 *
+	 * 
 	 */
 	public static class FormatUtil {
 		public static String formatLowercaseName(String name) {
@@ -76,36 +78,36 @@ public class Utils {
 			return name;
 		}
 	}
-	
+
 	/**
 	 * A class which provides functions related to the use of Class elements
 	 * 
 	 * @author Nikki
-	 *
+	 * 
 	 */
 	public static class ClassUtil {
-		
+
 		/**
 		 * Format a class name to get only the real name, not the package
+		 * 
 		 * @param clazz
-		 * 			The class
-		 * @return
-		 * 			The name
+		 *            The class
+		 * @return The name
 		 */
 		public static String formatName(Class<?> clazz) {
 			String name = clazz.getName();
 			int packageIndex = name.lastIndexOf(".");
-			if(packageIndex != -1) {
-				name = name.substring(packageIndex+1);
+			if (packageIndex != -1) {
+				name = name.substring(packageIndex + 1);
 			}
 			int subIndex = name.lastIndexOf("$");
-			if(subIndex != -1) {
+			if (subIndex != -1) {
 				name = name.substring(0, subIndex);
 			}
 			return name;
 		}
 	}
-	
+
 	/**
 	 * A basic class to use clipboard related functions
 	 * 
@@ -195,13 +197,13 @@ public class Utils {
 	 * 
 	 */
 	public static class FileUtils {
-		
+
 		/**
 		 * Get the mime type for a file
+		 * 
 		 * @param fileUrl
-		 * 			The file url (Can use file.toURI().toURL())
-		 * @return
-		 * 			The mime type
+		 *            The file url (Can use file.toURI().toURL())
+		 * @return The mime type
 		 */
 		public static String getMimeType(String fileUrl) {
 			FileNameMap fileNameMap = URLConnection.getFileNameMap();
@@ -209,23 +211,23 @@ public class Utils {
 
 			return type;
 		}
-		
+
 		/**
 		 * Read a file
+		 * 
 		 * @param file
-		 * 			The file
-		 * @return
-		 * 			The contents
+		 *            The file
+		 * @return The contents
 		 * @throws IOException
-		 * 			If an error occurred
+		 *             If an error occurred
 		 */
 		public static String readFile(File file) throws IOException {
 			StringBuilder contents = new StringBuilder();
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			try {
-				while(true) {
+				while (true) {
 					String line = reader.readLine();
-					if(line == null) {
+					if (line == null) {
 						break;
 					}
 					contents.append(line).append("\n");
@@ -235,18 +237,19 @@ public class Utils {
 			}
 			return contents.toString();
 		}
-		
+
 		/**
 		 * Get the jar path
+		 * 
 		 * @param cl
-		 * 			The class to get the path from
-		 * @return
-		 * 			The path
+		 *            The class to get the path from
+		 * @return The path
 		 * @throws Exception
-		 * 			If the path is invalid
+		 *             If the path is invalid
 		 */
 		public static String getJarPath(Class<?> cl) throws Exception {
-			return new File(cl.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
+			return new File(cl.getProtectionDomain().getCodeSource()
+					.getLocation().toURI()).getAbsolutePath();
 		}
 	}
 
@@ -282,7 +285,7 @@ public class Utils {
 
 			// Get the image's color model
 			ColorModel cm = pg.getColorModel();
-			if(cm == null) {
+			if (cm == null) {
 				return false;
 			}
 			return cm.hasAlpha();
@@ -300,7 +303,7 @@ public class Utils {
 		public static String toBase64(BufferedImage image) throws IOException {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			ImageIO.write(image, "PNG", output);
-			return Base64.encodeBase64String(output.toByteArray());
+			return DatatypeConverter.printBase64Binary(output.toByteArray());
 		}
 
 		/**
@@ -366,28 +369,30 @@ public class Utils {
 
 		/**
 		 * Get an image as a ByteArrayInputStream
+		 * 
 		 * @param image
-		 * 			The image
-		 * @return
-		 * 			The inputstream
+		 *            The image
+		 * @return The inputstream
 		 * @throws IOException
-		 * 			If an error occurred while writing or reading
+		 *             If an error occurred while writing or reading
 		 */
-		public static InputStream toInputStream(BufferedImage image) throws IOException {
+		public static InputStream toInputStream(BufferedImage image)
+				throws IOException {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			ImageIO.write(image, "PNG", output);
 			return new ByteArrayInputStream(output.toByteArray());
 		}
 	}
-	
+
 	/**
 	 * A class used for sorting
 	 * 
 	 * @author Nikki
-	 *
+	 * 
 	 */
 	public static class SortingUtil {
-		public static List<Uploader<?>> sortUploaders(Collection<Uploader<?>> uploaders) {
+		public static List<Uploader<?>> sortUploaders(
+				Collection<Uploader<?>> uploaders) {
 			List<Uploader<?>> list = new LinkedList<Uploader<?>>(uploaders);
 			Collections.sort(list, new Comparator<Uploader<?>>() {
 				@Override
@@ -398,18 +403,19 @@ public class Utils {
 			return list;
 		}
 	}
-	
+
 	/**
 	 * Contains display methods, will use more later...
+	 * 
 	 * @author Nikki
-	 *
+	 * 
 	 */
 	public static class DisplayUtil {
 
 		/**
 		 * Get the real screen size, multiple screens..
-		 * @return
-		 * 		The screen size
+		 * 
+		 * @return The screen size
 		 */
 		public static Rectangle getRealScreenSize() {
 			GraphicsEnvironment ge = GraphicsEnvironment
@@ -428,24 +434,25 @@ public class Utils {
 			return allScreenBounds;
 		}
 	}
-	
+
 	/**
 	 * A utility class used for formatting Dates
 	 * 
 	 * @author Nikki
-	 *
+	 * 
 	 */
 	public static class DateUtil {
-		
+
 		/**
 		 * The date format
 		 */
-		private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss");
-		
+		private static SimpleDateFormat dateFormat = new SimpleDateFormat(
+				"MM-dd-yyyy_HH-mm-ss");
+
 		/**
 		 * Gets a filename friendly date
-		 * @return
-		 * 		The formatted date
+		 * 
+		 * @return The formatted date
 		 */
 		public static String getCurrentDate() {
 			return dateFormat.format(new Date());

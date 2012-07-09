@@ -45,9 +45,11 @@ import org.sleeksnap.util.Utils.ImageUtil;
 public class SelectionWindow extends JWindow {
 
 	/**
-	 * A <code>javax.swing.event.MouseInputAdapter</code> which listens for selections
+	 * A <code>javax.swing.event.MouseInputAdapter</code> which listens for
+	 * selections
+	 * 
 	 * @author User
-	 *
+	 * 
 	 */
 	private class ScreenSelectionListener extends MouseInputAdapter {
 		public void mouseDragged(MouseEvent e) {
@@ -57,7 +59,7 @@ public class SelectionWindow extends JWindow {
 		public void mousePressed(MouseEvent e) {
 			int x = e.getX();
 			int y = e.getY();
-			if(e.getButton() == MouseEvent.BUTTON3) {
+			if (e.getButton() == MouseEvent.BUTTON3) {
 				e.consume();
 				close();
 				return;
@@ -68,8 +70,8 @@ public class SelectionWindow extends JWindow {
 		}
 
 		public void mouseReleased(MouseEvent e) {
-			//Cancel button
-			if(e.getButton() == MouseEvent.BUTTON3) {
+			// Cancel button
+			if (e.getButton() == MouseEvent.BUTTON3) {
 				e.consume();
 				close();
 				return;
@@ -77,7 +79,7 @@ public class SelectionWindow extends JWindow {
 			updateSize(e);
 			try {
 				capture();
-			} catch(Exception ex) {
+			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 		}
@@ -91,7 +93,8 @@ public class SelectionWindow extends JWindow {
 		 * the painting region using arguments to the repaint() call.
 		 */
 		void updateSize(MouseEvent e) {
-			currentRect.setSize(e.getX() - currentRect.x, e.getY() - currentRect.y);
+			currentRect.setSize(e.getX() - currentRect.x, e.getY()
+					- currentRect.y);
 			updateDrawableRect(getWidth(), getHeight());
 			repaint();
 		}
@@ -114,17 +117,17 @@ public class SelectionWindow extends JWindow {
 		this.setPreferredSize(new Dimension(area.width, area.height));
 		this.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 		this.setBounds(area);
-		
+
 		ScreenSelectionListener listener = new ScreenSelectionListener();
 		addMouseListener(listener);
 		addMouseMotionListener(listener);
 	}
-	
+
 	public void capture() {
 		Image sub = createImage(new FilteredImageSource(image.getSource(),
 				new CropImageFilter(rectToDraw.x, rectToDraw.y,
 						rectToDraw.width, rectToDraw.height)));
-		if(sub == null) {
+		if (sub == null) {
 			throw new RuntimeException("Unable to crop!");
 		}
 		snapper.upload(ImageUtil.toBufferedImage(sub));
@@ -132,7 +135,7 @@ public class SelectionWindow extends JWindow {
 		sub = null;
 		close();
 	}
-	
+
 	public void close() {
 		dispose();
 		snapper.clearWindow();

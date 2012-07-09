@@ -29,15 +29,16 @@ import org.sleeksnap.util.StreamUtils;
  * A text uploader for http://pastebin.ca
  * 
  * @author Nikki
- *
+ * 
  */
 public class PastebincaUploader extends Uploader<String> {
-	
+
 	/**
 	 * Basic variables, such as the API Key and URL
 	 */
 	private static final String PASTEBINCA_URL = "http://pastebin.ca/";
-	private static final String PASTEBINCA_SCRIPTURL = PASTEBINCA_URL+"quiet-paste.php";
+	private static final String PASTEBINCA_SCRIPTURL = PASTEBINCA_URL
+			+ "quiet-paste.php";
 	private static final String PASTEBINCA_KEY = "cjONz2tQBu4kZxDcugEVAdkSELcD77No";
 
 	@Override
@@ -53,7 +54,8 @@ public class PastebincaUploader extends Uploader<String> {
 	@Override
 	public String upload(String string) throws Exception {
 		URL url = new URL(PASTEBINCA_SCRIPTURL);
-		String data = "api="+PASTEBINCA_KEY+"&content="+HttpUtil.encode(string)+"&s=true&type=1&expiry=Never&name=";
+		String data = "api=" + PASTEBINCA_KEY + "&content="
+				+ HttpUtil.encode(string) + "&s=true&type=1&expiry=Never&name=";
 		URLConnection connection = url.openConnection();
 		connection.setDoOutput(true);
 		OutputStreamWriter writer = new OutputStreamWriter(
@@ -65,10 +67,10 @@ public class PastebincaUploader extends Uploader<String> {
 			writer.write(data);
 			writer.flush();
 			writer.close();
-			
+
 			String resp = StreamUtils.readContents(connection.getInputStream());
-			
-			return PASTEBINCA_URL+resp.substring(resp.indexOf(':')+1);
+
+			return PASTEBINCA_URL + resp.substring(resp.indexOf(':') + 1);
 		} finally {
 			writer.close();
 		}

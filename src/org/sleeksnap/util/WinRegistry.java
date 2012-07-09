@@ -1,4 +1,5 @@
 package org.sleeksnap.util;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -8,9 +9,9 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 
 public class WinRegistry {
-	
+
 	public static final String RUN_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
-	
+
 	public static final int HKEY_CURRENT_USER = 0x80000001;
 	public static final int HKEY_LOCAL_MACHINE = 0x80000002;
 	public static final int REG_SUCCESS = 0;

@@ -24,47 +24,56 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.jibble.simpleftp.SimpleFTP;
+import org.sleeksnap.util.SimpleFTP;
 import org.sleeksnap.util.Utils.DateUtil;
 import org.sleeksnap.util.Utils.ImageUtil;
 
 /**
- * A generic uploader for FTP servers
- * Also serves as an example for the Settings annotation and GenericUploaders
+ * A generic uploader for FTP servers Also serves as an example for the Settings
+ * annotation and GenericUploaders
  * 
  * @author Nikki
- *
+ * 
  */
-@Settings(required={"hostname", "username", "password", "baseurl"}, optional={"port", "remotedir"})
+@Settings(required = { "hostname", "username", "password", "baseurl" }, optional = {
+		"port", "remotedir" })
 public class FTPUploader extends GenericUploader {
-	
+
 	/**
 	 * The date format used when uploading
 	 */
-	
+
 	/**
 	 * The uploader array
 	 */
-	private Uploader<?>[] uploaders = new Uploader<?>[] {new FTPImageUploader(), new FTPTextUploader(), new FTPFileUploader()};
-	
+	private Uploader<?>[] uploaders = new Uploader<?>[] {
+			new FTPImageUploader(), new FTPTextUploader(),
+			new FTPFileUploader() };
+
 	/**
 	 * Upload a file to the FTP server
+	 * 
 	 * @param fileName
-	 * 			The filename
+	 *            The filename
 	 * @param input
-	 * 			The input stream
-	 * @return
-	 * 			The final URL
+	 *            The input stream
+	 * @return The final URL
 	 * @throws IOException
-	 * 			If an error occurred
+	 *             If an error occurred
 	 */
-	public String ftpUpload(String fileName, InputStream input) throws IOException, UploaderConfigurationException {
-		if(!settings.containsKey("hostname") || !settings.containsKey("username") || !settings.containsKey("password") || !settings.containsKey("baseurl")) {
-			throw new UploaderConfigurationException("Missing hostname, username, password or baseurl!");
+	public String ftpUpload(String fileName, InputStream input)
+			throws IOException, UploaderConfigurationException {
+		if (!settings.containsKey("hostname")
+				|| !settings.containsKey("username")
+				|| !settings.containsKey("password")
+				|| !settings.containsKey("baseurl")) {
+			throw new UploaderConfigurationException(
+					"Missing hostname, username, password or baseurl!");
 		}
 		SimpleFTP ftp = new SimpleFTP();
-		ftp.connect(settings.getProperty("hostname"), Integer.parseInt(settings.getProperty("port", "21")));
-		if(settings.containsKey("remotedir")) {
+		ftp.connect(settings.getProperty("hostname"),
+				Integer.parseInt(settings.getProperty("port", "21")));
+		if (settings.containsKey("remotedir")) {
 			ftp.cwd(settings.getProperty("remotedir"));
 		}
 		try {
@@ -75,12 +84,12 @@ public class FTPUploader extends GenericUploader {
 		}
 		return String.format(settings.getProperty("baseurl", "%s"), fileName);
 	}
-	
+
 	/**
 	 * An uploader to deal with Image uploads
 	 * 
 	 * @author Nikki
-	 *
+	 * 
 	 */
 	public class FTPImageUploader extends Uploader<BufferedImage> {
 
@@ -99,12 +108,12 @@ public class FTPUploader extends GenericUploader {
 			return ftpUpload(generateFileName(t), ImageUtil.toInputStream(t));
 		}
 	}
-	
+
 	/**
 	 * An uploader to deal with Text uploads
 	 * 
 	 * @author Nikki
-	 *
+	 * 
 	 */
 	public class FTPTextUploader extends Uploader<String> {
 
@@ -120,15 +129,16 @@ public class FTPUploader extends GenericUploader {
 
 		@Override
 		public String upload(String t) throws Exception {
-			return ftpUpload(generateFileName(t), new ByteArrayInputStream(t.getBytes()));
+			return ftpUpload(generateFileName(t),
+					new ByteArrayInputStream(t.getBytes()));
 		}
 	}
-	
+
 	/**
 	 * An uploader to deal with File uploads
 	 * 
 	 * @author Nikki
-	 *
+	 * 
 	 */
 	public class FTPFileUploader extends Uploader<File> {
 
@@ -147,22 +157,23 @@ public class FTPUploader extends GenericUploader {
 			return ftpUpload(generateFileName(t), new FileInputStream(t));
 		}
 	}
-	
+
 	/**
-	 * Generate a file name from a date object formatted for filenames, plus the filename if applicable
+	 * Generate a file name from a date object formatted for filenames, plus the
+	 * filename if applicable
+	 * 
 	 * @param object
-	 * 			The object to be uploaded
-	 * @return
-	 * 			The filename
+	 *            The object to be uploaded
+	 * @return The filename
 	 */
 	public String generateFileName(Object object) {
 		String name = DateUtil.getCurrentDate();
-		if(object instanceof BufferedImage) {
+		if (object instanceof BufferedImage) {
 			name += ".png";
-		} else if(object instanceof String) {
+		} else if (object instanceof String) {
 			name += ".txt";
-		} else if(object instanceof File) {
-			name += ((File)object).getName();
+		} else if (object instanceof File) {
+			name += ((File) object).getName();
 		} else {
 			name += ".file";
 		}

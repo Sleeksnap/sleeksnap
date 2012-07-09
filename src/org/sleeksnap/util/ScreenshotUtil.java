@@ -29,10 +29,10 @@ import org.sleeksnap.util.Utils.DisplayUtil;
  * A basic screenshot utility
  * 
  * @author Nikki
- *
+ * 
  */
 public class ScreenshotUtil {
-	
+
 	/**
 	 * The robot instance
 	 */
@@ -45,14 +45,16 @@ public class ScreenshotUtil {
 		try {
 			robot = new Robot();
 		} catch (AWTException e) {
-			
+			// We can't run without this!
+			throw new RuntimeException(
+					"Robot not initialized, shutting down...");
 		}
 	}
 
 	/**
 	 * Capture a simple screenshot
-	 * @return
-	 * 		The screenshot
+	 * 
+	 * @return The screenshot
 	 */
 	public static BufferedImage capture() {
 		return capture(DisplayUtil.getRealScreenSize());
@@ -60,21 +62,22 @@ public class ScreenshotUtil {
 
 	/**
 	 * Capture a screenshot
+	 * 
 	 * @param d
-	 * 			The dimensions of the area, starts at 0,0
-	 * @return
-	 * 			The captured image
+	 *            The dimensions of the area, starts at 0,0
+	 * @return The captured image
 	 */
 	public static BufferedImage capture(Dimension d) {
 		return capture(new Rectangle(0, 0, d.width, d.height));
 	}
-	
+
 	/**
-	 * Capture a regular screenshot, a static method for robot.createScreenCapture
+	 * Capture a regular screenshot, a static method for
+	 * robot.createScreenCapture
+	 * 
 	 * @param rectangle
-	 * 			Rect to capture in screen coordinates
-	 * @return
-	 * 			The captured image
+	 *            Rect to capture in screen coordinates
+	 * @return The captured image
 	 */
 	public static BufferedImage capture(Rectangle rectangle) {
 		return robot.createScreenCapture(rectangle);

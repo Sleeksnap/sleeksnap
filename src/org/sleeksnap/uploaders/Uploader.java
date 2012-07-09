@@ -27,13 +27,13 @@ import java.util.Properties;
  * A basic uploader
  * 
  * @author Nikki
- *
+ * 
  * @param <T>
- * 			The upload type
+ *            The upload type
  */
-@Settings(required={},optional={})
+@Settings(required = {}, optional = {})
 public abstract class Uploader<T> {
-	
+
 	/**
 	 * The properties instance
 	 */
@@ -41,33 +41,35 @@ public abstract class Uploader<T> {
 
 	/**
 	 * Get the uploader name
-	 * @return
-	 * 		The uploader name
+	 * 
+	 * @return The uploader name
 	 */
 	public abstract String getName();
 
 	/**
 	 * Get the object type this class can upload
+	 * 
 	 * @return
 	 */
 	public abstract Class<?> getUploadType();
 
 	/**
 	 * Upload the specified object
+	 * 
 	 * @param t
-	 * 			The object
-	 * @return
-	 * 			The URL or Location
-	 * @throws Exception 
+	 *            The object
+	 * @return The URL or Location
+	 * @throws Exception
 	 */
 	public abstract String upload(T t) throws Exception;
-	
+
 	/**
 	 * Load the settings from the specified file
+	 * 
 	 * @param file
-	 * 			The file to load from
+	 *            The file to load from
 	 * @throws IOException
-	 * 			If an error occurred while loading
+	 *             If an error occurred while loading
 	 */
 	public void loadSettings(File file) throws IOException {
 		FileInputStream input = new FileInputStream(file);
@@ -77,30 +79,30 @@ public abstract class Uploader<T> {
 			input.close();
 		}
 	}
-	
+
 	/**
 	 * Save the settings to the specified file
+	 * 
 	 * @param file
-	 * 			The file to save to
+	 *            The file to save to
 	 * @throws IOException
-	 * 			If an error occurred while saving
+	 *             If an error occurred while saving
 	 */
 	public void saveSettings(File file) throws IOException {
 		FileOutputStream out = new FileOutputStream(file);
 		try {
-			settings.storeToXML(
-							out,
-							"Uploader settings for "
-									+ getClass().getName());
+			settings.storeToXML(out, "Uploader settings for "
+					+ getClass().getName());
 		} finally {
 			out.close();
 		}
 	}
-	
+
 	/**
 	 * Set this uploader's settings
+	 * 
 	 * @param settings
-	 * 			The Properties object containing the settings
+	 *            The Properties object containing the settings
 	 */
 	public void setSettings(Properties settings) {
 		this.settings = settings;
@@ -108,8 +110,8 @@ public abstract class Uploader<T> {
 
 	/**
 	 * Get this uploader's properties
-	 * @return
-	 * 		The properties
+	 * 
+	 * @return The properties
 	 */
 	public Properties getSettings() {
 		return settings;

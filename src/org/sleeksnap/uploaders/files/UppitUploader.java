@@ -28,14 +28,17 @@ import org.sleeksnap.util.MultipartPostMethod.FileUpload;
 
 /**
  * An uploader for http://uppit.com
+ * 
  * @author Nikki
- *
+ * 
  */
 public class UppitUploader extends Uploader<File> {
-	
+
 	private static Pattern urlPattern = Pattern.compile("action=\"(.*?)\"");
-	private static Pattern paramPattern = Pattern.compile("<input type=\"hidden\" name=\"(.*?)\" value=\"(.*?)\">");
-	private static Pattern finalPattern = Pattern.compile("<textarea .*?>(.*?)\\s*</textarea>");
+	private static Pattern paramPattern = Pattern
+			.compile("<input type=\"hidden\" name=\"(.*?)\" value=\"(.*?)\">");
+	private static Pattern finalPattern = Pattern
+			.compile("<textarea .*?>(.*?)\\s*</textarea>");
 
 	@Override
 	public String getName() {
@@ -51,20 +54,21 @@ public class UppitUploader extends Uploader<File> {
 	public String upload(File t) throws Exception {
 		String contents = HttpUtil.executeGet("http://uppit.com/");
 		Matcher matcher = urlPattern.matcher(contents);
-		if(matcher.find()) {
-			MultipartPostMethod method = new MultipartPostMethod(matcher.group(1));
+		if (matcher.find()) {
+			MultipartPostMethod method = new MultipartPostMethod(
+					matcher.group(1));
 			matcher = paramPattern.matcher(contents);
-			while(matcher.find()) {
+			while (matcher.find()) {
 				method.setParameter(matcher.group(1), matcher.group(2));
 			}
 			method.setParameter("tos", "1");
 			method.setParameter("file_1", FileUpload.create(t));
-			
+
 			method.execute();
 			try {
 				matcher = finalPattern.matcher(method.getResponse());
-				
-				if(matcher.find()) {
+
+				if (matcher.find()) {
 					return matcher.group(1);
 				}
 			} finally {

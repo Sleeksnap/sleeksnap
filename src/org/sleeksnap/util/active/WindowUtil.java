@@ -21,16 +21,16 @@ package org.sleeksnap.util.active;
  * An interface which declares methods to get the active window
  * 
  * @author Nikki
- *
+ * 
  */
 public interface WindowUtil {
-	
+
 	/**
 	 * Get the active window
-	 * @return
-	 * 			The active desktop window
+	 * 
+	 * @return The active desktop window
 	 * @throws Exception
-	 * 			If we failed to get the window
+	 *             If we failed to get the window
 	 */
 	public ActiveWindow getActiveWindow() throws Exception;
 }

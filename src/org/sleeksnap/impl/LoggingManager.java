@@ -22,10 +22,11 @@ import java.util.logging.LogManager;
 import org.sleeksnap.util.Util;
 
 /**
- * A class to load the logging properties of this application, allows the use of file logging for the Log panel
+ * A class to load the logging properties of this application, allows the use of
+ * file logging for the Log panel
  * 
  * @author Nikki
- *
+ * 
  */
 public class LoggingManager {
 	/**
@@ -33,7 +34,8 @@ public class LoggingManager {
 	 */
 	public static void configure() {
 		try {
-			LogManager.getLogManager().readConfiguration(Util.getResourceByName("/logging.props").openStream());
+			LogManager.getLogManager().readConfiguration(
+					Util.getResourceByName("/logging.props").openStream());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

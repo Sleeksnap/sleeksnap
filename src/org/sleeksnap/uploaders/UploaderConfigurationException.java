@@ -18,10 +18,11 @@
 package org.sleeksnap.uploaders;
 
 /**
- * An Exception which should be thrown if an uploader is not configured correctly
+ * An Exception which should be thrown if an uploader is not configured
+ * correctly
  * 
  * @author Nikki
- *
+ * 
  */
 public class UploaderConfigurationException extends UploadException {
 

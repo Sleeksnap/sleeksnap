@@ -18,7 +18,6 @@ package org.sleeksnap.util;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -163,16 +162,16 @@ public class MultipartPostMethod {
 			// Write a final newline
 			writer.write("\r\n");
 		}
-		
-		//Set the final boundary
+
+		// Set the final boundary
 		boundary = boundary + "--";
 		// Write a boundary to let the server know the previous content area is
 		// finished
 		writer.write(boundary);
 		// Write a final newline
 		writer.write("\r\n");
-		
-		//Flush and close the output
+
+		// Flush and close the output
 		writer.flush();
 		writer.close();
 	}
@@ -284,15 +283,15 @@ public class MultipartPostMethod {
 		public InputStream getStream() {
 			return stream;
 		}
-		
+
 		/**
 		 * Create a FileUpload from an existing file
+		 * 
 		 * @param file
-		 * 			The file
-		 * @return
-		 * 			The wrapper with file name/input stream	
-		 * @throws IOException 
-		 * 			If a problem occured while opening the file
+		 *            The file
+		 * @return The wrapper with file name/input stream
+		 * @throws IOException
+		 *             If a problem occured while opening the file
 		 */
 		public static FileUpload create(File file) throws IOException {
 			return new FileUpload(file.getName(), new FileInputStream(file));
