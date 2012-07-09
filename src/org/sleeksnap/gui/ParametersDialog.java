@@ -323,10 +323,14 @@ public class ParametersDialog extends JDialog {
 					"Fields missing", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		// everything is valid, let the caller know, then go ahead and close the
-		// window
+		// everything is valid, let the caller know, then let them close this.
 		actionListener.actionPerformed(evt);
-
+	}
+	
+	/**
+	 * Close this window
+	 */
+	public void closeWindow() {
 		dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 	}
 
@@ -340,6 +344,11 @@ public class ParametersDialog extends JDialog {
 		dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 	}
 
+	/**
+	 * Validate the settings (verify they aren't empty, more validation later)
+	 * @return
+	 * 		true if all settings are good
+	 */
 	public boolean validateProperties() {
 		for (String s : settings.required()) {
 			if (fieldMap.get(s).getText().equals("")) {
@@ -349,6 +358,11 @@ public class ParametersDialog extends JDialog {
 		return true;
 	}
 
+	/**
+	 * Convert the fields into a properties object
+	 * @return
+	 * 		The properties object
+	 */
 	public Properties toProperties() {
 		Properties props = new Properties();
 		for (Entry<String, JTextField> entry : fieldMap.entrySet()) {
@@ -357,6 +371,11 @@ public class ParametersDialog extends JDialog {
 		return props;
 	}
 
+	/**
+	 * Set the "OK" action
+	 * @param actionListener
+	 * 			The aciton listener
+	 */
 	public void setOkAction(ActionListener actionListener) {
 		this.actionListener = actionListener;
 	}

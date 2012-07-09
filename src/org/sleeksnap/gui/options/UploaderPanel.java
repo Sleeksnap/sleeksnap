@@ -588,6 +588,9 @@ public class UploaderPanel extends OptionSubPanel {
 				Properties newSettings = dialog.toProperties();
 				try {
 					if(uploader.validateSettings(newSettings)) {
+						//Close the window
+						dialog.closeWindow();
+						//Set the uploader's settings
 						uploader.setSettings(newSettings);
 						// Finally, save the settings
 						try {
@@ -600,7 +603,7 @@ public class UploaderPanel extends OptionSubPanel {
 						}
 					}
 				} catch (UploaderConfigurationException e1) {
-					JOptionPane.showMessageDialog(getParent().getParent(), "Uploader settings are not valid!\nCause: "+e1.getMessage());
+					JOptionPane.showMessageDialog(dialog, "Uploader settings not saved due to error\nCause:\n"+e1.getMessage(), "Error saving settings", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
