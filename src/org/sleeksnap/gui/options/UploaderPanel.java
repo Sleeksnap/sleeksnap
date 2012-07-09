@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -42,6 +43,7 @@ import org.sleeksnap.gui.OptionPanel;
 import org.sleeksnap.gui.ParametersDialog;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.uploaders.UploaderConfigurationException;
 import org.sleeksnap.util.Util;
 import org.sleeksnap.util.Utils.SortingUtil;
 
@@ -583,15 +585,22 @@ public class UploaderPanel extends OptionSubPanel {
 		dialog.setOkAction(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				uploader.setSettings(dialog.toProperties());
-				// Finally, save the settings
+				Properties newSettings = dialog.toProperties();
 				try {
-					uploader.saveSettings(parent.getSnapper().getSettingsFile(
-							uploader.getClass()));
-				} catch (Exception ex) {
-					JOptionPane.showMessageDialog(null,
-							"Save failed! Caused by: " + ex, "Save failed",
-							JOptionPane.ERROR_MESSAGE);
+					if(uploader.validateSettings(newSettings)) {
+						uploader.setSettings(newSettings);
+						// Finally, save the settings
+						try {
+							uploader.saveSettings(parent.getSnapper().getSettingsFile(
+									uploader.getClass()));
+						} catch (Exception ex) {
+							JOptionPane.showMessageDialog(null,
+									"Save failed! Caused by: " + ex, "Save failed",
+									JOptionPane.ERROR_MESSAGE);
+						}
+					}
+				} catch (UploaderConfigurationException e1) {
+					JOptionPane.showMessageDialog(getParent().getParent(), "Uploader settings are not valid!\nCause: "+e1.getMessage());
 				}
 			}
 		});

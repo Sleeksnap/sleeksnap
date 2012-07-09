@@ -97,6 +97,18 @@ public abstract class Uploader<T> {
 			out.close();
 		}
 	}
+	
+	/**
+	 * Can be overridden by the uploader to validate the settings.
+	 * 
+	 * @param settings
+	 * 			The settings object
+	 * @return
+	 * 			true if valid, false if invalid.
+	 */
+	public boolean validateSettings(Properties settings) throws UploaderConfigurationException {
+		return true;
+	}
 
 	/**
 	 * Set this uploader's settings

@@ -2,6 +2,7 @@ package org.sleeksnap.uploaders.images;
 
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
+import java.util.Properties;
 
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.UploadException;
@@ -53,5 +54,14 @@ public class PuushUploader extends Uploader<BufferedImage> {
 			throw new UploadException("Puu.sh returned the wrong data!");
 		}
 		return fields[1];
+	}
+	
+	@Override
+	public boolean validateSettings(Properties properties) throws UploaderConfigurationException {
+		if (!properties.containsKey("apikey")) {
+			throw new UploaderConfigurationException("API Key is not set!");
+		}
+		//TODO Validate the API key with an 'auth' login?
+		return true;
 	}
 }
