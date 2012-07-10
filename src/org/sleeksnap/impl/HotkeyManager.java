@@ -58,7 +58,7 @@ public class HotkeyManager {
 		// Register a shutdown hook just in case
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
-				//cleanupInput();
+				cleanupInput();
 			}
 		});
 	}
