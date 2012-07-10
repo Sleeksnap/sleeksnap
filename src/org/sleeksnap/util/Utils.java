@@ -64,6 +64,8 @@ import org.sleeksnap.uploaders.Uploader;
  * 
  */
 public class Utils {
+	
+	
 
 	/**
 	 * Formatting utils
@@ -79,7 +81,7 @@ public class Utils {
 		}
 	}
 
-	/**
+	/**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
 	 * A class which provides functions related to the use of Class elements
 	 * 
 	 * @author Nikki

@@ -101,6 +101,8 @@ public abstract class Uploader<T> {
 	/**
 	 * Can be overridden by the uploader to validate the settings.
 	 * 
+	 * If invalid, either throw an UploaderConfigurationException or display your own message.
+	 * 
 	 * @param settings
 	 * 			The settings object
 	 * @return

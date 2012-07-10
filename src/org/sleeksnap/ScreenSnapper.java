@@ -482,7 +482,6 @@ public class ScreenSnapper {
 	 */
 	private void shutdown() {
 		uploadService.shutdown();
-		keyManager.cleanupInput();
 		System.exit(0);
 	}
 

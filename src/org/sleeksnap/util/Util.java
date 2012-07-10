@@ -51,6 +51,10 @@ public class Util {
 	 */
 	private static File workDir;
 
+	/**
+	 * A method to get the unix time...
+	 * @return
+	 */
 	public static long currentTimeSeconds() {
 		return (System.currentTimeMillis() / 1000);
 	}
@@ -157,7 +161,13 @@ public class Util {
 		switch (getPlatform()) {
 		case LINUX:
 		case SOLARIS:
-			workingDirectory = new File(userHome, '.' + applicationName + '/');
+			File config = new File(userHome, ".config");
+			if(config.exists()) {
+				workingDirectory = new File(config, applicationName + '/');
+				workingDirectory.mkdirs();
+			} else {
+				workingDirectory = new File(userHome, '.' + applicationName + '/');
+			}
 			break;
 		case WINDOWS:
 			String applicationData = System.getenv("APPDATA");
