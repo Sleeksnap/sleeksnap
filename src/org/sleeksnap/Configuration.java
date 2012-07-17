@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.yaml.snakeyaml.Yaml;
@@ -39,7 +40,7 @@ public class Configuration {
 	/**
 	 * The configuration map
 	 */
-	private Map<String, Object> config;
+	private Map<String, Object> config = new HashMap<String, Object>();
 
 	/**
 	 * Empty constructor
@@ -133,6 +134,15 @@ public class Configuration {
 		this.config = (Map<String, Object>) yaml
 				.load(new FileInputStream(file));
 	}
+	
+	/**
+	 * Set the configuration file path
+	 * @param file
+	 * 			The file
+	 */
+	public void setFile(File file) {
+		this.file = file;
+	}
 
 	/**
 	 * Load from a string
@@ -154,11 +164,6 @@ public class Configuration {
 	 *            The value
 	 */
 	public void put(String key, Object value) {
-		if (config == null) {
-			System.out.println("CONFIG NULL");
-		}
-		if (key == null || value == null)
-			System.out.println("Key or value null");
 		config.put(key, value);
 	}
 

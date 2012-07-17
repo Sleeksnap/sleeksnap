@@ -329,6 +329,9 @@ public class HotkeyPanel extends OptionSubPanel {
 
 	public void loadCurrentHotkeys() {
 		Map<String, String> keys = configuration.getMap("hotkeys");
+		if(keys == null) {
+			return;
+		}
 		if (keys.containsKey("full")) {
 			fullHotkeyButton.setText(getButtonText(keys.get("full")));
 		} else {

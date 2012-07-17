@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.util.HttpUtil;
 
@@ -61,7 +62,7 @@ public class TinyURLShortener extends Uploader<URL> {
 		if (matcher.find()) {
 			return matcher.group(1);
 		} else {
-			throw new Exception("Cannot find the short url");
+			throw new UploadException("Cannot find the short url");
 		}
 	}
 }

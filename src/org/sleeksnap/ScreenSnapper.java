@@ -72,7 +72,6 @@ import org.sleeksnap.uploaders.url.TUrlShortener;
 import org.sleeksnap.uploaders.url.TinyURLShortener;
 import org.sleeksnap.util.MultipartPostMethod.FileUpload;
 import org.sleeksnap.util.ScreenshotUtil;
-import org.sleeksnap.util.StreamUtils;
 import org.sleeksnap.util.Util;
 import org.sleeksnap.util.Utils.ClipboardUtil;
 import org.sleeksnap.util.Utils.ClipboardUtil.ClipboardException;
@@ -166,7 +165,7 @@ public class ScreenSnapper {
 			Util.setWorkingDirectory(file);
 		}
 		// Initialize
-		new ScreenSnapper();
+		new ScreenSnapper(map.containsKey("resetconfig"));
 	}
 
 	/**
@@ -222,7 +221,7 @@ public class ScreenSnapper {
 	 */
 	private History history;
 
-	public ScreenSnapper() {
+	public ScreenSnapper(boolean resetConfig) {
 		File local = Util.getWorkingDirectory();
 		if (!local.exists()) {
 			local.mkdirs();
@@ -235,12 +234,14 @@ public class ScreenSnapper {
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Failed to load uploaders!", e);
 		}
+		//Load the settings
 		logger.info("Loading settings...");
 		try {
-			loadSettings();
+			loadSettings(resetConfig);
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Failed to load settings!", e);
 		}
+		//Load the history
 		logger.info("Loading history...");
 		history = new History(new File(local, "history.yml"));
 		try {
@@ -248,12 +249,38 @@ public class ScreenSnapper {
 		} catch (IOException e) {
 			logger.log(Level.WARNING, "Failed to load history", e);
 		}
+		//Validate settings
+		if(!configuration.contains("hotkeys") || !configuration.contains("uploaders")) {
+			promptConfigurationReset();
+		}
+		//Register the hotkeys
 		logger.info("Registering keys...");
 		keyManager = new HotkeyManager(this);
 		keyManager.initializeInput();
 		logger.info("Opening tray icon...");
 		initializeTray();
 		logger.info("Ready.");
+	}
+	
+	/**
+	 * Prompt the user for a configuration reset
+	 */
+	public void promptConfigurationReset() {
+		int option = JOptionPane.showConfirmDialog(null, "It looks like your configuration is corrupted, would you like to load the default settings?\nPress \"No\" to open the settings GUI",
+				"Error loading settings", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+		if(option == JOptionPane.YES_OPTION) {
+			try {
+				loadSettings(true);
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "Unable to load default settings!", e);
+			}
+		} else if(option == JOptionPane.NO_OPTION) {
+			//If no, let them set the configuration themselves..
+			openSettings();
+		} else if(option == JOptionPane.CANCEL_OPTION) {
+			//Exit, they don't want anything to do with it.
+			System.exit(0);
+		}
 	}
 
 	/**
@@ -350,10 +377,22 @@ public class ScreenSnapper {
 		return configuration;
 	}
 
+	/**
+	 * Get the Hotkey Manager
+	 * @return
+	 * 		The hotkey manager
+	 */
 	public HotkeyManager getKeyManager() {
 		return keyManager;
 	}
 
+	/**
+	 * Get the settings file for an uploader class
+	 * @param uploader
+	 * 			The uploader's class
+	 * @return
+	 * 			The settings file path
+	 */
 	public File getSettingsFile(Class<?> uploader) {
 		String name = uploader.getName();
 		if (name.contains("$")) {
@@ -488,16 +527,15 @@ public class ScreenSnapper {
 	/**
 	 * Load settings
 	 */
-	private void loadSettings() throws Exception {
+	private void loadSettings(boolean resetConfig) throws Exception {
 		File configFile = new File(Util.getWorkingDirectory(),
 				Application.NAME.toLowerCase() + ".conf");
-		if (!configFile.exists()) {
-			String name = "/" + Application.NAME.toLowerCase()
-					+ (Platform.isMac() ? "_mac" : "") + ".conf";
-			StreamUtils.writeStreamToFile(getClass().getResourceAsStream(name),
-					configFile);
+		if (!configFile.exists() || resetConfig) {
+			configuration.setFile(configFile);
+			loadDefaultConfiguration();
+		} else {
+			configuration.load(configFile);
 		}
-		configuration.load(configFile);
 		if (configuration.contains("uploaders")) {
 			Map<String, String> uploadConfig = configuration
 					.getMap("uploaders");
@@ -508,6 +546,42 @@ public class ScreenSnapper {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Restores the default configuration
+	 * @throws IOException 
+	 */
+	private void loadDefaultConfiguration() throws IOException {
+		
+		configuration.put("plainTextUpload", false);
+		configuration.put("shortenurls", false);
+		
+		Map<String, String> uploaders = new HashMap<String, String>();
+		
+		//Default uploaders
+		uploaders.put(BufferedImage.class.getName(), KsnpUploader.class.getName());
+		uploaders.put(String.class.getName(), PasteeUploader.class.getName());
+		uploaders.put(URL.class.getName(), GoogleShortener.class.getName());
+		uploaders.put(File.class.getName(), UppitUploader.class.getName());
+		
+		configuration.put("uploaders", uploaders);
+		
+		Map<String, String> hotkeys = new HashMap<String, String>();
+
+		//Hotkeys
+		hotkeys.put("full", Platform.isMac() ? HotkeyManager.FULL_HOTKEY_MAC : HotkeyManager.FULL_HOTKEY);
+		hotkeys.put("crop", Platform.isMac() ? HotkeyManager.CROP_HOTKEY_MAC : HotkeyManager.CROP_HOTKEY);
+		hotkeys.put("clipboard", Platform.isMac() ? HotkeyManager.CLIPBOARD_HOTKEY_MAC : HotkeyManager.CLIPBOARD_HOTKEY);
+		hotkeys.put("options", Platform.isMac() ? HotkeyManager.OPTIONS_HOTKEY_MAC : HotkeyManager.OPTIONS_HOTKEY);
+		if(!Platform.isMac()) {
+			hotkeys.put("active", "alt PRINTSCREEN");
+		}
+		
+		configuration.put("hotkeys", hotkeys);
+		
+		//Save it
+		configuration.save();
 	}
 
 	/**
@@ -838,6 +912,13 @@ public class ScreenSnapper {
 		return new File(dir, fileName);
 	}
 
+	/**
+	 * Check if we have an uploader for a type
+	 * @param class1
+	 * 			The type to check
+	 * @return
+	 * 			True, if we have an uploader
+	 */
 	public boolean hasUploaderFor(Class<? extends Object> class1) {
 		return uploaderAssociations.containsKey(class1);
 	}

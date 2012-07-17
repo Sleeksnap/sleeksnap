@@ -23,6 +23,7 @@ import java.net.URLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.util.StreamUtils;
 
@@ -71,7 +72,7 @@ public class GoogleShortener extends Uploader<URL> {
 		if (matcher.find()) {
 			return matcher.group(1);
 		} else {
-			throw new Exception("Unable to find short url");
+			throw new UploadException("Unable to find short url");
 		}
 	}
 }

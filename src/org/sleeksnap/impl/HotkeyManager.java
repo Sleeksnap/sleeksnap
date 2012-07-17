@@ -29,7 +29,38 @@ import com.tulskiy.keymaster.common.HotKey;
 import com.tulskiy.keymaster.common.HotKeyListener;
 import com.tulskiy.keymaster.common.HotkeyProvider;
 
+/**
+ * A simple hotkey class which uses JKeyMaster, wrapped in a few functions to clean it up and give us better control
+ * 
+ * @author Nikki
+ *
+ */
 public class HotkeyManager {
+	
+	/**
+	 * Full screenshot hotkeys
+	 */
+	public static final String FULL_HOTKEY = "PRINTSCREEN", FULL_HOTKEY_MAC = "ctrl shift 1";
+	
+	/**
+	 * Crop shot hotkeys
+	 */
+	public static final String CROP_HOTKEY = "ctrl PRINTSCREEN", CROP_HOTKEY_MAC = "ctrl shift 2";
+	
+	/**
+	 * Active window hotkeys, for Linux and Windows only
+	 */
+	public static final String ACTIVE_HOTKEY = "alt PRINTSCREEN", ACTIVE_HOTKEY_MAC = "";
+	
+	/**
+	 * Clipboard hotkeys
+	 */
+	public static final String CLIPBOARD_HOTKEY = "ctrl PAGE_UP", CLIPBOARD_HOTKEY_MAC = "ctrl shift 3";
+	
+	/**
+	 * Settings gui hotkeys
+	 */
+	public static final String OPTIONS_HOTKEY = "ctrl alt PRINTSCREEN", OPTIONS_HOTKEY_MAC = "ctrl shift 9";
 
 	/**
 	 * The hotkey provider
@@ -64,11 +95,14 @@ public class HotkeyManager {
 	}
 
 	/**
-	 * Initialize the inputs, using JIntellitype for Windows and JXGrabKey for
-	 * Linux
+	 * Initialize the input using JKeymaster
 	 */
 	public void initializeInput() {
 		Map<String, String> keys = snapper.getConfiguration().getMap("hotkeys");
+		//A little sanity check, just in case we don't have ANY keys set
+		if(keys == null) {
+			return;
+		}
 		if (keys.containsKey("crop")) {
 			provider.register(KeyStroke.getKeyStroke(keys.get("crop")),
 					new HotKeyListener() {

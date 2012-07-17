@@ -205,6 +205,8 @@ public class Util {
 		for (String s : args) {
 			if (s.startsWith("--")) {
 				s = s.substring(2);
+			} else if (s.startsWith("-")) {
+				s = s.substring(1);
 			}
 			int eqIdx = s.indexOf('=');
 			String key = s.substring(0, eqIdx != -1 ? eqIdx : s.length());

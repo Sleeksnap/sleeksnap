@@ -17,13 +17,8 @@
  */
 package org.sleeksnap.uploaders.text;
 
-import java.io.OutputStreamWriter;
-import java.net.URL;
-import java.net.URLConnection;
-
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.util.HttpUtil;
-import org.sleeksnap.util.StreamUtils;
 
 /**
  * A text uploader for http://pastebin.ca
@@ -53,26 +48,11 @@ public class PastebincaUploader extends Uploader<String> {
 
 	@Override
 	public String upload(String string) throws Exception {
-		URL url = new URL(PASTEBINCA_SCRIPTURL);
 		String data = "api=" + PASTEBINCA_KEY + "&content="
 				+ HttpUtil.encode(string) + "&s=true&type=1&expiry=Never&name=";
-		URLConnection connection = url.openConnection();
-		connection.setDoOutput(true);
-		OutputStreamWriter writer = new OutputStreamWriter(
-				connection.getOutputStream());
-		try {
-			/**
-			 * Write the image data and api key
-			 */
-			writer.write(data);
-			writer.flush();
-			writer.close();
+		
+		String resp = HttpUtil.executePost(PASTEBINCA_SCRIPTURL, data);
 
-			String resp = StreamUtils.readContents(connection.getInputStream());
-
-			return PASTEBINCA_URL + resp.substring(resp.indexOf(':') + 1);
-		} finally {
-			writer.close();
-		}
+		return PASTEBINCA_URL + resp.substring(resp.indexOf(':') + 1);
 	}
 }

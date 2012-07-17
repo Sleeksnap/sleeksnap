@@ -19,6 +19,7 @@ package org.sleeksnap.uploaders.url;
 
 import java.net.URL;
 
+import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.util.HttpUtil;
 
@@ -49,7 +50,7 @@ public class TUrlShortener extends Uploader<URL> {
 	public String upload(URL url) throws Exception {
 		String resp = HttpUtil.executeGet(TURL_BASE + "api.php?url=" + url);
 		if (resp.contains("ERROR")) {
-			throw new Exception(
+			throw new UploadException(
 					"An error was reported from the URL Shortening service");
 		}
 		return TURL_BASE + resp.substring(resp.indexOf(':') + 1);
