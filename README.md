@@ -12,4 +12,5 @@ This project is licensed with the standard GNU GPL
 
 ### TODO ###
 
+- API
 - ???
