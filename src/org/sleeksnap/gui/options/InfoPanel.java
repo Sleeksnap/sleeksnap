@@ -69,7 +69,7 @@ public class InfoPanel extends OptionSubPanel {
 		logoLabel.setIcon(new ImageIcon(Util
 				.getResourceByName(Constants.Resources.LOGO_PATH))); // NOI18N
 
-		versionLabel.setText("Version " + Constants.Application.VERSION);
+		versionLabel.setText("Version " + Constants.Version.getVersionString());
 
 		startOnStartup.setText("Start Sleeksnap on startup (Windows only)");
 

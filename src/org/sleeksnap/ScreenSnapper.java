@@ -48,6 +48,7 @@ import javax.swing.UIManager;
 
 import org.sleeksnap.Constants.Application;
 import org.sleeksnap.Constants.Resources;
+import org.sleeksnap.Constants.Version;
 import org.sleeksnap.gui.OptionPanel;
 import org.sleeksnap.gui.SelectionWindow;
 import org.sleeksnap.impl.History;
@@ -502,18 +503,7 @@ public class ScreenSnapper {
 		SystemTrayAdapter adapter = SystemTrayProvider.getSystemTray();
 		icon = adapter.createAndAddTrayIcon(
 				Util.getResourceByName(Resources.ICON_PATH), Application.NAME
-						+ " v" + Application.VERSION, tray);
-		icon.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (!openSettings()) {
-					icon.displayMessage(
-							"Error",
-							"Could not open settings, is there another window open?",
-							TrayIcon.MessageType.ERROR);
-				}
-			}
-		});
+						+ " v" + Version.getVersionString(), tray);
 	}
 
 	/**

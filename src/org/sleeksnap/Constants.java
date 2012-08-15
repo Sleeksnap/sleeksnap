@@ -26,7 +26,6 @@ package org.sleeksnap;
 public class Constants {
 	public static class Application {
 		public static final String NAME = "Sleeksnap";
-		public static final double VERSION = 1.1;
 	}
 
 	public static class Configuration {
@@ -37,5 +36,15 @@ public class Constants {
 	public static class Resources {
 		public static final String LOGO_PATH = "/logo.png";
 		public static final String ICON_PATH = "/icon.png";
+	}
+	
+	public static class Version {
+		public static final int MAJOR = 1;
+		public static final int MINOR = 1;
+		public static final int PATCH = 1;
+		
+		public static String getVersionString() {
+			return MAJOR + "." + MINOR + "." + PATCH;
+		}
 	}
 }

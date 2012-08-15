@@ -23,6 +23,7 @@ import java.util.HashMap;
 
 import org.sleeksnap.Constants;
 import org.sleeksnap.Constants.Application;
+import org.sleeksnap.Constants.Version;
 
 /**
  * A basic utility class
@@ -75,7 +76,7 @@ public class Util {
 	 * 
 	 */
 	public static String getHttpUserAgent() {
-		return Application.NAME + " v" + Application.VERSION;
+		return Application.NAME + " v" + Version.getVersionString();
 	}
 
 	/**

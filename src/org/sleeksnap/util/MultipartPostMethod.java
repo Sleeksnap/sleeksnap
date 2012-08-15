@@ -1,5 +1,3 @@
-package org.sleeksnap.util;
-
 /**
  * Sleeksnap, the open source cross-platform screenshot uploader
  * Copyright (C) 2012 Nikki <nikki@nikkii.us>
@@ -17,6 +15,7 @@ package org.sleeksnap.util;
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package org.sleeksnap.util;
 
 import java.io.BufferedReader;
 import java.io.File;
