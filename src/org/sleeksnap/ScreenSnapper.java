@@ -34,6 +34,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +51,8 @@ import javax.swing.UIManager;
 import org.sleeksnap.Constants.Application;
 import org.sleeksnap.Constants.Resources;
 import org.sleeksnap.Constants.Version;
+import org.sleeksnap.filter.PNGCompressionFilter;
+import org.sleeksnap.filter.UploadFilter;
 import org.sleeksnap.gui.OptionPanel;
 import org.sleeksnap.gui.SelectionWindow;
 import org.sleeksnap.impl.History;
@@ -178,6 +182,11 @@ public class ScreenSnapper {
 	 * A map which contains the current uploader settings
 	 */
 	private HashMap<Class<?>, Uploader<?>> uploaderAssociations = new HashMap<Class<?>, Uploader<?>>();
+	
+	/**
+	 * A map containing upload filters
+	 */
+	private HashMap<Class<?>, List<UploadFilter<?>>> filters = new HashMap<Class<?>, List<UploadFilter<?>>>();
 
 	/**
 	 * The basic service...
@@ -581,8 +590,9 @@ public class ScreenSnapper {
 	 *             If an error occurred
 	 */
 	public void loadUploaders() throws Exception {
-		// Register the default uploaders
-
+		// Register any filters
+		registerFilter(new PNGCompressionFilter());
+		
 		// Generic uploaders
 		registerUploader(new FTPUploader());
 		// Image Uploaders
@@ -651,6 +661,19 @@ public class ScreenSnapper {
 			}
 		}
 	}
+	
+	/**
+	 * Register an upload filter
+	 * @param filter
+	 * 			The filter to register
+	 */
+	public void registerFilter(UploadFilter<?> filter) {
+		List<UploadFilter<?>> filterList = filters.get(filter.getType());
+		if(filterList == null) {
+			filters.put(filter.getType(), filterList = new LinkedList<UploadFilter<?>>());
+		}
+		filterList.add(filter);
+	}
 
 	/**
 	 * Open the settings panel
@@ -659,9 +682,7 @@ public class ScreenSnapper {
 		if (optionsOpen) {
 			return false;
 		}
-		if (!optionsOpen) {
-			optionsOpen = true;
-		}
+		optionsOpen = true;
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
@@ -826,11 +847,17 @@ public class ScreenSnapper {
 		uploadService.execute(new Runnable() {
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			public void run() {
+				//Run the object through the filters
+				Object newObject = object;
+				for(UploadFilter filter : filters.get(newObject.getClass())) {
+					newObject = filter.filter(newObject);
+				}
+				//Then upload it
 				Uploader uploader = uploaderAssociations.get(object.getClass());
 				if (uploader != null) {
 					try {
 						String url = uploader.upload(uploader.getUploadType()
-								.cast(object));
+								.cast(newObject));
 						if (url != null) {
 							if (configuration.getBoolean("shortenurls")) {
 								Uploader shortener = uploaderAssociations
