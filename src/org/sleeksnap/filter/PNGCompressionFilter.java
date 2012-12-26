@@ -3,51 +3,74 @@ package org.sleeksnap.filter;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
-public class PNGCompressionFilter implements UploadFilter<BufferedImage> {
+import org.sleeksnap.util.Util;
 
-	private static File pngCrush = new File("tools/pngcrush.exe");
+/**
+ * An Experimental upload filter for compressing images through pngcrush or pngout
+ * Warning: May make uploads slower than they already are! Crushing big images takes time.
+ * 
+ * @author Nikki
+ *
+ */
+public class PNGCompressionFilter implements UploadFilter<BufferedImage> {
 	
-	private static File pngOut = new File("tools/pngout.exe");
+	/**
+	 * Logger object
+	 */
+	private static final Logger logger = Logger.getLogger(PNGCompressionFilter.class.getName());
+
+	/**
+	 * Location of the pngcrush program
+	 * pngcrush is faster than pngout.
+	 * Download: http://pmt.sourceforge.net/pngcrush/
+	 */
+	private static File pngCrush = new File(Util.getWorkingDirectory(), "tools/pngcrush.exe");
+	
+	/**
+	 * Location of the pngout program
+	 * pngout is slower than pngcrush, but has higher compression ratios.
+	 * Download: http://advsys.net/ken/util/pngout.exe
+	 */
+	private static File pngOut = new File(Util.getWorkingDirectory(), "tools/pngout.exe");
 	
 	@Override
 	public BufferedImage filter(BufferedImage object) {
-		if(pngCrush.exists()) {
-			System.out.println("Crushing image...");
+		if(pngOut.exists() || pngCrush.exists()) {
 			try {
-				File file = new File("tools/sleeksnapcompress.png");
-				ImageIO.write(object, "JPG", new FileOutputStream(file));
-
-				/*File outFile = new File("tools/sleeksnapcompress_out.png");
+				File input = new File(Util.getWorkingDirectory(), "sleeksnap_original.png");
+				File output = new File(Util.getWorkingDirectory(), "sleeksnap_compressed.png");
+				
+				ImageIO.write(object, "png", input);
+				
 				String[] opts = new String[3];
-				opts[0] = strPad(pngCrush.getAbsolutePath(), '"');
-				opts[1] = strPad(file.getAbsolutePath(), '"');
-				opts[2] = strPad(outFile.getAbsolutePath(), '"');
+				opts[0] = strPad((pngOut.exists() ? pngOut : pngCrush).getAbsolutePath(), '"');
+				opts[1] = strPad(input.getAbsolutePath(), '"');
+				opts[2] = strPad(output.getAbsolutePath(), '"');
+				
+				logger.info("Compressing image with "+(pngOut.exists() ? "pngout" : "pngcrush") +"...");
 				
 				Process p = Runtime.getRuntime().exec(opts);
 				BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-				String line;
-				while((line = reader.readLine()) != null) {
-					System.out.println(line);
+				
+				while(reader.readLine() != null) {
+					//Nothing.
 				}
 				
-				System.out.println("Original size: "+file.length()+", Crushed size: "+outFile.length());
-				*/
+				logger.info("Compressed image, original size: "+input.length()+", compressed size: "+output.length());
+				
 				try {
 					//Finally, read the new file.
-					return ImageIO.read(file);
+					return ImageIO.read(output);
 				} finally {
-					file.delete();
-					//outFile.delete();
+					input.delete();
+					output.delete();
 				}
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
