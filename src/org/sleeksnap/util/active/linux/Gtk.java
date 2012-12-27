@@ -101,9 +101,12 @@ public interface Gtk extends Library {
 	/**
 	 * Get the gdk window that the cursor is in
 	 * 
-	 * @param object
-	 * @param object2
+	 * @param winx
+	 * 			The window x position
+	 * @param winy
+	 * 			The window y position
 	 * @return
+	 * 			A pointer to the window
 	 */
 	public NativeLong gdk_window_at_pointer(IntByReference winx,
 			IntByReference winy);

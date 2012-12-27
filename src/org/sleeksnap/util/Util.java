@@ -55,6 +55,7 @@ public class Util {
 	/**
 	 * A method to get the unix time...
 	 * @return
+	 * 		The current time in seconds
 	 */
 	public static long currentTimeSeconds() {
 		return (System.currentTimeMillis() / 1000);

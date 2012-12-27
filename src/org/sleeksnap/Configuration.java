@@ -114,10 +114,10 @@ public class Configuration {
 	 * 
 	 * @param key
 	 *            The key
-	 * @return
+	 * @return The string containing the setting for the key.
 	 */
 	public String getString(String key) {
-		return (String) config.get(key);
+		return config.get(key).toString();
 	}
 
 	/**

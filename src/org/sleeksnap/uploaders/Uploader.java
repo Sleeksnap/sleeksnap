@@ -42,7 +42,8 @@ public abstract class Uploader<T> {
 	/**
 	 * Get the uploader name
 	 * 
-	 * @return The uploader name
+	 * @return
+	 * 		The uploader name
 	 */
 	public abstract String getName();
 
@@ -50,6 +51,7 @@ public abstract class Uploader<T> {
 	 * Get the object type this class can upload
 	 * 
 	 * @return
+	 * 		The class of the upload type
 	 */
 	public abstract Class<?> getUploadType();
 
@@ -57,8 +59,9 @@ public abstract class Uploader<T> {
 	 * Upload the specified object
 	 * 
 	 * @param t
-	 *            The object
-	 * @return The URL or Location
+	 *      The object
+	 * @return
+	 * 		The URL or Location
 	 * @throws Exception
 	 */
 	public abstract String upload(T t) throws Exception;
@@ -67,7 +70,7 @@ public abstract class Uploader<T> {
 	 * Load the settings from the specified file
 	 * 
 	 * @param file
-	 *            The file to load from
+	 * 		The file to load from
 	 * @throws IOException
 	 *             If an error occurred while loading
 	 */

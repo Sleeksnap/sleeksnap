@@ -104,10 +104,12 @@ public class ParametersDialog extends JDialog {
 	 * Creates a new parameters dialog with the specified parent and array of
 	 * parameters.
 	 * 
-	 * @param name
-	 *            The name of the uploader
-	 * @param The
-	 *            simulation.
+	 * @param parent
+	 * 			The frame which opened this dialog
+	 * @param uploader
+	 * 			The uploader for this settings dialog
+	 * @param settings
+	 * 			The settings annotation
 	 */
 	public ParametersDialog(JFrame parent, Uploader<?> uploader,
 			Settings settings) {

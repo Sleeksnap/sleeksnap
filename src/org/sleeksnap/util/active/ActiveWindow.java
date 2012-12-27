@@ -26,8 +26,15 @@ import java.awt.Rectangle;
  * 
  */
 public class ActiveWindow {
+	
+	/**
+	 * The window name
+	 */
 	private String name;
 
+	/**
+	 * The window's bounds
+	 */
 	private Rectangle bounds;
 
 	public ActiveWindow(String name, Rectangle bounds) {
@@ -35,10 +42,20 @@ public class ActiveWindow {
 		this.bounds = bounds;
 	}
 
+	/**
+	 * Get the window's bounds as a rectangle
+	 * @return
+	 * 		A rectangle containing the window's bounds
+	 */
 	public Rectangle getBounds() {
 		return bounds;
 	}
 
+	/**
+	 * Get the window name
+	 * @return
+	 * 		The window name
+	 */
 	public String getName() {
 		return name;
 	}

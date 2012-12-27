@@ -22,7 +22,7 @@ package org.sleeksnap.uploaders;
  * 
  * @author Nikki
  * 
- * @param <T>
+ * @param <Object>
  *            The upload type
  */
 public abstract class GenericUploader extends Uploader<Object> {
