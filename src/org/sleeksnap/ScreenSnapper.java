@@ -35,7 +35,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
@@ -53,6 +52,7 @@ import org.sleeksnap.Constants.Resources;
 import org.sleeksnap.Constants.Version;
 import org.sleeksnap.filter.PNGCompressionFilter;
 import org.sleeksnap.filter.UploadFilter;
+import org.sleeksnap.filter.WatermarkFilter;
 import org.sleeksnap.gui.OptionPanel;
 import org.sleeksnap.gui.SelectionWindow;
 import org.sleeksnap.impl.History;
@@ -66,8 +66,8 @@ import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.UploaderConfigurationException;
 import org.sleeksnap.uploaders.files.UppitUploader;
 import org.sleeksnap.uploaders.images.ImgurUploader;
-import org.sleeksnap.uploaders.images.KsnpUploader;
 import org.sleeksnap.uploaders.images.PuushUploader;
+import org.sleeksnap.uploaders.images.SleeksnapUploader;
 import org.sleeksnap.uploaders.text.PastebinUploader;
 import org.sleeksnap.uploaders.text.PastebincaUploader;
 import org.sleeksnap.uploaders.text.PasteeUploader;
@@ -186,7 +186,7 @@ public class ScreenSnapper {
 	/**
 	 * A map containing upload filters
 	 */
-	private HashMap<Class<?>, List<UploadFilter<?>>> filters = new HashMap<Class<?>, List<UploadFilter<?>>>();
+	private HashMap<Class<?>, LinkedList<UploadFilter<?>>> filters = new HashMap<Class<?>, LinkedList<UploadFilter<?>>>();
 
 	/**
 	 * The basic service...
@@ -238,11 +238,12 @@ public class ScreenSnapper {
 		}
 		// Then start
 		LoggingManager.configure();
-		logger.info("Loading uploaders...");
+		logger.info("Loading plugins...");
 		try {
 			loadUploaders();
+			loadFilters();
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Failed to load uploaders!", e);
+			logger.log(Level.SEVERE, "Failed to load plugins!", e);
 		}
 		//Load the settings
 		logger.info("Loading settings...");
@@ -327,7 +328,7 @@ public class ScreenSnapper {
 				return;
 			}
 			if (clipboard instanceof BufferedImage) {
-				upload((BufferedImage) clipboard);
+				upload(clipboard);
 			} else if (clipboard instanceof File) {
 				// TODO we could also trigger a file uploader for other files...
 				File file = (File) clipboard;
@@ -506,7 +507,6 @@ public class ScreenSnapper {
 			public void actionPerformed(ActionEvent e) {
 				shutdown();
 			}
-
 		});
 		tray.add(exit);
 		SystemTrayAdapter adapter = SystemTrayProvider.getSystemTray();
@@ -559,7 +559,7 @@ public class ScreenSnapper {
 		Map<String, String> uploaders = new HashMap<String, String>();
 		
 		//Default uploaders
-		uploaders.put(BufferedImage.class.getName(), KsnpUploader.class.getName());
+		uploaders.put(BufferedImage.class.getName(), SleeksnapUploader.class.getName());
 		uploaders.put(String.class.getName(), PasteeUploader.class.getName());
 		uploaders.put(URL.class.getName(), GoogleShortener.class.getName());
 		uploaders.put(File.class.getName(), UppitUploader.class.getName());
@@ -582,6 +582,43 @@ public class ScreenSnapper {
 		//Save it
 		configuration.save();
 	}
+	
+	private void loadFilters() throws Exception {
+		// Register any filters
+		// PNG Compression will always be done last.
+		registerFilter(new PNGCompressionFilter(this));
+		// Watermarks will be done after everything else too.
+		registerFilter(new WatermarkFilter());
+
+		// Load custom uploaders
+		File dir = new File(Util.getWorkingDirectory(), "plugins/filters");
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		ClassLoader loader = new URLClassLoader(
+				new URL[] { dir.toURI().toURL() });
+		for (File f : dir.listFiles()) {
+			//TODO jar files.
+			String name = f.getName();
+			if (name.endsWith(".class") && !name.contains("$")) {
+				try {
+					Class<?> c = loader.loadClass(f.getName().replaceAll(
+							".class", ""));
+					UploadFilter<?> uploader = (UploadFilter<?>) c.newInstance();
+					if (uploader == null)
+						throw new Exception();
+
+					registerFilter(uploader);
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(null,
+							"An exception occured when loading " + name + " : "
+									+ e + ", it could be outdated.",
+							"Could not load filter : " + name,
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		}
+	}
 
 	/**
 	 * Load the uploaders from inside the jar file and the regular file
@@ -589,16 +626,13 @@ public class ScreenSnapper {
 	 * @throws Exception
 	 *             If an error occurred
 	 */
-	public void loadUploaders() throws Exception {
-		// Register any filters
-		registerFilter(new PNGCompressionFilter());
-		
+	private void loadUploaders() throws Exception {		
 		// Generic uploaders
 		registerUploader(new FTPUploader());
 		// Image Uploaders
 		registerUploader(new ImgurUploader());
 		registerUploader(new PuushUploader());
-		registerUploader(new KsnpUploader());
+		registerUploader(new SleeksnapUploader());
 		// Text uploaders
 		registerUploader(new PasteeUploader());
 		registerUploader(new PastebinUploader());
@@ -612,13 +646,14 @@ public class ScreenSnapper {
 		registerUploader(new UppitUploader());
 
 		// Load custom uploaders
-		File dir = new File(Util.getWorkingDirectory(), "uploaders");
+		File dir = new File(Util.getWorkingDirectory(), "plugins/uploaders");
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
 		ClassLoader loader = new URLClassLoader(
 				new URL[] { dir.toURI().toURL() });
 		for (File f : dir.listFiles()) {
+			//TODO jar files.
 			String name = f.getName();
 			if (name.endsWith(".class") && !name.contains("$")) {
 				try {
@@ -668,11 +703,11 @@ public class ScreenSnapper {
 	 * 			The filter to register
 	 */
 	public void registerFilter(UploadFilter<?> filter) {
-		List<UploadFilter<?>> filterList = filters.get(filter.getType());
+		LinkedList<UploadFilter<?>> filterList = filters.get(filter.getType());
 		if(filterList == null) {
 			filters.put(filter.getType(), filterList = new LinkedList<UploadFilter<?>>());
 		}
-		filterList.add(filter);
+		filterList.addFirst(filter);
 	}
 
 	/**

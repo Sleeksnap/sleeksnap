@@ -17,6 +17,12 @@
  */
 package org.sleeksnap.uploaders;
 
+/**
+ * An exception thrown when something goes wrong during an upload
+ * 
+ * @author Nikki
+ *
+ */
 @SuppressWarnings("serial")
 public class UploadException extends Exception {
 

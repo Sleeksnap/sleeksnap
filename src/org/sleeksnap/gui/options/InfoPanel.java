@@ -48,6 +48,7 @@ public class InfoPanel extends OptionSubPanel {
 	private JLabel logoLabel;
 
 	private JCheckBox startOnStartup;
+	private JCheckBox compressImages;
 	private JButton saveAllButton;
 
 	private OptionPanel parent;
@@ -61,6 +62,7 @@ public class InfoPanel extends OptionSubPanel {
 		logoLabel = new JLabel();
 		versionLabel = new JLabel();
 		startOnStartup = new javax.swing.JCheckBox();
+		compressImages = new javax.swing.JCheckBox();
 		saveAllButton = new javax.swing.JButton();
 
 		this.setPreferredSize(new java.awt.Dimension(300, 442));
@@ -72,6 +74,7 @@ public class InfoPanel extends OptionSubPanel {
 		versionLabel.setText("Version " + Constants.Version.getVersionString());
 
 		startOnStartup.setText("Start Sleeksnap on startup (Windows only)");
+		compressImages.setText("Compress images with pngout/pngcrush (Requires binaries)");
 
 		saveAllButton.setText("Save all");
 
@@ -79,7 +82,7 @@ public class InfoPanel extends OptionSubPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Save startup options here... Windows we can add it to the
-				// registry, Linux.... dunno
+				// registry, Linux.... dunno, maybe bashrc?
 				boolean start = startOnStartup.isSelected();
 				if (start) {
 					// Overwrite the old key, in case it's a new version.
@@ -107,6 +110,7 @@ public class InfoPanel extends OptionSubPanel {
 					}
 				}
 				parent.getConfiguration().put("startOnStartup", start);
+				parent.getConfiguration().put("compressImages", compressImages.isSelected());
 				try {
 					parent.getConfiguration().save();
 				} catch (IOException e1) {
@@ -140,6 +144,7 @@ public class InfoPanel extends OptionSubPanel {
 																				javax.swing.GroupLayout.Alignment.LEADING)
 																		.addComponent(
 																				startOnStartup)
+																		.addComponent(compressImages)
 																		.addComponent(
 																				logoLabel)))
 										.addContainerGap())
@@ -165,6 +170,9 @@ public class InfoPanel extends OptionSubPanel {
 												javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
 										.addComponent(startOnStartup)
 										.addPreferredGap(
+												javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+										.addComponent(compressImages)
+										.addPreferredGap(
 												javax.swing.LayoutStyle.ComponentPlacement.RELATED,
 												270, Short.MAX_VALUE)
 										.addComponent(saveAllButton)
@@ -175,6 +183,9 @@ public class InfoPanel extends OptionSubPanel {
 		if (parent.getConfiguration().contains("startOnStartup")) {
 			startOnStartup.setSelected(parent.getConfiguration().getBoolean(
 					"startOnStartup"));
+		}
+		if (parent.getConfiguration().contains("compressImages")) {
+			compressImages.setSelected(parent.getConfiguration().getBoolean("compressImages"));
 		}
 	}
 }

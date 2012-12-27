@@ -20,6 +20,12 @@ package org.sleeksnap.uploaders;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * Uploader settings annotation
+ * 
+ * @author Nikki
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Settings {
 

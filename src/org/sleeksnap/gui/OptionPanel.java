@@ -20,7 +20,6 @@ package org.sleeksnap.gui;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import javax.swing.GroupLayout;
 import javax.swing.JPanel;
@@ -136,8 +135,6 @@ public class OptionPanel extends JPanel {
 					}
 				}
 				if (previousTab == 2) {
-					Logger.getAnonymousLogger()
-							.info("Tab changed from hotkey settings, attempting to rebind..");
 					// Restart our input manager if we disabled it
 					if (!snapper.getKeyManager().hasKeysBound()) {
 						snapper.getKeyManager().initializeInput();
