@@ -78,6 +78,15 @@ public class StreamUtils {
 		}
 	}
 
+	/**
+	 * Read all of the data from an InputStream into a string
+	 * @param inputStream
+	 * 			The stream to read from
+	 * @return
+	 * 			The data, lines separated by \n
+	 * @throws IOException
+	 * 			If a problem occurred while reading
+	 */
 	public static String readContents(InputStream inputStream)
 			throws IOException {
 		StringBuilder contents = new StringBuilder();
@@ -91,7 +100,7 @@ public class StreamUtils {
 		} finally {
 			reader.close();
 		}
-		return contents.toString();
+		return contents.toString().trim();
 	}
 
 	/**

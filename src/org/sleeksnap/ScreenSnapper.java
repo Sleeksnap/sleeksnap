@@ -155,6 +155,9 @@ public class ScreenSnapper {
 		names.put(FileUpload.class, "Files");
 	}
 
+	/**
+	 * Logging instance
+	 */
 	private static final Logger logger = Logger.getLogger(ScreenSnapper.class
 			.getName());
 
@@ -162,15 +165,9 @@ public class ScreenSnapper {
 		// Parse arguments, could be the directory, which can be set to "." for
 		// the current directory, or "./bla" to change
 		HashMap<String, Object> map = Util.parseArguments(args);
-		if (map.containsKey("dir")) {
-			File file = new File(map.get("dir").toString());
-			if (!file.exists()) {
-				file.mkdirs();
-			}
-			Util.setWorkingDirectory(file);
-		}
 		// Initialize
-		new ScreenSnapper(map.containsKey("resetconfig"));
+		ScreenSnapper instance = new ScreenSnapper();
+		instance.initialize(map);
 	}
 
 	/**
@@ -182,7 +179,7 @@ public class ScreenSnapper {
 	 * A map which contains the current uploader settings
 	 */
 	private HashMap<Class<?>, Uploader<?>> uploaderAssociations = new HashMap<Class<?>, Uploader<?>>();
-	
+
 	/**
 	 * A map containing upload filters
 	 */
@@ -231,7 +228,22 @@ public class ScreenSnapper {
 	 */
 	private History history;
 
-	public ScreenSnapper(boolean resetConfig) {
+	/**
+	 * Initialize the program
+	 * 
+	 * @param map
+	 *            Flag to reset configuration
+	 */
+	private void initialize(HashMap<String, Object> map) {
+		// Check for a configuration option
+		if (map.containsKey("dir")) {
+			File file = new File(map.get("dir").toString());
+			if (!file.exists()) {
+				file.mkdirs();
+			}
+			Util.setWorkingDirectory(file);
+		}
+		// Verify the directory
 		File local = Util.getWorkingDirectory();
 		if (!local.exists()) {
 			local.mkdirs();
@@ -245,14 +257,14 @@ public class ScreenSnapper {
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Failed to load plugins!", e);
 		}
-		//Load the settings
+		// Load the settings
 		logger.info("Loading settings...");
 		try {
-			loadSettings(resetConfig);
+			loadSettings(map.containsKey("resetconfig"));
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Failed to load settings!", e);
 		}
-		//Load the history
+		// Load the history
 		logger.info("Loading history...");
 		history = new History(new File(local, "history.yml"));
 		try {
@@ -260,11 +272,12 @@ public class ScreenSnapper {
 		} catch (IOException e) {
 			logger.log(Level.WARNING, "Failed to load history", e);
 		}
-		//Validate settings
-		if(!configuration.contains("hotkeys") || !configuration.contains("uploaders")) {
+		// Validate settings
+		if (!configuration.contains("hotkeys")
+				|| !configuration.contains("uploaders")) {
 			promptConfigurationReset();
 		}
-		//Register the hotkeys
+		// Register the hotkeys
 		logger.info("Registering keys...");
 		keyManager = new HotkeyManager(this);
 		keyManager.initializeInput();
@@ -272,24 +285,29 @@ public class ScreenSnapper {
 		initializeTray();
 		logger.info("Ready.");
 	}
-	
+
 	/**
 	 * Prompt the user for a configuration reset
 	 */
 	public void promptConfigurationReset() {
-		int option = JOptionPane.showConfirmDialog(null, "It looks like your configuration is corrupted, would you like to load the default settings?\nPress \"No\" to open the settings GUI",
-				"Error loading settings", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-		if(option == JOptionPane.YES_OPTION) {
+		int option = JOptionPane
+				.showConfirmDialog(
+						null,
+						"It looks like your configuration is corrupted, would you like to load the default settings?\nPress \"No\" to open the settings GUI",
+						"Error loading settings",
+						JOptionPane.YES_NO_CANCEL_OPTION,
+						JOptionPane.QUESTION_MESSAGE);
+		if (option == JOptionPane.YES_OPTION) {
 			try {
 				loadSettings(true);
 			} catch (Exception e) {
 				logger.log(Level.SEVERE, "Unable to load default settings!", e);
 			}
-		} else if(option == JOptionPane.NO_OPTION) {
-			//If no, let them set the configuration themselves..
+		} else if (option == JOptionPane.NO_OPTION) {
+			// If no, let them set the configuration themselves..
 			openSettings();
-		} else if(option == JOptionPane.CANCEL_OPTION) {
-			//Exit, they don't want anything to do with it.
+		} else if (option == JOptionPane.CANCEL_OPTION) {
+			// Exit, they don't want anything to do with it.
 			System.exit(0);
 		}
 	}
@@ -390,8 +408,8 @@ public class ScreenSnapper {
 
 	/**
 	 * Get the Hotkey Manager
-	 * @return
-	 * 		The hotkey manager
+	 * 
+	 * @return The hotkey manager
 	 */
 	public HotkeyManager getKeyManager() {
 		return keyManager;
@@ -399,10 +417,10 @@ public class ScreenSnapper {
 
 	/**
 	 * Get the settings file for an uploader class
+	 * 
 	 * @param uploader
-	 * 			The uploader's class
-	 * @return
-	 * 			The settings file path
+	 *            The uploader's class
+	 * @return The settings file path
 	 */
 	public File getSettingsFile(Class<?> uploader) {
 		String name = uploader.getName();
@@ -546,43 +564,51 @@ public class ScreenSnapper {
 			}
 		}
 	}
-	
+
 	/**
 	 * Restores the default configuration
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	private void loadDefaultConfiguration() throws IOException {
-		
+
 		configuration.put("plainTextUpload", false);
 		configuration.put("shortenurls", false);
-		
+
 		Map<String, String> uploaders = new HashMap<String, String>();
-		
-		//Default uploaders
-		uploaders.put(BufferedImage.class.getName(), SleeksnapUploader.class.getName());
+
+		// Default uploaders
+		uploaders.put(BufferedImage.class.getName(),
+				SleeksnapUploader.class.getName());
 		uploaders.put(String.class.getName(), PasteeUploader.class.getName());
 		uploaders.put(URL.class.getName(), GoogleShortener.class.getName());
 		uploaders.put(File.class.getName(), UppitUploader.class.getName());
-		
+
 		configuration.put("uploaders", uploaders);
-		
+
 		Map<String, String> hotkeys = new HashMap<String, String>();
 
-		//Hotkeys
-		hotkeys.put("full", Platform.isMac() ? HotkeyManager.FULL_HOTKEY_MAC : HotkeyManager.FULL_HOTKEY);
-		hotkeys.put("crop", Platform.isMac() ? HotkeyManager.CROP_HOTKEY_MAC : HotkeyManager.CROP_HOTKEY);
-		hotkeys.put("clipboard", Platform.isMac() ? HotkeyManager.CLIPBOARD_HOTKEY_MAC : HotkeyManager.CLIPBOARD_HOTKEY);
-		hotkeys.put("options", Platform.isMac() ? HotkeyManager.OPTIONS_HOTKEY_MAC : HotkeyManager.OPTIONS_HOTKEY);
-		if(!Platform.isMac()) {
+		// Hotkeys
+		hotkeys.put("full", Platform.isMac() ? HotkeyManager.FULL_HOTKEY_MAC
+				: HotkeyManager.FULL_HOTKEY);
+		hotkeys.put("crop", Platform.isMac() ? HotkeyManager.CROP_HOTKEY_MAC
+				: HotkeyManager.CROP_HOTKEY);
+		hotkeys.put("clipboard",
+				Platform.isMac() ? HotkeyManager.CLIPBOARD_HOTKEY_MAC
+						: HotkeyManager.CLIPBOARD_HOTKEY);
+		hotkeys.put("options",
+				Platform.isMac() ? HotkeyManager.OPTIONS_HOTKEY_MAC
+						: HotkeyManager.OPTIONS_HOTKEY);
+		if (!Platform.isMac()) {
 			hotkeys.put("active", "alt PRINTSCREEN");
 		}
-		
+
 		configuration.put("hotkeys", hotkeys);
-		
-		//Save it
+
+		// Save it
 		configuration.save();
 	}
-	
+
 	private void loadFilters() throws Exception {
 		// Register any filters
 		// PNG Compression will always be done last.
@@ -598,13 +624,14 @@ public class ScreenSnapper {
 		ClassLoader loader = new URLClassLoader(
 				new URL[] { dir.toURI().toURL() });
 		for (File f : dir.listFiles()) {
-			//TODO jar files.
+			// TODO jar files.
 			String name = f.getName();
 			if (name.endsWith(".class") && !name.contains("$")) {
 				try {
 					Class<?> c = loader.loadClass(f.getName().replaceAll(
 							".class", ""));
-					UploadFilter<?> uploader = (UploadFilter<?>) c.newInstance();
+					UploadFilter<?> uploader = (UploadFilter<?>) c
+							.newInstance();
 					if (uploader == null)
 						throw new Exception();
 
@@ -626,7 +653,7 @@ public class ScreenSnapper {
 	 * @throws Exception
 	 *             If an error occurred
 	 */
-	private void loadUploaders() throws Exception {		
+	private void loadUploaders() throws Exception {
 		// Generic uploaders
 		registerUploader(new FTPUploader());
 		// Image Uploaders
@@ -653,7 +680,7 @@ public class ScreenSnapper {
 		ClassLoader loader = new URLClassLoader(
 				new URL[] { dir.toURI().toURL() });
 		for (File f : dir.listFiles()) {
-			//TODO jar files.
+			// TODO jar files.
 			String name = f.getName();
 			if (name.endsWith(".class") && !name.contains("$")) {
 				try {
@@ -696,16 +723,18 @@ public class ScreenSnapper {
 			}
 		}
 	}
-	
+
 	/**
 	 * Register an upload filter
+	 * 
 	 * @param filter
-	 * 			The filter to register
+	 *            The filter to register
 	 */
 	public void registerFilter(UploadFilter<?> filter) {
 		LinkedList<UploadFilter<?>> filterList = filters.get(filter.getType());
-		if(filterList == null) {
-			filters.put(filter.getType(), filterList = new LinkedList<UploadFilter<?>>());
+		if (filterList == null) {
+			filters.put(filter.getType(),
+					filterList = new LinkedList<UploadFilter<?>>());
 		}
 		filterList.addFirst(filter);
 	}
@@ -880,73 +909,81 @@ public class ScreenSnapper {
 			return;
 		}
 		uploadService.execute(new Runnable() {
-			@SuppressWarnings({ "rawtypes", "unchecked" })
 			public void run() {
-				//Run the object through the filters
-				Object newObject = object;
-				for(UploadFilter filter : filters.get(newObject.getClass())) {
-					newObject = filter.filter(newObject);
-				}
-				//Then upload it
-				Uploader uploader = uploaderAssociations.get(object.getClass());
-				if (uploader != null) {
-					try {
-						String url = uploader.upload(uploader.getUploadType()
-								.cast(newObject));
-						if (url != null) {
-							if (configuration.getBoolean("shortenurls")) {
-								Uploader shortener = uploaderAssociations
-										.get(URL.class);
-								if (shortener != null) {
-									url = shortener.upload(new URL(url));
-								}
-							}
-							if (object instanceof BufferedImage) {
-								if (configuration.getBoolean("savelocal")) {
-									FileOutputStream output = new FileOutputStream(
-											getLocalFile(DateUtil
-													.getCurrentDate() + ".png"));
-									try {
-										ImageIO.write(((BufferedImage) object),
-												"png", output);
-									} finally {
-										output.close();
-									}
-								}
-							}
-							url = url.trim();
-							ClipboardUtil.setClipboard(url);
-							history.addEntry(new HistoryEntry(url, uploader
-									.getName()));
-							icon.displayMessage("Upload complete",
-									"Uploaded to " + url,
-									TrayIcon.MessageType.INFO);
-							logger.info("Upload completed, url: " + url);
-							if (object instanceof BufferedImage) {
-								((BufferedImage) object).flush();
-							}
-						} else {
-							icon.displayMessage(
-									"Upload failed",
-									"The upload failed to execute due to an unknown error",
-									TrayIcon.MessageType.ERROR);
-							logger.severe("Upload failed to execute due to an unknown error");
-						}
-					} catch (UploaderConfigurationException e) {
-						icon.displayMessage(
-								"Uploader Configuration error",
-								"You must configure this uploader before using it!",
-								TrayIcon.MessageType.ERROR);
-					} catch (Exception e) {
-						e.printStackTrace();
-						icon.displayMessage("Upload failed",
-								"The upload failed to execute: " + e,
-								TrayIcon.MessageType.ERROR);
-						logger.log(Level.SEVERE, "Upload failed to execute", e);
-					}
-				}
+				executeUpload(object);
 			}
 		});
+	}
+
+	/**
+	 * Execute an upload
+	 * 
+	 * @param object
+	 *            The object to upload
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void executeUpload(Object object) {
+		// Run the object through the filters
+		if (filters.containsKey(object.getClass())) {
+			for (UploadFilter filter : filters.get(object.getClass())) {
+				object = filter.filter(object);
+			}
+		}
+		// Then upload it
+		Uploader uploader = uploaderAssociations.get(object.getClass());
+		if (uploader != null) {
+			try {
+				String url = uploader.upload(uploader.getUploadType().cast(
+						object));
+				if (url != null) {
+					if (configuration.getBoolean("shortenurls")) {
+						Uploader shortener = uploaderAssociations
+								.get(URL.class);
+						if (shortener != null) {
+							url = shortener.upload(new URL(url));
+						}
+					}
+					if (object instanceof BufferedImage) {
+						if (configuration.getBoolean("savelocal")) {
+							FileOutputStream output = new FileOutputStream(
+									getLocalFile(DateUtil.getCurrentDate()
+											+ ".png"));
+							try {
+								ImageIO.write(((BufferedImage) object), "png",
+										output);
+							} finally {
+								output.close();
+							}
+						}
+					}
+					url = url.trim();
+					ClipboardUtil.setClipboard(url);
+					history.addEntry(new HistoryEntry(url, uploader.getName()));
+					icon.displayMessage("Upload complete",
+							"Uploaded to " + url, TrayIcon.MessageType.INFO);
+					logger.info("Upload completed, url: " + url);
+					if (object instanceof BufferedImage) {
+						((BufferedImage) object).flush();
+					}
+				} else {
+					icon.displayMessage(
+							"Upload failed",
+							"The upload failed to execute due to an unknown error",
+							TrayIcon.MessageType.ERROR);
+					logger.severe("Upload failed to execute due to an unknown error");
+				}
+			} catch (UploaderConfigurationException e) {
+				icon.displayMessage("Uploader Configuration error",
+						"You must configure this uploader before using it!",
+						TrayIcon.MessageType.ERROR);
+			} catch (Exception e) {
+				e.printStackTrace();
+				icon.displayMessage("Upload failed",
+						"The upload failed to execute: " + e,
+						TrayIcon.MessageType.ERROR);
+				logger.log(Level.SEVERE, "Upload failed to execute", e);
+			}
+		}
 	}
 
 	/**
@@ -966,10 +1003,10 @@ public class ScreenSnapper {
 
 	/**
 	 * Check if we have an uploader for a type
+	 * 
 	 * @param class1
-	 * 			The type to check
-	 * @return
-	 * 			True, if we have an uploader
+	 *            The type to check
+	 * @return True, if we have an uploader
 	 */
 	public boolean hasUploaderFor(Class<? extends Object> class1) {
 		return uploaderAssociations.containsKey(class1);
