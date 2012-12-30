@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -66,8 +67,10 @@ import org.sleeksnap.uploaders.GenericUploader;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.UploaderConfigurationException;
+import org.sleeksnap.uploaders.files.FilebinUploader;
 import org.sleeksnap.uploaders.files.UppitUploader;
 import org.sleeksnap.uploaders.images.ImgurUploader;
+import org.sleeksnap.uploaders.images.ImmioUploader;
 import org.sleeksnap.uploaders.images.PuushUploader;
 import org.sleeksnap.uploaders.images.SleeksnapUploader;
 import org.sleeksnap.uploaders.text.PastebinUploader;
@@ -138,6 +141,7 @@ public class ScreenSnapper {
 		private static final int FULL = 2;
 		private static final int CLIPBOARD = 3;
 		public static final int ACTIVE = 4;
+		public static final int FILE = 5;
 	}
 
 	/**
@@ -250,6 +254,12 @@ public class ScreenSnapper {
 		if (!local.exists()) {
 			local.mkdirs();
 		}
+		// Set the UI skin
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		// Then start
 		LoggingManager.configure();
 		logger.info("Loading plugins...");
@@ -352,7 +362,7 @@ public class ScreenSnapper {
 			} else if (clipboard instanceof File) {
 				File file = (File) clipboard;
 				String mime = FileUtils.getMimeType(file.getAbsolutePath());
-				
+
 				// A better way to upload images, it'll check the mime type!
 				if (mime.startsWith("image")) {
 					upload(ImageIO.read(file));
@@ -485,12 +495,42 @@ public class ScreenSnapper {
 				case ScreenshotAction.CLIPBOARD:
 					clipboard();
 					break;
+				case ScreenshotAction.FILE:
+					selectFile();
+					break;
 				case ScreenshotAction.ACTIVE:
 					active();
 					break;
 				}
 			}
 		});
+	}
+
+	/**
+	 * Upload a file to the file service by selecting in another window
+	 */
+	public void selectFile() {
+		JFileChooser chooser = new JFileChooser();
+		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		int returnVal = chooser.showOpenDialog(null);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			File file = chooser.getSelectedFile();
+			int confirm = JOptionPane.showConfirmDialog(null,
+					"Are you sure you wish to upload " + file.getName() + "?",
+					"Confirm upload", JOptionPane.YES_NO_OPTION,
+					JOptionPane.WARNING_MESSAGE);
+			if (confirm == JOptionPane.YES_OPTION) {
+				JOptionPane.showMessageDialog(null, "File is uploading.",
+						"File upload", JOptionPane.INFORMATION_MESSAGE);
+				upload(file.getAbsoluteFile());
+			} else {
+				JOptionPane
+						.showMessageDialog(null,
+								"File upload has been canceled.",
+								"File upload canceled",
+								JOptionPane.INFORMATION_MESSAGE);
+			}
+		}
 	}
 
 	/**
@@ -504,6 +544,7 @@ public class ScreenSnapper {
 		actions.add(new ActionMenuItem("Crop", ScreenshotAction.CROP));
 		actions.add(new ActionMenuItem("Full", ScreenshotAction.FULL));
 		actions.add(new ActionMenuItem("Clipboard", ScreenshotAction.CLIPBOARD));
+		actions.add(new ActionMenuItem("File", ScreenshotAction.FILE));
 		if (Platform.isWindows() || Platform.isLinux()) {
 			actions.add(new ActionMenuItem("Active", ScreenshotAction.ACTIVE));
 		}
@@ -584,7 +625,7 @@ public class ScreenSnapper {
 				SleeksnapUploader.class.getName());
 		uploaders.put(String.class.getName(), PasteeUploader.class.getName());
 		uploaders.put(URL.class.getName(), GoogleShortener.class.getName());
-		uploaders.put(File.class.getName(), UppitUploader.class.getName());
+		uploaders.put(File.class.getName(), FilebinUploader.class.getName());
 
 		configuration.put("uploaders", uploaders);
 
@@ -601,6 +642,8 @@ public class ScreenSnapper {
 		hotkeys.put("options",
 				Platform.isMac() ? HotkeyManager.OPTIONS_HOTKEY_MAC
 						: HotkeyManager.OPTIONS_HOTKEY);
+		hotkeys.put("file", Platform.isMac() ? HotkeyManager.FILE_HOTKEY_MAC
+				: HotkeyManager.FILE_HOTKEY);
 		if (!Platform.isMac()) {
 			hotkeys.put("active", "alt PRINTSCREEN");
 		}
@@ -611,14 +654,21 @@ public class ScreenSnapper {
 		configuration.save();
 	}
 
+	/**
+	 * Load upload filters
+	 * 
+	 * @throws Exception
+	 *             If an error occurred while loading
+	 */
 	private void loadFilters() throws Exception {
 		// Register any filters
+
 		// PNG Compression will always be done last.
 		registerFilter(new PNGCompressionFilter(this));
 		// Watermarks will be done after everything else too.
 		registerFilter(new WatermarkFilter());
 
-		// Load custom uploaders
+		// Load custom filters
 		File dir = new File(Util.getWorkingDirectory(), "plugins/filters");
 		if (!dir.exists()) {
 			dir.mkdirs();
@@ -659,9 +709,10 @@ public class ScreenSnapper {
 		// Generic uploaders
 		registerUploader(new FTPUploader());
 		// Image Uploaders
-		registerUploader(new ImgurUploader());
-		registerUploader(new PuushUploader());
 		registerUploader(new SleeksnapUploader());
+		registerUploader(new ImgurUploader());
+		registerUploader(new ImmioUploader());
+		registerUploader(new PuushUploader());
 		// Text uploaders
 		registerUploader(new PasteeUploader());
 		registerUploader(new PastebinUploader());
@@ -672,6 +723,7 @@ public class ScreenSnapper {
 		registerUploader(new TinyURLShortener());
 		registerUploader(new TUrlShortener());
 		// File uploaders
+		registerUploader(new FilebinUploader());
 		registerUploader(new UppitUploader());
 
 		// Load custom uploaders
@@ -749,11 +801,7 @@ public class ScreenSnapper {
 			return false;
 		}
 		optionsOpen = true;
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
 		JFrame frame = new JFrame("Sleeksnap Settings");
 
 		OptionPanel panel = new OptionPanel(this);
@@ -803,7 +851,7 @@ public class ScreenSnapper {
 			return;
 		}
 		Class<?> type = getUploaderType(uploader);
-		//Check for the current list of types
+		// Check for the current list of types
 		if (!uploaders.containsKey(type)) {
 			uploaders.put(type, new HashMap<String, Uploader<?>>());
 		}
@@ -813,19 +861,20 @@ public class ScreenSnapper {
 
 		uploaders.get(type).put(uploader.getClass().getName(), uploader);
 	}
-	
+
 	/**
 	 * Attempt to get the upload type from the Superclass
+	 * 
 	 * @param uploader
-	 * 			The uploader to get the type from
-	 * @return
-	 * 			The type
+	 *            The uploader to get the type from
+	 * @return The type
 	 */
 	public Class<?> getUploaderType(Uploader<?> uploader) {
-		//Find the uploader type
-		ParameterizedType parameterizedType = (ParameterizedType) uploader.getClass().getGenericSuperclass();
+		// Find the uploader type
+		ParameterizedType parameterizedType = (ParameterizedType) uploader
+				.getClass().getGenericSuperclass();
 		Type[] args = parameterizedType.getActualTypeArguments();
-		if(args.length == 0) {
+		if (args.length == 0) {
 			throw new RuntimeException("Attempted to load invalid uploader!");
 		}
 		return (Class<?>) args[0];

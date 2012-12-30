@@ -48,14 +48,14 @@ public class PastebinUploader extends Uploader<String> {
 	private static final String API_OPTION_PASTE = "paste";
 
 	/**
-	 * The URL of the API Auth page
-	 */
-	private static final String AUTH_URL = "http://pastebin.com/api/api_login.php";
-
-	/**
 	 * The URL of the API page
 	 */
-	private static final String URL = "http://pastebin.com/api/api_post.php";
+	private static final String API_URL = "http://pastebin.com/api/api_post.php";
+	
+	/**
+	 * The URL of the API Auth page
+	 */
+	private static final String API_AUTH_URL = "http://pastebin.com/api/api_login.php";
 
 	@Override
 	public String getName() {
@@ -88,7 +88,7 @@ public class PastebinUploader extends Uploader<String> {
 			}
 		}
 		// Execute it and let the user know if something is wrong with it.
-		String resp = HttpUtil.executePost(URL, req);
+		String resp = HttpUtil.executePost(API_URL, req);
 		if (resp.startsWith("Bad")) {
 			throw new UploadException(resp.substring(resp.indexOf(',') + 2));
 		}
@@ -109,7 +109,7 @@ public class PastebinUploader extends Uploader<String> {
 				req.put("api_user_name", username);
 				req.put("api_user_password", password);
 				try {
-					String resp = HttpUtil.executePost(AUTH_URL, req);
+					String resp = HttpUtil.executePost(API_AUTH_URL, req);
 					if (resp.startsWith("Bad")) {
 						throw new UploaderConfigurationException(
 								resp.substring(resp.indexOf(',') + 2));

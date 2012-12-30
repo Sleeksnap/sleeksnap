@@ -58,6 +58,11 @@ public class HotkeyManager {
 	public static final String CLIPBOARD_HOTKEY = "ctrl PAGE_UP", CLIPBOARD_HOTKEY_MAC = "ctrl shift 3";
 	
 	/**
+	 * File upload hotkeys
+	 */
+	public static final String FILE_HOTKEY = "ctrl PAGE_DOWN", FILE_HOTKEY_MAC = "ctrl shift 4";
+	
+	/**
 	 * Settings gui hotkeys
 	 */
 	public static final String OPTIONS_HOTKEY = "ctrl alt PRINTSCREEN", OPTIONS_HOTKEY_MAC = "ctrl shift 9";
@@ -130,6 +135,15 @@ public class HotkeyManager {
 						}
 					});
 		}
+		if (keys.containsKey("file")) {
+			provider.register(KeyStroke.getKeyStroke(keys.get("file")),
+					new HotKeyListener() {
+						@Override
+						public void onHotKey(HotKey hotKey) {
+							snapper.selectFile();
+						}
+					});
+		}
 		if (keys.containsKey("options")) {
 			provider.register(KeyStroke.getKeyStroke(keys.get("options")),
 					new HotKeyListener() {
@@ -171,11 +185,8 @@ public class HotkeyManager {
 	 * Reset the bound keys and let other classes know that they are not set
 	 */
 	public void resetKeys() {
-		try {
-			provider.reset();
-		} finally {
-			initialized = false;
-		}
+		provider.reset();
+		initialized = false;
 	}
 
 	/**

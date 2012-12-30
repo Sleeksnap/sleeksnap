@@ -117,11 +117,11 @@ public class MultipartPostMethod {
 					+ entry.getKey() + "\"");
 			// Get the content value
 			Object object = entry.getValue();
-			if (object instanceof FileUpload) { // If it is an upload (We
+			if (object instanceof FileUpload || object instanceof File) { // If it is an upload (We
 												// simulate this if we have an
 												// input/file name), use this to
 												// write it
-				FileUpload file = (FileUpload) object;
+				FileUpload file = object instanceof File ? FileUpload.create((File) object) : (FileUpload) object;
 				// Write the file name with the content name
 				writer.write("; filename=\"" + file.getName() + "\"");
 				writer.write("\r\n");

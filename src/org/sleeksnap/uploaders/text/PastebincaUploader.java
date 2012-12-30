@@ -34,6 +34,7 @@ public class PastebincaUploader extends Uploader<String> {
 	private static final String PASTEBINCA_URL = "http://pastebin.ca/";
 	private static final String PASTEBINCA_SCRIPTURL = PASTEBINCA_URL
 			+ "quiet-paste.php";
+	
 	private static final String PASTEBINCA_KEY = "cjONz2tQBu4kZxDcugEVAdkSELcD77No";
 
 	@Override

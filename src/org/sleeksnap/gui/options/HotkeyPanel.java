@@ -53,12 +53,14 @@ public class HotkeyPanel extends OptionSubPanel {
 	private JLabel clipboardLabel;
 	private JLabel activeLabel;
 	private JLabel noteLabel;
-	private JLabel settingsLabel;
+	private JLabel optionsLabel;
+	private JLabel fileLabel;
 
 	private JButton fullHotkeyButton;
 	private JButton cropHotkeyButton;
 	private JButton clipboardHotkeyButton;
 	private JButton activeHotkeyButton;
+	private JButton fileHotkeyButton;
 	private JButton optionsHotkeyButton;
 
 	private JButton hotkeyResetButton;
@@ -75,6 +77,7 @@ public class HotkeyPanel extends OptionSubPanel {
 		cropHotkeyButton = new JButton();
 		clipboardHotkeyButton = new JButton();
 		activeHotkeyButton = new JButton();
+		fileHotkeyButton = new JButton();
 		optionsHotkeyButton = new JButton();
 
 		hotkeySettingsLabel = new JLabel();
@@ -82,7 +85,8 @@ public class HotkeyPanel extends OptionSubPanel {
 		cropLabel = new JLabel();
 		clipboardLabel = new JLabel();
 		activeLabel = new JLabel();
-		settingsLabel = new JLabel();
+		fileLabel = new JLabel();
+		optionsLabel = new JLabel();
 		noteLabel = new JLabel();
 
 		hotkeyResetButton = new JButton();
@@ -112,6 +116,12 @@ public class HotkeyPanel extends OptionSubPanel {
 		clipboardHotkeyButton.addKeyListener(new HotkeyChangeListener(
 				clipboardHotkeyButton));
 
+		fileLabel.setText("File upload:");
+
+		fileHotkeyButton.setText("Not set");
+		fileHotkeyButton.addKeyListener(new HotkeyChangeListener(
+				fileHotkeyButton));
+
 		activeLabel.setText("Active window:");
 
 		activeHotkeyButton.setText("Not set");
@@ -119,7 +129,7 @@ public class HotkeyPanel extends OptionSubPanel {
 		activeHotkeyButton.addKeyListener(new HotkeyChangeListener(
 				activeHotkeyButton));
 
-		settingsLabel.setText("Open settings:");
+		optionsLabel.setText("Open settings:");
 
 		optionsHotkeyButton.setText("Not set");
 
@@ -202,7 +212,10 @@ public class HotkeyPanel extends OptionSubPanel {
 																								activeLabel,
 																								javax.swing.GroupLayout.Alignment.LEADING)
 																						.addComponent(
-																								settingsLabel,
+																								fileLabel,
+																								javax.swing.GroupLayout.Alignment.LEADING)
+																						.addComponent(
+																								optionsLabel,
 																								javax.swing.GroupLayout.Alignment.LEADING))
 																		.addPreferredGap(
 																				javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -218,6 +231,11 @@ public class HotkeyPanel extends OptionSubPanel {
 																								Short.MAX_VALUE)
 																						.addComponent(
 																								activeHotkeyButton,
+																								javax.swing.GroupLayout.DEFAULT_SIZE,
+																								javax.swing.GroupLayout.DEFAULT_SIZE,
+																								Short.MAX_VALUE)
+																						.addComponent(
+																								fileHotkeyButton,
 																								javax.swing.GroupLayout.DEFAULT_SIZE,
 																								javax.swing.GroupLayout.DEFAULT_SIZE,
 																								Short.MAX_VALUE)
@@ -297,6 +315,15 @@ public class HotkeyPanel extends OptionSubPanel {
 												hotkeyPanelLayout
 														.createParallelGroup(
 																javax.swing.GroupLayout.Alignment.BASELINE)
+														.addComponent(fileLabel)
+														.addComponent(
+																fileHotkeyButton))
+										.addPreferredGap(
+												javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+										.addGroup(
+												hotkeyPanelLayout
+														.createParallelGroup(
+																javax.swing.GroupLayout.Alignment.BASELINE)
 														.addComponent(
 																activeLabel)
 														.addComponent(
@@ -308,7 +335,7 @@ public class HotkeyPanel extends OptionSubPanel {
 														.createParallelGroup(
 																javax.swing.GroupLayout.Alignment.BASELINE)
 														.addComponent(
-																settingsLabel)
+																optionsLabel)
 														.addComponent(
 																optionsHotkeyButton))
 										.addGap(40, 40, 40)
@@ -329,7 +356,7 @@ public class HotkeyPanel extends OptionSubPanel {
 
 	public void loadCurrentHotkeys() {
 		Map<String, String> keys = configuration.getMap("hotkeys");
-		if(keys == null) {
+		if (keys == null) {
 			return;
 		}
 		if (keys.containsKey("full")) {
@@ -351,6 +378,11 @@ public class HotkeyPanel extends OptionSubPanel {
 			optionsHotkeyButton.setText(getButtonText(keys.get("options")));
 		} else {
 			optionsHotkeyButton.setText("Not set");
+		}
+		if (keys.containsKey("file")) {
+			fileHotkeyButton.setText(getButtonText(keys.get("file")));
+		} else {
+			fileHotkeyButton.setText("Not set");
 		}
 		if (Platform.isWindows() || Platform.isLinux()) {
 			if (keys.containsKey("active")) {
@@ -382,6 +414,10 @@ public class HotkeyPanel extends OptionSubPanel {
 		if (!active.equals("Not set")) {
 			keys.put("active", getFormattedKeyStroke(active));
 		}
+		String file = fileHotkeyButton.getText();
+		if (!file.equals("Not set")) {
+			keys.put("file", getFormattedKeyStroke(file));
+		}
 		String options = optionsHotkeyButton.getText();
 		if (!options.equals("Not set")) {
 			keys.put("options", getFormattedKeyStroke(options));
@@ -401,6 +437,20 @@ public class HotkeyPanel extends OptionSubPanel {
 
 		public HotkeyChangeListener(JButton button) {
 			this.button = button;
+		}
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			// If the key is unknown/a function key
+			if (e.getKeyCode() == 0 || e.getKeyCode() == KeyEvent.VK_ALT
+					|| e.getKeyCode() == KeyEvent.VK_CONTROL
+					|| e.getKeyCode() == KeyEvent.VK_SHIFT
+					|| e.getKeyCode() == KeyEvent.VK_META) {
+				return;
+			}
+			// Consume any keys that may cause tab changes/other undesired
+			// behavior
+			e.consume();
 		}
 
 		@Override

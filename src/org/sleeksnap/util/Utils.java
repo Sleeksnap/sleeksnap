@@ -54,6 +54,7 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.xml.bind.DatatypeConverter;
 
+import org.sleeksnap.Constants.Application;
 import org.sleeksnap.uploaders.Uploader;
 
 /**
@@ -252,6 +253,17 @@ public class Utils {
 		public static String getJarPath(Class<?> cl) throws Exception {
 			return new File(cl.getProtectionDomain().getCodeSource()
 					.getLocation().toURI()).getAbsolutePath();
+		}
+		
+		/**
+		 * Generate a unique filename for uploads etc
+		 * @param extension
+		 * 			The file extension
+		 * @return
+		 * 			The generated filename
+		 */
+		public static String generateFileName(String extension) {
+			return Application.NAME + "-" + DateUtil.getCurrentDate() + (extension.equals("") ? "" : "." + extension);
 		}
 	}
 

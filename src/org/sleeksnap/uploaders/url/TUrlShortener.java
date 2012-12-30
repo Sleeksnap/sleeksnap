@@ -25,6 +25,7 @@ import org.sleeksnap.util.HttpUtil;
 
 /**
  * A url shortener for http://turl.ca
+ * http://turl.ca/apidoc.php
  * 
  * @author Nikki
  * 
@@ -44,10 +45,12 @@ public class TUrlShortener extends Uploader<URL> {
 	@Override
 	public String upload(URL url) throws Exception {
 		String resp = HttpUtil.executeGet(TURL_BASE + "api.php?url=" + url);
-		if (resp.contains("ERROR")) {
-			throw new UploadException(
-					"An error was reported from the URL Shortening service");
+		//Response is in STATUS:data format, data can be an error message or the shortened url.
+		String status = resp.substring(0, resp.indexOf(':'));
+		String data = resp.substring(resp.indexOf(':')+1);
+		if (status.equals("ERROR")) {
+			throw new UploadException(data);
 		}
-		return TURL_BASE + resp.substring(resp.indexOf(':') + 1);
+		return TURL_BASE + data;
 	}
 }

@@ -18,7 +18,14 @@ import org.sleeksnap.util.Utils.ImageUtil;
 @Settings(required = { "apikey" }, optional = { })
 public class PuushUploader extends Uploader<BufferedImage> {
 
+	/**
+	 * The auth page URL
+	 */
 	private static final String API_AUTH_URL = "http://puush.me/api/auth";
+	
+	/**
+	 * The upload URL
+	 */
 	private static final String API_UPLOAD_URL = "http://puush.me/api/up";
 
 	@Override
@@ -29,7 +36,7 @@ public class PuushUploader extends Uploader<BufferedImage> {
 	@Override
 	public String upload(BufferedImage t) throws Exception {
 		if (!settings.containsKey("apikey")) {
-			throw new UploaderConfigurationException("API Key is not set!");
+			throw new UploaderConfigurationException("API Key is not set! Get one by visiting http://puush.me/account/settings and copying 'API Key'");
 		}
 
 		MultipartPostMethod post = new MultipartPostMethod(API_UPLOAD_URL);
@@ -57,7 +64,7 @@ public class PuushUploader extends Uploader<BufferedImage> {
 	@Override
 	public boolean validateSettings(Properties properties) throws UploaderConfigurationException {
 		if (!properties.containsKey("apikey")) {
-			throw new UploaderConfigurationException("API Key is not set!");
+			throw new UploaderConfigurationException("API Key is not set! Get one by visiting http://puush.me/account/settings and copying 'API Key'");
 		}
 		try {
 			String resp = HttpUtil.executePost(API_AUTH_URL, "k="+properties.getProperty("apikey")).trim();
