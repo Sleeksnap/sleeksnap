@@ -17,6 +17,7 @@
  */
 package org.sleeksnap;
 
+import java.awt.Desktop;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
@@ -33,6 +34,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
@@ -233,6 +236,11 @@ public class ScreenSnapper {
 	 * The history instance
 	 */
 	private History history;
+	
+	/**
+	 * The last uploaded URL, used for clicking tray icon
+	 */
+	private String lastUrl;
 
 	/**
 	 * Initialize the program
@@ -574,6 +582,22 @@ public class ScreenSnapper {
 		icon = adapter.createAndAddTrayIcon(
 				Util.getResourceByName(Resources.ICON_PATH), Application.NAME
 						+ " v" + Version.getVersionString(), tray);
+		icon.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(lastUrl != null) {
+					try {
+						Desktop.getDesktop().browse(new URL(lastUrl).toURI());
+					} catch (MalformedURLException e1) {
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					} catch (URISyntaxException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+		});
 	}
 
 	/**
@@ -1046,6 +1070,8 @@ public class ScreenSnapper {
 					}
 					url = url.trim();
 					ClipboardUtil.setClipboard(url);
+					
+					lastUrl = url;
 					history.addEntry(new HistoryEntry(url, uploader.getName()));
 					icon.displayMessage("Upload complete",
 							"Uploaded to " + url, TrayIcon.MessageType.INFO);
