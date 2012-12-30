@@ -31,6 +31,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
@@ -348,9 +350,9 @@ public class ScreenSnapper {
 			if (clipboard instanceof BufferedImage) {
 				upload(clipboard);
 			} else if (clipboard instanceof File) {
-				// TODO we could also trigger a file uploader for other files...
 				File file = (File) clipboard;
 				String mime = FileUtils.getMimeType(file.getAbsolutePath());
+				
 				// A better way to upload images, it'll check the mime type!
 				if (mime.startsWith("image")) {
 					upload(ImageIO.read(file));
@@ -800,7 +802,8 @@ public class ScreenSnapper {
 			}
 			return;
 		}
-		Class<?> type = uploader.getUploadType();
+		Class<?> type = getUploaderType(uploader);
+		//Check for the current list of types
 		if (!uploaders.containsKey(type)) {
 			uploaders.put(type, new HashMap<String, Uploader<?>>());
 		}
@@ -809,6 +812,23 @@ public class ScreenSnapper {
 		loadUploaderSettings(uploader);
 
 		uploaders.get(type).put(uploader.getClass().getName(), uploader);
+	}
+	
+	/**
+	 * Attempt to get the upload type from the Superclass
+	 * @param uploader
+	 * 			The uploader to get the type from
+	 * @return
+	 * 			The type
+	 */
+	public Class<?> getUploaderType(Uploader<?> uploader) {
+		//Find the uploader type
+		ParameterizedType parameterizedType = (ParameterizedType) uploader.getClass().getGenericSuperclass();
+		Type[] args = parameterizedType.getActualTypeArguments();
+		if(args.length == 0) {
+			throw new RuntimeException("Attempted to load invalid uploader!");
+		}
+		return (Class<?>) args[0];
 	}
 
 	/**
@@ -844,7 +864,7 @@ public class ScreenSnapper {
 	 */
 	public void setDefaultUploader(final Uploader<?> uploader,
 			boolean settingsOverride) {
-		uploaderAssociations.put(uploader.getUploadType(), uploader);
+		uploaderAssociations.put(getUploaderType(uploader), uploader);
 	}
 
 	/**
@@ -933,8 +953,7 @@ public class ScreenSnapper {
 		Uploader uploader = uploaderAssociations.get(object.getClass());
 		if (uploader != null) {
 			try {
-				String url = uploader.upload(uploader.getUploadType().cast(
-						object));
+				String url = uploader.upload(object);
 				if (url != null) {
 					if (configuration.getBoolean("shortenurls")) {
 						Uploader shortener = uploaderAssociations

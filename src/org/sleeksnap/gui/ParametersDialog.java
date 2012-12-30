@@ -26,18 +26,23 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.util.Util;
 import org.sleeksnap.util.Utils.ClassUtil;
 
 /**
@@ -93,7 +98,7 @@ public class ParametersDialog extends JDialog {
 	/**
 	 * The map of name => field
 	 */
-	private Map<String, JTextField> fieldMap = new HashMap<String, JTextField>();
+	private Map<String, JComponent> fieldMap = new HashMap<String, JComponent>();
 
 	/**
 	 * The uploader name
@@ -126,7 +131,7 @@ public class ParametersDialog extends JDialog {
 		if (optionalLength != 0) {
 			length++;
 		}
-		this.labels = new JLabel[length]; // TODO refactor
+		this.labels = new JLabel[length];
 		this.components = createComponentArray();
 
 		initComponents();
@@ -149,18 +154,7 @@ public class ParametersDialog extends JDialog {
 			i++;
 
 			for (String s : settings.required()) {
-				labels[i] = new JLabel(s + ": ");
-
-				JTextField component = new JTextField();
-				components[i] = component;
-				if (properties.containsKey(s)) {
-					component.setText(properties.getProperty(s));
-				}
-				component.setMinimumSize(new Dimension(200, 0)); // TODO better
-																	// way?
-
-				fieldMap.put(s, component);
-
+				initializeSetting(components, i, s, properties);
 				i++;
 			}
 		}
@@ -171,23 +165,102 @@ public class ParametersDialog extends JDialog {
 			i++;
 
 			for (String s : settings.optional()) {
-				labels[i] = new JLabel(s + ": ");
-
-				JTextField component = new JTextField();
-				components[i] = component;
-				if (properties.containsKey(s)) {
-					component.setText(properties.getProperty(s));
-				}
-				component.setMinimumSize(new Dimension(200, 0)); // TODO better
-																	// way?
-
-				fieldMap.put(s, component);
-
+				initializeSetting(components, i, s, properties);
 				i++;
 			}
 		}
 
 		return components;
+	}
+	
+	/**
+	 * Build the setting component/label
+	 * @param components
+	 * 			The component array to push the setting into
+	 * @param index
+	 * 			The current setting index
+	 * @param name
+	 * 			The setting name
+	 * @param properties
+	 * 			The current properties object
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void initializeSetting(JComponent[] components, int index, String name, Properties properties) {
+		JComponent component = null;
+		SettingType settingType = SettingType.TEXT;
+		if(name.contains("|")) {
+			//Could be a different type.
+			String type = name.substring(name.indexOf('|')+1);
+			String data = "";
+			
+			name = name.substring(0, name.indexOf('|'));
+
+			//Data for Combo box or default setting
+			if(type.indexOf('[') != -1 && type.indexOf(']') != -1) {
+				int firstIdx = type.indexOf('[');
+				data = type.substring(firstIdx+1, type.indexOf(']', firstIdx));
+				type = type.substring(0, firstIdx);
+			}
+			
+			//Parse out the setting type
+			SettingType newType = SettingType.valueOf(type.toUpperCase());
+			if(newType != null) {
+				settingType = newType;
+				component = newType.createComponent();
+				
+				//Populate the default settings or combo items
+				if(!data.equals("")) {
+					switch(settingType) {
+					case TEXT:
+						((JTextField) component).setText(data);
+						break;
+					case PASSWORD:
+						((JPasswordField) component).setText(data);
+						break;
+					case CHECKBOX:
+						((JCheckBox) component).setSelected(Boolean.valueOf(data));
+						break;
+					case COMBOBOX:
+						String[] split = data.split(",");
+						for(int i = 0; i < split.length; i++) {
+							split[i] = split[i].trim();
+						}
+						((JComboBox) component).setModel(new DefaultComboBoxModel(split));
+						break;
+					}
+				}
+			} else {
+				//Unknown type, just create a text component
+				component = settingType.createComponent();
+			}
+		} else {
+			//Or revert to a simple text field
+			component = new JTextField();
+		}
+		
+		labels[index] = new JLabel(settingName(name) + ": ");
+		components[index] = component;
+		
+		if (properties.containsKey(name)) {
+			switch(settingType) {
+			case TEXT:
+				((JTextField) component).setText(properties.getProperty(name));
+				break;
+			case PASSWORD:
+				((JPasswordField) component).setText(properties.getProperty(name));
+				break;
+			case CHECKBOX:
+				((JCheckBox) component).setSelected(Boolean.valueOf(properties.getProperty(name)));
+				break;
+			case COMBOBOX:
+				((JComboBox) component).setSelectedItem(properties.getProperty(name));
+				break;
+			}
+		}
+		
+		component.setMinimumSize(new Dimension(200, 0));
+		
+		fieldMap.put(name, component);
 	}
 
 	/**
@@ -353,7 +426,8 @@ public class ParametersDialog extends JDialog {
 	 */
 	public boolean validateProperties() {
 		for (String s : settings.required()) {
-			if (fieldMap.get(s).getText().equals("")) {
+			Object object = getComponentValue(fieldMap.get(s));
+			if (object == null || object.toString().equals("")) {
 				return false;
 			}
 		}
@@ -367,10 +441,35 @@ public class ParametersDialog extends JDialog {
 	 */
 	public Properties toProperties() {
 		Properties props = new Properties();
-		for (Entry<String, JTextField> entry : fieldMap.entrySet()) {
-			props.put(entry.getKey(), entry.getValue().getText());
+		for (Entry<String, JComponent> entry : fieldMap.entrySet()) {
+			props.put(entry.getKey(), getComponentValue(entry.getValue()).toString());
 		}
 		return props;
+	}
+	
+	public String settingName(String key) {
+		return Util.ucwords(key.replace('_', ' '));
+	}
+	
+	/**
+	 * Get the component's value based on type
+	 * @param component
+	 * 			The component to get the value from
+	 * @return
+	 * 			The component value
+	 */
+	@SuppressWarnings("rawtypes")
+	public Object getComponentValue(JComponent component) {
+		if(component instanceof JTextField) {
+			return ((JTextField) component).getText();
+		} else if(component instanceof JPasswordField) {
+			return new String(((JPasswordField) component).getPassword());
+		} else if(component instanceof JCheckBox) {
+			return ((JCheckBox) component).isSelected() ? true : false;
+		} else if(component instanceof JComboBox) {
+			return ((JComboBox) component).getSelectedItem();
+		}
+		return null;
 	}
 
 	/**
@@ -380,5 +479,26 @@ public class ParametersDialog extends JDialog {
 	 */
 	public void setOkAction(ActionListener actionListener) {
 		this.actionListener = actionListener;
+	}
+	
+	public enum SettingType {
+		TEXT(JTextField.class), PASSWORD(JPasswordField.class), CHECKBOX(JCheckBox.class), COMBOBOX(JComboBox.class);
+		
+		private Class<?> cl;
+		
+		private SettingType(Class<?> cl) {
+			this.cl = cl;
+		}
+		
+		public JComponent createComponent() {
+			try {
+				return (JComponent) this.cl.newInstance();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
 	}
 }

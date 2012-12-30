@@ -21,13 +21,14 @@ import java.awt.image.BufferedImage;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.sleeksnap.uploaders.Uploader;
-import org.sleeksnap.util.Util;
+import org.sleeksnap.util.HttpUtil;
 import org.sleeksnap.util.Utils.ImageUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -42,15 +43,12 @@ import org.w3c.dom.NodeList;
  * 
  */
 public class ImgurUploader extends Uploader<BufferedImage> {
+	
+	private static final String API_KEY = "a071fe99cee17999a8ff93b282cd602f";
 
 	@Override
 	public String getName() {
 		return "Imgur";
-	}
-
-	@Override
-	public Class<?> getUploadType() {
-		return BufferedImage.class;
 	}
 
 	@Override
@@ -59,28 +57,23 @@ public class ImgurUploader extends Uploader<BufferedImage> {
 		/**
 		 * Encode the image into a base64 string using apache commons codec
 		 */
-		String data = URLEncoder.encode("image", "UTF-8") + "="
-				+ URLEncoder.encode(ImageUtil.toBase64(image), "UTF-8");
-		data += "&key=a071fe99cee17999a8ff93b282cd602f";
+		Map<String, Object> req = new HashMap<String, Object>();
+		req.put("image", ImageUtil.toBase64(image));
+		req.put("key", API_KEY);
+		
 		URLConnection connection = url.openConnection();
 		connection.setDoOutput(true);
+		
 		/**
 		 * Write the image data and api key
 		 */
 		OutputStreamWriter writer = new OutputStreamWriter(
 				connection.getOutputStream());
-		writer.write(data);
+		writer.write(HttpUtil.implode(req));
 		writer.flush();
 		writer.close();
-
-		int remainingUploads = Integer.parseInt(connection
-				.getHeaderField("X-RateLimit-Remaining"));
-		long resetTime = Long.parseLong(connection
-				.getHeaderField("X-RateLimit-Reset"));
-		if (remainingUploads <= 50
-				&& (resetTime - Util.currentTimeSeconds()) >= 600) {
-			// TODO show a warning about remaining uploads
-		}
+		
+		
 		/**
 		 * Parse the URL from the response
 		 */

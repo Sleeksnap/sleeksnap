@@ -42,11 +42,6 @@ public class PastebincaUploader extends Uploader<String> {
 	}
 
 	@Override
-	public Class<?> getUploadType() {
-		return String.class;
-	}
-
-	@Override
 	public String upload(String string) throws Exception {
 		String data = "api=" + PASTEBINCA_KEY + "&content="
 				+ HttpUtil.encode(string) + "&s=true&type=1&expiry=Never&name=";

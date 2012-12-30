@@ -99,11 +99,6 @@ public class FTPUploader extends GenericUploader {
 		}
 
 		@Override
-		public Class<?> getUploadType() {
-			return BufferedImage.class;
-		}
-
-		@Override
 		public String upload(BufferedImage t) throws Exception {
 			return ftpUpload(generateFileName(t), ImageUtil.toInputStream(t));
 		}
@@ -120,11 +115,6 @@ public class FTPUploader extends GenericUploader {
 		@Override
 		public String getName() {
 			return FTPUploader.this.getName();
-		}
-
-		@Override
-		public Class<?> getUploadType() {
-			return String.class;
 		}
 
 		@Override
@@ -145,11 +135,6 @@ public class FTPUploader extends GenericUploader {
 		@Override
 		public String getName() {
 			return FTPUploader.this.getName();
-		}
-
-		@Override
-		public Class<?> getUploadType() {
-			return File.class;
 		}
 
 		@Override

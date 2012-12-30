@@ -35,11 +35,6 @@ public abstract class GenericUploader extends Uploader<Object> {
 	public abstract Uploader<?>[] getSubUploaders();
 
 	@Override
-	public Class<?> getUploadType() {
-		return Object.class;
-	}
-
-	@Override
 	public String upload(Object t) throws Exception {
 		return null;
 	}

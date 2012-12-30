@@ -48,14 +48,6 @@ public abstract class Uploader<T> {
 	public abstract String getName();
 
 	/**
-	 * Get the object type this class can upload
-	 * 
-	 * @return
-	 * 		The class of the upload type
-	 */
-	public abstract Class<?> getUploadType();
-
-	/**
 	 * Upload the specified object
 	 * 
 	 * @param t

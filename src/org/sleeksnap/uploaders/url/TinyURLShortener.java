@@ -50,11 +50,6 @@ public class TinyURLShortener extends Uploader<URL> {
 	}
 
 	@Override
-	public Class<?> getUploadType() {
-		return URL.class;
-	}
-
-	@Override
 	public String upload(URL t) throws Exception {
 		String contents = HttpUtil.executeGet(String.format(PAGE_URL,
 				HttpUtil.encode(t.toString())));

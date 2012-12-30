@@ -42,11 +42,6 @@ public class TUrlShortener extends Uploader<URL> {
 	}
 
 	@Override
-	public Class<?> getUploadType() {
-		return URL.class;
-	}
-
-	@Override
 	public String upload(URL url) throws Exception {
 		String resp = HttpUtil.executeGet(TURL_BASE + "api.php?url=" + url);
 		if (resp.contains("ERROR")) {

@@ -46,11 +46,6 @@ public class UppitUploader extends Uploader<File> {
 	}
 
 	@Override
-	public Class<?> getUploadType() {
-		return File.class;
-	}
-
-	@Override
 	public String upload(File t) throws Exception {
 		String contents = HttpUtil.executeGet("http://uppit.com/");
 		Matcher matcher = urlPattern.matcher(contents);

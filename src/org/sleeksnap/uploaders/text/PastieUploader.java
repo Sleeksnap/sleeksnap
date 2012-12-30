@@ -36,11 +36,6 @@ public class PastieUploader extends Uploader<String> {
 	}
 
 	@Override
-	public Class<?> getUploadType() {
-		return String.class;
-	}
-
-	@Override
 	public String upload(String t) throws Exception {
 		String url = HttpUtil.executePostWithLocation(PASTEBIN_URL,
 				"paste[parser]=plain_text&paste[body]=" + HttpUtil.encode(t)

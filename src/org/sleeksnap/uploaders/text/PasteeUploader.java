@@ -13,11 +13,6 @@ public class PasteeUploader extends Uploader<String> {
 	}
 
 	@Override
-	public Class<?> getUploadType() {
-		return String.class;
-	}
-
-	@Override
 	public String upload(String t) throws Exception {
 		return HttpUtil.executePost(
 				"http://paste.ee/api",

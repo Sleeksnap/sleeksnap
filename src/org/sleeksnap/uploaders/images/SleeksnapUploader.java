@@ -31,9 +31,4 @@ public class SleeksnapUploader extends Uploader<BufferedImage> {
 	public String getName() {
 		return "Sleeksnap";
 	}
-
-	@Override
-	public Class<?> getUploadType() {
-		return BufferedImage.class;
-	}
 }

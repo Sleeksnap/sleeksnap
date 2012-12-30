@@ -52,11 +52,6 @@ public class GoogleShortener extends Uploader<URL> {
 	}
 
 	@Override
-	public Class<?> getUploadType() {
-		return URL.class;
-	}
-
-	@Override
 	public String upload(URL url) throws Exception {
 		URLConnection connection = new URL(PAGE_URL).openConnection();
 		connection.setDoOutput(true);

@@ -27,11 +27,6 @@ public class PuushUploader extends Uploader<BufferedImage> {
 	}
 
 	@Override
-	public Class<?> getUploadType() {
-		return BufferedImage.class;
-	}
-
-	@Override
 	public String upload(BufferedImage t) throws Exception {
 		if (!settings.containsKey("apikey")) {
 			throw new UploaderConfigurationException("API Key is not set!");
