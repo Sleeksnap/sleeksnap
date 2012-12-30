@@ -34,8 +34,7 @@ import org.sleeksnap.util.HttpUtil;
  * @author Nikki
  * 
  */
-@Settings(required = {}, optional = { "username", "password|password",
-		"paste_exposure|combobox[Public,Unlisted,Private]" })
+@Settings(required = { "paste_exposure|combobox[Public,Unlisted,Private]" }, optional = { "username", "password|password" })
 public class PastebinUploader extends Uploader<String> {
 
 	/**
