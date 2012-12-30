@@ -38,9 +38,4 @@ public class WatermarkFilter implements UploadFilter<BufferedImage> {
 		}
 		return object;
 	}
-
-	@Override
-	public Class<?> getType() {
-		return BufferedImage.class;
-	}
 }

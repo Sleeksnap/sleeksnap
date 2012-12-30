@@ -785,12 +785,32 @@ public class ScreenSnapper {
 	 *            The filter to register
 	 */
 	public void registerFilter(UploadFilter<?> filter) {
-		LinkedList<UploadFilter<?>> filterList = filters.get(filter.getType());
+		Class<?> type = getFilterType(filter);
+		LinkedList<UploadFilter<?>> filterList = filters.get(type);
 		if (filterList == null) {
-			filters.put(filter.getType(),
+			filters.put(type,
 					filterList = new LinkedList<UploadFilter<?>>());
 		}
 		filterList.addFirst(filter);
+	}
+	
+	/**
+	 * Gets a filter's parent class type
+	 * @param filter
+	 * @return
+	 */
+	public Class<?> getFilterType(UploadFilter<?> filter) {
+		// Find the uploader type
+		Type[] types = filter.getClass().getGenericInterfaces();
+		for(Type type : types) {
+			if(type instanceof ParameterizedType) {
+				ParameterizedType parameterizedType = (ParameterizedType) type;
+				if(parameterizedType.getRawType() == UploadFilter.class) {
+					return (Class<?>) parameterizedType.getActualTypeArguments()[0];
+				}
+			}
+		}
+		throw new RuntimeException("Attempted to load invalid filter!");
 	}
 
 	/**

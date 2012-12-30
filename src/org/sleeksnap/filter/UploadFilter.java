@@ -17,11 +17,4 @@ public interface UploadFilter<T> {
 	 */
 	public T filter(T object);
 	
-	/**
-	 * Get the class type of this filter
-	 * @return
-	 * 		The class type
-	 */
-	public Class<?> getType();
-	
 }

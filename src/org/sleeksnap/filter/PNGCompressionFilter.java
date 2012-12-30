@@ -98,11 +98,6 @@ public class PNGCompressionFilter implements UploadFilter<BufferedImage> {
 		}
 		return object;
 	}
-	
-	@Override
-	public Class<?> getType() {
-		return BufferedImage.class;
-	}
 
 	private static String strPad(String string, char pad) {
 		return pad + string + pad;
