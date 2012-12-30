@@ -68,6 +68,7 @@ import org.sleeksnap.impl.LoggingManager;
 import org.sleeksnap.uploaders.FTPUploader;
 import org.sleeksnap.uploaders.GenericUploader;
 import org.sleeksnap.uploaders.Settings;
+import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.UploaderConfigurationException;
 import org.sleeksnap.uploaders.files.FilebinUploader;
@@ -1088,10 +1089,14 @@ public class ScreenSnapper {
 				}
 			} catch (UploaderConfigurationException e) {
 				icon.displayMessage("Uploader Configuration error",
-						"You must configure this uploader before using it!",
+						"You must configure this uploader correctly before using it!",
 						TrayIcon.MessageType.ERROR);
+			} catch (UploadException e) {
+				icon.displayMessage("Upload failed",
+						"The upload failed to execute: " + e.getMessage(),
+						TrayIcon.MessageType.ERROR);
+				logger.log(Level.SEVERE, "Upload failed to execute", e);
 			} catch (Exception e) {
-				e.printStackTrace();
 				icon.displayMessage("Upload failed",
 						"The upload failed to execute: " + e,
 						TrayIcon.MessageType.ERROR);

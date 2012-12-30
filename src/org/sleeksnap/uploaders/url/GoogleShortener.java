@@ -46,12 +46,16 @@ public class GoogleShortener extends Uploader<URL> {
 
 	@Override
 	public String upload(URL url) throws Exception {
+		//Sanity check, otherwise google's api returns a 400
+		if(url.toString().startsWith("http://goo.gl/")) {
+			throw new UploadException("Unable to shorten URL that has already been shortened");
+		}
 		URLConnection connection = new URL(PAGE_URL).openConnection();
 		connection.setDoOutput(true);
 		connection.setRequestProperty("Content-type", "application/json");
 		
 		JSONObject out = new JSONObject();
-		out.put("longUrl", url.toString());
+		out.put("longUrl", url);
 		
 		OutputStreamWriter writer = new OutputStreamWriter(
 				connection.getOutputStream());
