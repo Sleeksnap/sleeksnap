@@ -30,7 +30,6 @@ import javax.swing.JOptionPane;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.sleeksnap.Constants;
 import org.sleeksnap.Constants.Application;
 import org.sleeksnap.Constants.Version;
 import org.sleeksnap.Launcher;
@@ -79,7 +78,7 @@ public class Updater {
 		try {
 			logger.info("Checking for updates...");
 			
-			String data = HttpUtil.executeGet(Constants.Application.UPDATE_URL);
+			String data = HttpUtil.executeGet(Application.UPDATE_URL);
 			
 			JSONObject obj = new JSONObject(data);
 			
@@ -89,7 +88,7 @@ public class Updater {
 			String[] s = ver.split("\\.");
 			int major = Integer.parseInt(s[0]), minor = Integer.parseInt(s[1]), patch = Integer.parseInt(s[2]);
 			if(major > Version.MAJOR || major == Version.MAJOR && minor > Version.MINOR || major == Version.MAJOR && minor == Version.MINOR && patch > Version.PATCH) {
-				logger.info("A new version is available. Current version: " + Version.getVersionString() + ", new version: " + ver);
+				logger.info("A new version is available. Current version: " + Version.getVersionString() + ", new version: " + major + "." + minor + "." + patch);
 				if(prompt) {
 					StringBuilder message = new StringBuilder();
 					message.append("There is a new version of ").append(Application.NAME).append(" available!").append("\n");
