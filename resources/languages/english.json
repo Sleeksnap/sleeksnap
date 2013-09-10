@@ -1,0 +1,37 @@
+{
+	"language" : "English",
+	"tokens" : {
+		"errorLoadingSettings" : "Error loading settings",
+		"settingsCorrupted" : "It looks like your configuration is corrupted, would you like to load the default settings?\nPress \"No\" to open the settings GUI",
+		"invalidClipboard" : "Invalid clipboard contents",
+		"invalidClipboardTitle" : "Could not upload clipboard contents, invalid type",
+		"uploadConfirm" : "Are you sure you wish to upload {1}?",
+		"uploadConfirmTitle" : "Confirm upload",
+		"fileUploading" : "File is uploading.",
+		"fileUploadCanceled" : "File upload has been canceled.",
+		"fileUploadTitle" : "File upload",
+		"actions" : "Actions",
+		"crop" : "Crop",
+		"full" : "Full",
+		"clipboard" : "Clipboard",
+		"file" : "File",
+		"active" : "Active",
+		"options" : "Options",
+		"error" : "Error",
+		"exit" : "Exit",
+		"optionsOpenError" : "Could not open settings, is there another window open?",
+		"loadingError" : "An error occurred while loading {1} : {2}, it could be outdated.",
+		"filterLoadError" : "Could not load filter : {1}",
+		"exceptionCause" : "An error occurred while performing the selected action, cause: {1}",
+		"noUploaderTitle" : "No uploader available",
+		"noUploader" : "There is no uploader available for {1}!",
+		"uploadComplete" : "Upload complete",
+		"uploadFailed" : "Upload failed",
+		"uploadFailedError" : "The upload failed to execute due to an unknown error",
+		"uploadedTo" : "Uploaded to {1}",
+		"uploaderConfigError" : "Uploader configuration error",
+		"uploaderConfigErrorMessage" : "You must configure this uploader correctly before using it!",
+		
+		"hotkeyNotSet" : "Not set"
+	}
+}

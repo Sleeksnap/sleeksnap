@@ -8,7 +8,7 @@
 # By default we only configure a ConsoleHandler, which will only
 # show messages at the INFO and above levels.
 # However, you can enable the ManagementHandler instance here
-handlers= java.util.logging.ConsoleHandler,org.sleeksnap.util.FileLogHandler
+handlers= java.util.logging.ConsoleHandler,org.sleeksnap.util.logging.FileLogHandler,org.sleeksnap.util.logging.LogPanelHandler
 
 # Default global logging level.
 # This specifies which kinds of events are logged across
