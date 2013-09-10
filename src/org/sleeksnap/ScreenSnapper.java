@@ -697,10 +697,10 @@ public class ScreenSnapper {
 		JSONObject uploaders = new JSONObject();
 
 		// Default uploaders
-		uploaders.put(BufferedImage.class.getName(), ImgurUploader.class.getName());
-		uploaders.put(String.class.getName(), PasteeUploader.class.getName());
-		uploaders.put(URL.class.getName(), GoogleShortener.class.getName());
-		uploaders.put(File.class.getName(), FilebinUploader.class.getName());
+		uploaders.put(ImageUpload.class.getName(), ImgurUploader.class.getName());
+		uploaders.put(TextUpload.class.getName(), PasteeUploader.class.getName());
+		uploaders.put(FileUpload.class.getName(), FilebinUploader.class.getName());
+		uploaders.put(URLUpload.class.getName(), GoogleShortener.class.getName());
 
 		configuration.put("uploaders", uploaders);
 
