@@ -60,7 +60,7 @@
             <fileset dir="resources" />
             <manifest>
                 <!-- Main class attribute -->
-                <attribute name="Main-Class" value="org.sleeksnap.ScreenSnapper"/>
+                <attribute name="Main-Class" value="org.sleeksnap.Launcher"/>
             </manifest>
             <archives>
                 <zips>
