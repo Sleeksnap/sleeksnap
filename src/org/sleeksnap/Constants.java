@@ -26,6 +26,7 @@ package org.sleeksnap;
 public class Constants {
 	public static class Application {
 		public static final String NAME = "Sleeksnap";
+		public static final String UPDATE_URL = "http://sleeksnap.com/build/latest.json";
 	}
 
 	public static class Configuration {
@@ -40,11 +41,16 @@ public class Constants {
 	
 	public static class Version {
 		public static final int MAJOR = 1;
-		public static final int MINOR = 1;
-		public static final int PATCH = 9;
+		public static final int MINOR = 3;
+		public static final int PATCH = 1;
+		
+		private static String versionString = null;
 		
 		public static String getVersionString() {
-			return MAJOR + "." + MINOR + "." + PATCH;
+			if(versionString == null) {
+				versionString = MAJOR + "." + MINOR + "." + PATCH;
+			}
+			return  versionString;
 		}
 	}
 }

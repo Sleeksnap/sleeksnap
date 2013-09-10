@@ -19,12 +19,16 @@ package org.sleeksnap.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.yaml.snakeyaml.Yaml;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.sleeksnap.util.StreamUtils;
 
 /**
  * A basic history manager loading and saving to YAML
@@ -33,11 +37,6 @@ import org.yaml.snakeyaml.Yaml;
  * 
  */
 public class History {
-
-	/**
-	 * The static YAML instance
-	 */
-	private static Yaml yaml = new Yaml();
 
 	/**
 	 * The history storage class
@@ -67,6 +66,7 @@ public class History {
 	 * @throws IOException
 	 *             Thrown if an error occurred while saving, notify that local
 	 *             history is disabled?
+	 * @throws JSONException 
 	 */
 	public void addEntry(HistoryEntry entry) throws IOException {
 		addEntry(entry, true);
@@ -82,6 +82,7 @@ public class History {
 	 * @throws IOException
 	 *             Thrown if an error occurred while saving, notify that local
 	 *             history is disabled?
+	 * @throws JSONException 
 	 */
 	public void addEntry(HistoryEntry entry, boolean save) throws IOException {
 		synchronized (history) {
@@ -106,12 +107,16 @@ public class History {
 	 * 
 	 * @throws IOException
 	 *             If an error occurs reading the file
+	 * @throws JSONException 
 	 */
-	@SuppressWarnings("unchecked")
 	public void load() throws IOException {
-		FileInputStream input = new FileInputStream(file);
+		InputStream input = new FileInputStream(file);
 		try {
-			history = (List<HistoryEntry>) yaml.load(input);
+			history = new LinkedList<HistoryEntry>();
+			JSONArray array = new JSONArray(StreamUtils.readContents(input));
+			for(int i = 0; i < array.length(); i++) {
+				history.add(new HistoryEntry(array.getJSONObject(i)));
+			}
 		} finally {
 			input.close();
 		}
@@ -122,13 +127,18 @@ public class History {
 	 * 
 	 * @throws IOException
 	 *             If an error occurs saving the file
+	 * @throws JSONException 
 	 */
 	private void save() throws IOException {
-		FileWriter writer = new FileWriter(file);
+		OutputStream output = new FileOutputStream(file);
 		try {
-			yaml.dump(history, writer);
+			JSONArray array = new JSONArray();
+			for(HistoryEntry e : history) {
+				array.put(e.toJSONObject());
+			}
+			output.write(array.toString().getBytes());
 		} finally {
-			writer.close();
+			output.close();
 		}
 	}
 }

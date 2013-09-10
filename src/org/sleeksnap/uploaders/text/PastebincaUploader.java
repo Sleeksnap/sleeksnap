@@ -17,8 +17,9 @@
  */
 package org.sleeksnap.uploaders.text;
 
+import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Uploader;
-import org.sleeksnap.util.HttpUtil;
 
 /**
  * A text uploader for http://pastebin.ca
@@ -26,7 +27,7 @@ import org.sleeksnap.util.HttpUtil;
  * @author Nikki
  * 
  */
-public class PastebincaUploader extends Uploader<String> {
+public class PastebincaUploader extends Uploader<TextUpload> {
 
 	/**
 	 * Basic variables, such as the API Key and URL
@@ -43,9 +44,9 @@ public class PastebincaUploader extends Uploader<String> {
 	}
 
 	@Override
-	public String upload(String string) throws Exception {
+	public String upload(TextUpload text) throws Exception {
 		String data = "api=" + PASTEBINCA_KEY + "&content="
-				+ HttpUtil.encode(string) + "&s=true&type=1&expiry=Never&name=";
+				+ HttpUtil.encode(text.getText()) + "&s=true&type=1&expiry=Never&name=";
 		
 		String resp = HttpUtil.executePost(PASTEBINCA_SCRIPTURL, data);
 

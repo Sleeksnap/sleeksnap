@@ -21,16 +21,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.yaml.snakeyaml.Yaml;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 public class Configuration {
-	/**
-	 * The YAML Instance
-	 */
-	private static final Yaml yaml = new Yaml();
 
 	/**
 	 * The file which we loaded from
@@ -40,7 +36,7 @@ public class Configuration {
 	/**
 	 * The configuration map
 	 */
-	private Map<String, Object> config = new HashMap<String, Object>();
+	private JSONObject config = new JSONObject();
 
 	/**
 	 * Empty constructor
@@ -55,6 +51,7 @@ public class Configuration {
 	 * @param key
 	 *            The key
 	 * @return The result
+	 * @throws JSONException 
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T get(String key) {
@@ -67,12 +64,10 @@ public class Configuration {
 	 * @param key
 	 *            The key
 	 * @return The result
+	 * @throws JSONException 
 	 */
 	public boolean getBoolean(String key) {
-		if (config.containsKey(key)) {
-			return (Boolean) config.get(key);
-		}
-		return false;
+		return config.getBoolean(key);
 	}
 
 	/**
@@ -81,9 +76,10 @@ public class Configuration {
 	 * @param key
 	 *            The key
 	 * @return The integer
+	 * @throws JSONException 
 	 */
 	public int getInteger(String key) {
-		return (Integer) config.get(key);
+		return config.getInt(key);
 	}
 
 	/**
@@ -92,10 +88,10 @@ public class Configuration {
 	 * @param key
 	 *            The key
 	 * @return The map attached to the specified key
+	 * @throws JSONException 
 	 */
-	@SuppressWarnings("unchecked")
-	public <K, V> Map<K, V> getMap(String key) {
-		return (Map<K, V>) config.get(key);
+	public JSONObject getJSONObject(String key) {
+		return config.getJSONObject(key);
 	}
 
 	/**
@@ -104,6 +100,7 @@ public class Configuration {
 	 * @param key
 	 *            The key
 	 * @return The object
+	 * @throws JSONException 
 	 */
 	public Object getObject(String key) {
 		return config.get(key);
@@ -115,9 +112,10 @@ public class Configuration {
 	 * @param key
 	 *            The key
 	 * @return The string containing the setting for the key.
+	 * @throws JSONException 
 	 */
 	public String getString(String key) {
-		return config.get(key).toString();
+		return config.getString(key);
 	}
 
 	/**
@@ -127,12 +125,20 @@ public class Configuration {
 	 *            The file
 	 * @throws IOException
 	 *             If an error occurred while loading
+	 * @throws JSONException 
 	 */
-	@SuppressWarnings("unchecked")
 	public void load(File file) throws IOException {
 		this.file = file;
-		this.config = (Map<String, Object>) yaml
-				.load(new FileInputStream(file));
+		try {
+			FileInputStream fInput = new FileInputStream(file);
+			try {
+				this.config = new JSONObject(new JSONTokener(fInput));
+			} finally {
+				fInput.close();
+			}
+		} catch(RuntimeException e) {
+			throw new IOException(e);
+		}
 	}
 	
 	/**
@@ -148,11 +154,15 @@ public class Configuration {
 	 * Load from a string
 	 * 
 	 * @param contents
-	 *            The YAML Contents
+	 *            The JSON contents
+	 * @throws IOException 
 	 */
-	@SuppressWarnings("unchecked")
-	public void load(String contents) {
-		this.config = (Map<String, Object>) yaml.load(contents);
+	public void load(String contents) throws IOException {
+		try {
+			this.config = new JSONObject(contents);
+		} catch(RuntimeException e) {
+			throw new IOException(e);
+		}
 	}
 
 	/**
@@ -162,6 +172,7 @@ public class Configuration {
 	 *            The key
 	 * @param value
 	 *            The value
+	 * @throws JSONException 
 	 */
 	public void put(String key, Object value) {
 		config.put(key, value);
@@ -179,7 +190,7 @@ public class Configuration {
 		}
 		FileWriter writer = new FileWriter(file);
 		try {
-			yaml.dump(config, writer);
+			writer.write(config.toString(4));
 		} finally {
 			writer.close();
 		}
@@ -193,6 +204,18 @@ public class Configuration {
 	 * @return Whether it contains the string or not
 	 */
 	public boolean contains(String string) {
-		return config.containsKey(string);
+		return config.has(string);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getEnumValue(String key, Class<?> class1) {
+		if(class1.isEnum()) {
+			return (T) class1.getEnumConstants()[getInteger(key)];
+		}
+		return null;
+	}
+
+	public String getString(String key, String defaultValue) {
+		return config.getString(key, defaultValue);
 	}
 }

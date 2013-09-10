@@ -17,11 +17,13 @@
  */
 package org.sleeksnap.uploaders.url;
 
-import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.upload.URLUpload;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
-import org.sleeksnap.util.HttpUtil;
 
 /**
  * A url shortener for http://turl.ca
@@ -30,12 +32,17 @@ import org.sleeksnap.util.HttpUtil;
  * @author Nikki
  * 
  */
-public class TUrlShortener extends Uploader<URL> {
+public class TUrlShortener extends Uploader<URLUpload> {
 
 	/**
 	 * The base URL
 	 */
 	private static final String TURL_BASE = "http://turl.ca/";
+	
+	/**
+	 * The API URL
+	 */
+	private static final String API_URL = TURL_BASE + "api.php";
 
 	@Override
 	public String getName() {
@@ -43,12 +50,16 @@ public class TUrlShortener extends Uploader<URL> {
 	}
 
 	@Override
-	public String upload(URL url) throws Exception {
-		String resp = HttpUtil.executeGet(TURL_BASE + "api.php?url=" + url);
+	public String upload(URLUpload url) throws Exception {
+		//Format the request
+		Map<String, Object> req = new HashMap<String, Object>();
+		req.put("url", url.getURL().toString());
+		//Implode the request properties (Automatically encodes)
+		String resp = HttpUtil.executeGet(API_URL + '?' + HttpUtil.implode(req));
 		//Response is in STATUS:data format, data can be an error message or the shortened url.
 		String status = resp.substring(0, resp.indexOf(':'));
 		String data = resp.substring(resp.indexOf(':')+1);
-		if (status.equals("ERROR")) {
+		if (status.equalsIgnoreCase("ERROR")) {
 			throw new UploadException(data);
 		}
 		return TURL_BASE + data;

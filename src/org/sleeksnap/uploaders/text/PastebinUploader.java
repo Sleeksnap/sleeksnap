@@ -20,13 +20,14 @@ package org.sleeksnap.uploaders.text;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
+import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.UploaderConfigurationException;
-import org.sleeksnap.util.HttpUtil;
+import org.sleeksnap.uploaders.settings.UploaderSettings;
 
 /**
  * A text uploader for Pastebin.com (New API)
@@ -35,7 +36,7 @@ import org.sleeksnap.util.HttpUtil;
  * 
  */
 @Settings(required = { "paste_exposure|combobox[Public,Unlisted,Private]" }, optional = { "username", "password|password" })
-public class PastebinUploader extends Uploader<String> {
+public class PastebinUploader extends Uploader<TextUpload> {
 
 	/**
 	 * Sleeksnap's API key
@@ -63,23 +64,23 @@ public class PastebinUploader extends Uploader<String> {
 	}
 
 	@Override
-	public String upload(String contents) throws Exception {
+	public String upload(TextUpload contents) throws Exception {
 		Map<String, Object> req = new HashMap<String, Object>();
 		req.put("api_dev_key", API_KEY);
 		req.put("api_option", API_OPTION_PASTE);
-		req.put("api_paste_code", contents);
+		req.put("api_paste_code", contents.getText());
 		// User signed in through API
-		if (settings.containsKey("apikey")) {
-			req.put("api_user_key", settings.getProperty("apikey"));
+		if (settings.has("apikey")) {
+			req.put("api_user_key", settings.getString("apikey"));
 		}
 		// Paste exposure is set.
-		if (settings.containsKey("paste_exposure")) {
+		if (settings.has("paste_exposure")) {
 			PastebinExposure exp = PastebinExposure.valueOf(settings
-					.getProperty("paste_exposure"));
+					.getString("paste_exposure"));
 			if (exp != null) {
 				if (exp == PastebinExposure.Private
-						&& (!settings.containsKey("apikey") || settings
-								.getProperty("apikey").equals(""))) {
+						&& (!settings.has("apikey") || settings
+								.getString("apikey").equals(""))) {
 					throw new UploaderConfigurationException(
 							"Pastebin.com only supports private pastes while logged in!");
 				} else {
@@ -96,12 +97,12 @@ public class PastebinUploader extends Uploader<String> {
 	}
 
 	@Override
-	public boolean validateSettings(Properties settings)
+	public boolean validateSettings(UploaderSettings settings)
 			throws UploaderConfigurationException {
-		if (settings.containsKey("username")
-				&& settings.containsKey("password")) {
-			String username = settings.getProperty("username"), password = settings
-					.getProperty("password");
+		if (settings.has("username")
+				&& settings.has("password")) {
+			String username = settings.getString("username"), password = settings
+					.getString("password");
 			if (!username.equals("") && !password.equals("")) {
 				// Validate the username and password, then get us a key.
 				Map<String, Object> req = new HashMap<String, Object>();
@@ -114,7 +115,7 @@ public class PastebinUploader extends Uploader<String> {
 						throw new UploaderConfigurationException(
 								resp.substring(resp.indexOf(',') + 2));
 					} else {
-						settings.put("apikey", resp);
+						settings.set("apikey", resp);
 					}
 				} catch (IOException e) {
 					throw new UploaderConfigurationException(
@@ -122,7 +123,7 @@ public class PastebinUploader extends Uploader<String> {
 				}
 			}
 		}
-		//We will not store the user's password in plain text!
+		// We don't need to store the user's password since we get an application key
 		settings.remove("password");
 		return true;
 	}

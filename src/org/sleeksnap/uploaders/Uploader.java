@@ -21,7 +21,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Properties;
+
+import org.sleeksnap.upload.Upload;
+import org.sleeksnap.uploaders.settings.UploaderSettings;
 
 /**
  * A basic uploader
@@ -32,12 +34,25 @@ import java.util.Properties;
  *            The upload type
  */
 @Settings(required = {}, optional = {})
-public abstract class Uploader<T> {
+public abstract class Uploader<T extends Upload> {
 
 	/**
 	 * The properties instance
 	 */
-	protected Properties settings = new Properties();
+	protected UploaderSettings settings = new UploaderSettings();
+	
+	/**
+	 * The parent uploader, used if this is a sub uploader of another generic uploader
+	 */
+	protected Uploader<?> parent;
+	
+	public Uploader() {
+		
+	}
+	
+	public Uploader(Uploader<?> parent) {
+		this.parent = parent;
+	}
 
 	/**
 	 * Get the uploader name
@@ -69,7 +84,7 @@ public abstract class Uploader<T> {
 	public void loadSettings(File file) throws IOException {
 		FileInputStream input = new FileInputStream(file);
 		try {
-			settings.loadFromXML(input);
+			settings.load(file);
 		} finally {
 			input.close();
 		}
@@ -86,8 +101,7 @@ public abstract class Uploader<T> {
 	public void saveSettings(File file) throws IOException {
 		FileOutputStream out = new FileOutputStream(file);
 		try {
-			settings.storeToXML(out, "Uploader settings for "
-					+ getClass().getName());
+			settings.saveTo(out);
 		} finally {
 			out.close();
 		}
@@ -98,13 +112,23 @@ public abstract class Uploader<T> {
 	 * 
 	 * If invalid, either throw an UploaderConfigurationException or display your own message.
 	 * 
-	 * @param settings
+	 * @param newSettings
 	 * 			The settings object
 	 * @return
 	 * 			true if valid, false if invalid.
 	 */
-	public boolean validateSettings(Properties settings) throws UploaderConfigurationException {
+	public boolean validateSettings(UploaderSettings newSettings) throws UploaderConfigurationException {
 		return true;
+	}
+	
+	/**
+	 * Can be overidden to get a call when it is activated/set as default (On Load or User Settings)
+	 * By default, if this is a sub uploader for a Generic uploader, it will call the parent's onActivation method
+	 */
+	public void onActivation() {
+		if(parent != null) {
+			parent.onActivation();
+		}
 	}
 
 	/**
@@ -113,7 +137,7 @@ public abstract class Uploader<T> {
 	 * @param settings
 	 *            The Properties object containing the settings
 	 */
-	public void setSettings(Properties settings) {
+	public void setSettings(UploaderSettings settings) {
 		this.settings = settings;
 	}
 
@@ -122,7 +146,47 @@ public abstract class Uploader<T> {
 	 * 
 	 * @return The properties
 	 */
-	public Properties getSettings() {
+	public UploaderSettings getSettings() {
+		return settings;
+	}
+	
+	/**
+	 * Set this uploader's parent
+	 */
+	public void setParentUploader(Uploader<?> parent) {
+		this.parent = parent;
+	}
+	
+	public Uploader<?> getParentUploader() {
+		return parent;
+	}
+
+	public boolean hasParent() {
+		return parent != null;
+	}
+	
+	public boolean hasSettings() {
+		boolean classHas = getClass().isAnnotationPresent(Settings.class);
+		if (classHas)
+			return true;
+		Class<?> enclosing = getClass().getEnclosingClass();
+		if (enclosing != null) {
+			return enclosing.isAnnotationPresent(Settings.class);
+		}
+		return false;
+	}
+
+	/**
+	 * Get the Settings annotation from an uploader
+	 * 
+	 * @return The settings, or null if it doesn't have any
+	 */
+	public Settings getSettingsAnnotation() {
+		Settings settings = getClass().getAnnotation(Settings.class);
+		Class<?> enclosing = getClass().getEnclosingClass();
+		if (settings == null && enclosing != null) {
+			settings = enclosing.getAnnotation(Settings.class);
+		}
 		return settings;
 	}
 }

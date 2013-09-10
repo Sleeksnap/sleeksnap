@@ -1,14 +1,29 @@
+/**
+ * Sleeksnap, the open source cross-platform screenshot uploader
+ * Copyright (C) 2012 Nikki <nikki@nikkii.us>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.sleeksnap.uploaders.images;
 
-import java.awt.image.BufferedImage;
-
 import org.json.JSONObject;
+import org.sleeksnap.http.MultipartPostMethod;
+import org.sleeksnap.http.MultipartPostMethod.MultipartFile;
+import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
-import org.sleeksnap.util.MultipartPostMethod;
-import org.sleeksnap.util.MultipartPostMethod.FileUpload;
 import org.sleeksnap.util.Utils.FileUtils;
-import org.sleeksnap.util.Utils.ImageUtil;
 
 /**
  * An image uploader for http://imm.io
@@ -16,7 +31,7 @@ import org.sleeksnap.util.Utils.ImageUtil;
  * @author Nikki
  *
  */
-public class ImmioUploader extends Uploader<BufferedImage> {
+public class ImmioUploader extends Uploader<ImageUpload> {
 	
 	private static final String API_URL = "http://imm.io/store/";
 
@@ -26,9 +41,9 @@ public class ImmioUploader extends Uploader<BufferedImage> {
 	}
 
 	@Override
-	public String upload(BufferedImage image) throws Exception {
+	public String upload(ImageUpload image) throws Exception {
 		MultipartPostMethod post = new MultipartPostMethod(API_URL);
-		post.setParameter("image", new FileUpload(FileUtils.generateFileName("png"), ImageUtil.toInputStream(image)));
+		post.setParameter("image", new MultipartFile(FileUtils.generateFileName("png"), image.asInputStream()));
 		post.execute();
 		//Read the response as JSON
 		JSONObject object = new JSONObject(post.getResponse());

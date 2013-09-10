@@ -21,17 +21,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
+import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 
 import org.sleeksnap.Constants;
 import org.sleeksnap.gui.OptionPanel;
+import org.sleeksnap.updater.Updater;
+import org.sleeksnap.updater.Updater.VerificationMode;
 import org.sleeksnap.util.Util;
 import org.sleeksnap.util.Utils.FileUtils;
-import org.sleeksnap.util.WinRegistry;
 
 import com.sun.jna.Platform;
 
@@ -52,6 +55,7 @@ public class InfoPanel extends OptionSubPanel {
 	private JButton saveAllButton;
 
 	private OptionPanel parent;
+	private JCheckBox showIconCheckbox;
 
 	public InfoPanel(OptionPanel parent) {
 		this.parent = parent;
@@ -61,56 +65,54 @@ public class InfoPanel extends OptionSubPanel {
 	public void initComponents() {
 		logoLabel = new JLabel();
 		versionLabel = new JLabel();
-		startOnStartup = new javax.swing.JCheckBox();
-		compressImages = new javax.swing.JCheckBox();
-		saveAllButton = new javax.swing.JButton();
+		startOnStartup = new JCheckBox();
+		compressImages = new JCheckBox();
+		showIconCheckbox = new JCheckBox();
+		saveAllButton = new JButton();
 
 		this.setPreferredSize(new java.awt.Dimension(300, 442));
 
 		logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		logoLabel.setIcon(new ImageIcon(Util
-				.getResourceByName(Constants.Resources.LOGO_PATH))); // NOI18N
+				.getResourceByName(Constants.Resources.LOGO_PATH)));
 
 		versionLabel.setText("Version " + Constants.Version.getVersionString());
 
-		startOnStartup.setText("Start Sleeksnap on startup (Windows only)");
+		startOnStartup.setText("Start Sleeksnap on startup (Windows and Linux only)");
 		compressImages.setText("Compress images with pngout/pngcrush (Requires binaries)");
+		showIconCheckbox.setText("Show icon in system tray");
+		
+		startOnStartup.setEnabled(Platform.isWindows() || Platform.isX11());
+		
+		showIconCheckbox.setSelected(true);
 
 		saveAllButton.setText("Save all");
 
 		saveAllButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// Save startup options here... Windows we can add it to the
-				// registry, Linux.... dunno, maybe bashrc?
 				boolean start = startOnStartup.isSelected();
 				if (start) {
 					// Overwrite the old key, in case it's a new version.
-					if (Platform.isWindows()) {
+					if (Platform.isWindows() || Platform.isX11()) {
 						try {
-							WinRegistry.writeStringValue(
-									WinRegistry.HKEY_CURRENT_USER,
-									WinRegistry.RUN_PATH,
-									Constants.Application.NAME,
-									FileUtils.getJarPath(OptionPanel.class));
+							Updater.verifyAutostart(FileUtils.getJarFile(OptionPanel.class), VerificationMode.INSERT);
 						} catch (Exception e1) {
-							// TODO problem, we couldn't add it!
+							e1.printStackTrace();
 						}
 					}
 				} else {
-					if (Platform.isWindows()) {
+					if (Platform.isWindows() || Platform.isX11()) {
 						try {
-							WinRegistry.deleteValue(
-									WinRegistry.HKEY_CURRENT_USER,
-									WinRegistry.RUN_PATH,
-									Constants.Application.NAME);
+							Updater.verifyAutostart(FileUtils.getJarFile(OptionPanel.class), VerificationMode.REMOVE);
 						} catch (Exception e1) {
-							// Doesn't exist, no problem.
+							e1.printStackTrace();
 						}
 					}
 				}
 				parent.getConfiguration().put("startOnStartup", start);
 				parent.getConfiguration().put("compressImages", compressImages.isSelected());
+				parent.getConfiguration().put("showIcon", showIconCheckbox.isSelected());
 				try {
 					parent.getConfiguration().save();
 				} catch (IOException e1) {
@@ -121,62 +123,44 @@ public class InfoPanel extends OptionSubPanel {
 			}
 		});
 
-		javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(
+		GroupLayout mainPanelLayout = new GroupLayout(
 				this);
 		this.setLayout(mainPanelLayout);
-		mainPanelLayout
-				.setHorizontalGroup(mainPanelLayout
-						.createParallelGroup(
-								javax.swing.GroupLayout.Alignment.LEADING)
-						.addGroup(
-								mainPanelLayout
-										.createSequentialGroup()
-										.addContainerGap()
-										.addGroup(
-												mainPanelLayout
-														.createParallelGroup(
-																javax.swing.GroupLayout.Alignment.TRAILING)
-														.addComponent(
-																versionLabel)
-														.addGroup(
-																mainPanelLayout
-																		.createParallelGroup(
-																				javax.swing.GroupLayout.Alignment.LEADING)
-																		.addComponent(
-																				startOnStartup)
-																		.addComponent(compressImages)
-																		.addComponent(
-																				logoLabel)))
-										.addContainerGap())
-						.addGroup(
-								javax.swing.GroupLayout.Alignment.TRAILING,
-								mainPanelLayout.createSequentialGroup()
-										.addContainerGap(352, Short.MAX_VALUE)
-										.addComponent(saveAllButton)
-										.addContainerGap()));
-		mainPanelLayout
-				.setVerticalGroup(mainPanelLayout
-						.createParallelGroup(
-								javax.swing.GroupLayout.Alignment.LEADING)
-						.addGroup(
-								mainPanelLayout
-										.createSequentialGroup()
-										.addContainerGap()
-										.addComponent(logoLabel)
-										.addPreferredGap(
-												javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-										.addComponent(versionLabel)
-										.addPreferredGap(
-												javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-										.addComponent(startOnStartup)
-										.addPreferredGap(
-												javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-										.addComponent(compressImages)
-										.addPreferredGap(
-												javax.swing.LayoutStyle.ComponentPlacement.RELATED,
-												270, Short.MAX_VALUE)
-										.addComponent(saveAllButton)
-										.addContainerGap()));
+        mainPanelLayout.setHorizontalGroup(
+                mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(mainPanelLayout.createSequentialGroup()
+                    .addGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(mainPanelLayout.createSequentialGroup()
+                            .addContainerGap()
+                            .addGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                .addComponent(versionLabel)
+                                .addGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                    .addComponent(startOnStartup)
+                                    .addComponent(logoLabel)
+                                    .addComponent(compressImages)
+                                    .addComponent(showIconCheckbox))))
+                        .addGroup(GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+                            .addContainerGap(368, Short.MAX_VALUE)
+                            .addComponent(saveAllButton)))
+                    .addContainerGap())
+            );
+            mainPanelLayout.setVerticalGroup(
+                mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(mainPanelLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(logoLabel)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(versionLabel)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(startOnStartup)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(compressImages)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(showIconCheckbox)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 224, Short.MAX_VALUE)
+                    .addComponent(saveAllButton)
+                    .addContainerGap())
+            );
 	}
 
 	public void doneBuilding() {

@@ -55,7 +55,13 @@ import javax.swing.ImageIcon;
 import javax.xml.bind.DatatypeConverter;
 
 import org.sleeksnap.Constants.Application;
+import org.sleeksnap.upload.FileUpload;
+import org.sleeksnap.upload.ImageUpload;
+import org.sleeksnap.upload.TextUpload;
+import org.sleeksnap.upload.Upload;
 import org.sleeksnap.uploaders.Uploader;
+
+import com.sun.jna.Platform;
 
 /**
  * A class containing many utility classes which would be wasteful to put in a
@@ -65,8 +71,6 @@ import org.sleeksnap.uploaders.Uploader;
  * 
  */
 public class Utils {
-	
-	
 
 	/**
 	 * Formatting utils
@@ -75,14 +79,75 @@ public class Utils {
 	 * 
 	 */
 	public static class FormatUtil {
-		public static String formatLowercaseName(String name) {
-			name = Character.toUpperCase(name.charAt(0)) + name.substring(1);
-			name = name.replace('_', ' ');
-			return name;
+
+		/**
+		 * Convert a byte count to a human readable count
+		 * 
+		 * @param bytes
+		 *            The input bytes
+		 * @param si
+		 *            false = binary, true = si
+		 * @return The result of the format
+		 */
+		public static String humanReadableByteCount(long bytes, boolean si) {
+			int unit = si ? 1000 : 1024;
+			if (bytes < unit)
+				return bytes + " B";
+			int exp = (int) (Math.log(bytes) / Math.log(unit));
+			String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1)
+					+ (si ? "" : "i");
+			return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+		}
+
+		/**
+		 * Format time elapsed
+		 * @param time
+		 * 			The time elapsed (In milliseconds)
+		 * @param pad
+		 * 			Whether to pad with zeros
+		 * @return
+		 * 			The formatted string
+		 */
+		public static String timeElapsed(long time, boolean pad) {
+			time = time / 1000;
+			int hours = (int) (time/3600), minutes = (int) ((time % 3600) / 60), seconds = (int) (time % 60);
+			StringBuilder bldr = new StringBuilder();
+			if(hours > 0) {
+				bldr.append(pad ? padZeros(hours) : hours)
+					.append(" hour" + (hours == 1 ? "" : "s"));
+			}
+			if(bldr.length() > 0) {
+				bldr.append(", ");
+			}
+			if(minutes > 0) {
+				bldr.append(pad ? padZeros(minutes) : minutes)
+					.append(" minute" + (minutes == 1 ? "" : "s"));
+			}
+			if(bldr.length() > 0) {
+				bldr.append(" and ");
+			}
+			bldr.append(pad ? padZeros(seconds) : seconds)
+				.append(" second" + (seconds == 1 ? "" : "s"));
+			
+			return bldr.toString();
+		}
+		
+		/**
+		 * Pad a number less than 10 with a zero
+		 * @param num
+		 * 			The number to pad
+		 * @return
+		 * 			The padded number
+		 */
+		public static String padZeros(int num) {
+			if(num >= 0 && num <= 9) {
+				return "0" + num;
+			}
+			return Integer.toString(num);
 		}
 	}
 
-	/**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+	/**
 	 * A class which provides functions related to the use of Class elements
 	 * 
 	 * @author Nikki
@@ -240,6 +305,21 @@ public class Utils {
 			}
 			return contents.toString();
 		}
+		
+		/**
+		 * Get the jar running from as a File object
+		 * 
+		 * @param cl
+		 * 			The class to get the path from
+		 * @return
+		 * 			A File object representing the path
+		 * @throws Exception
+		 * 			If the path is invalid
+		 */
+		public static File getJarFile(Class<?> cl) throws Exception {
+			return new File(cl.getProtectionDomain().getCodeSource()
+					.getLocation().toURI());
+		}
 
 		/**
 		 * Get the jar path
@@ -251,19 +331,66 @@ public class Utils {
 		 *             If the path is invalid
 		 */
 		public static String getJarPath(Class<?> cl) throws Exception {
-			return new File(cl.getProtectionDomain().getCodeSource()
-					.getLocation().toURI()).getAbsolutePath();
+			return getJarFile(cl).getAbsolutePath();
+		}
+
+		/**
+		 * Generate a unique filename for uploads etc
+		 * 
+		 * @param extension
+		 *            The file extension
+		 * @return The generated filename
+		 */
+		public static String generateFileName(String extension) {
+			return Application.NAME + "-" + DateUtil.getCurrentDate()
+					+ (extension.equals("") ? "" : "." + extension);
+		}
+
+		/**
+		 * Generate a file name from a date object formatted for filenames, plus the
+		 * filename if applicable
+		 * 
+		 * @param object
+		 *            The object to be uploaded
+		 * @return The filename
+		 */
+		public static String generateFileName(Upload upload) {
+			String name = DateUtil.getCurrentDate();
+			if (upload instanceof ImageUpload) {
+				name += ".png";
+			} else if (upload instanceof TextUpload) {
+				name += ".txt";
+			} else if (upload instanceof FileUpload) {
+				name = ((FileUpload) upload).getFile().getName();
+			} else {
+				name += ".file";
+			}
+			return name;
 		}
 		
 		/**
-		 * Generate a unique filename for uploads etc
-		 * @param extension
-		 * 			The file extension
+		 * Find the java executable for the current java runtime
+		 * 
 		 * @return
-		 * 			The generated filename
+		 * 		The File of the java executable, or null if it was not found (This is very bad)
 		 */
-		public static String generateFileName(String extension) {
-			return Application.NAME + "-" + DateUtil.getCurrentDate() + (extension.equals("") ? "" : "." + extension);
+		public static File getJavaExecutable() {
+			File javaDir = new File(System.getProperty("java.home"));
+			
+			String[] exes = new String[] { "bin/javaw", "bin/java" };
+			
+			boolean isWindows = Platform.isWindows();
+			
+			for(String s : exes) {
+				if(isWindows) {
+					s = s + ".exe";
+				}
+				File f = new File(javaDir, s);
+				if(f.exists()) {
+					return f;
+				}
+			}
+			return null;
 		}
 	}
 

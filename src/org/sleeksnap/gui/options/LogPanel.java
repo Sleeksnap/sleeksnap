@@ -17,11 +17,18 @@
  */
 package org.sleeksnap.gui.options;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import org.sleeksnap.gui.OptionPanel;
+import org.sleeksnap.upload.TextUpload;
+import org.sleeksnap.util.Utils.ClipboardUtil;
+import org.sleeksnap.util.logging.LogPanelHandler;
 
 /**
  * An OptionSubPanel for the Log panel
@@ -29,13 +36,17 @@ import org.sleeksnap.gui.OptionPanel;
  * @author Nikki
  * 
  */
-@SuppressWarnings({ "serial", "unused" })
+@SuppressWarnings({ "serial" })
 public class LogPanel extends OptionSubPanel {
 
 	private OptionPanel parent;
 
 	private JScrollPane logScroll;
 	private JTextArea logArea;
+	
+	private JButton copyLogButton;
+	private JButton uploadLogButton;
+	private JButton clearLogButton;
 
 	public LogPanel(OptionPanel parent) {
 		this.parent = parent;
@@ -45,28 +56,81 @@ public class LogPanel extends OptionSubPanel {
 	public void initComponents() {
 		logScroll = new JScrollPane();
 		logArea = new JTextArea();
+		
+		copyLogButton = new JButton();
+		uploadLogButton = new JButton();
+		clearLogButton = new JButton();
 
 		logArea.setColumns(20);
 		logArea.setRows(5);
 		logArea.setEditable(false);
 
 		logScroll.setViewportView(logArea);
+		
+		copyLogButton.setText("Copy Log");
+		
+		copyLogButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ClipboardUtil.setClipboard(logArea.getText());
+			}
+        });
+
+        uploadLogButton.setText("Upload Log");
+        
+        uploadLogButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				parent.getSnapper().upload(new TextUpload(logArea.getText()));
+			}
+        });
+
+        clearLogButton.setText("Clear Log");
+        
+        clearLogButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				logArea.setText("");
+			}
+        });
 
 		GroupLayout logPanelLayout = new GroupLayout(this);
 		this.setLayout(logPanelLayout);
-		logPanelLayout.setHorizontalGroup(logPanelLayout.createParallelGroup(
-				javax.swing.GroupLayout.Alignment.LEADING).addComponent(
-				logScroll, javax.swing.GroupLayout.Alignment.TRAILING,
-				javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE));
-		logPanelLayout.setVerticalGroup(logPanelLayout.createParallelGroup(
-				javax.swing.GroupLayout.Alignment.LEADING).addComponent(
-				logScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 465,
-				Short.MAX_VALUE));
+		logPanelLayout.setHorizontalGroup(
+	            logPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+	            .addComponent(logScroll)
+	            .addGroup(logPanelLayout.createSequentialGroup()
+	                .addComponent(copyLogButton, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+	                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+	                .addComponent(clearLogButton, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+	                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+	                .addComponent(uploadLogButton, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE))
+	        );
+	        logPanelLayout.setVerticalGroup(
+	            logPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+	            .addGroup(logPanelLayout.createSequentialGroup()
+	                .addComponent(logScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 429, javax.swing.GroupLayout.PREFERRED_SIZE)
+	                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+	                .addGroup(logPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+	                    .addComponent(uploadLogButton)
+	                    .addComponent(copyLogButton)
+	                    .addComponent(clearLogButton)))
+	        );
 	}
 
 	public void setContents(String contents) {
 		logArea.setText(contents);
 		logArea.setCaretPosition(contents.length());
+	}
+	
+	@Override
+	public void doneBuilding() {
+		LogPanelHandler.bindTo(this);
+	}
+
+	public void appendLog(String formattedLine) {
+		logArea.append(formattedLine);
+		logArea.setCaretPosition(logArea.getText().length());
 	}
 
 }

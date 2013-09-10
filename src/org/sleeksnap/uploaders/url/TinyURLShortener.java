@@ -17,13 +17,13 @@
  */
 package org.sleeksnap.uploaders.url;
 
-import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.upload.URLUpload;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
-import org.sleeksnap.util.HttpUtil;
 
 /**
  * A URL Shortener for TinyURL
@@ -31,7 +31,7 @@ import org.sleeksnap.util.HttpUtil;
  * @author Nikki
  * 
  */
-public class TinyURLShortener extends Uploader<URL> {
+public class TinyURLShortener extends Uploader<URLUpload> {
 
 	/**
 	 * The pattern to find the shortened url
@@ -50,9 +50,9 @@ public class TinyURLShortener extends Uploader<URL> {
 	}
 
 	@Override
-	public String upload(URL t) throws Exception {
+	public String upload(URLUpload t) throws Exception {
 		String contents = HttpUtil.executeGet(String.format(PAGE_URL,
-				HttpUtil.encode(t.toString())));
+				HttpUtil.encode(t.getURL().toString())));
 		Matcher matcher = urlPattern.matcher(contents);
 		if (matcher.find()) {
 			return matcher.group(1);

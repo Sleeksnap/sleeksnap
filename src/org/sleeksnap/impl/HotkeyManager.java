@@ -18,10 +18,11 @@
 package org.sleeksnap.impl;
 
 import java.awt.TrayIcon;
-import java.util.Map;
 
 import javax.swing.KeyStroke;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.sleeksnap.ScreenSnapper;
 
 import com.sun.jna.Platform;
@@ -101,15 +102,16 @@ public class HotkeyManager {
 
 	/**
 	 * Initialize the input using JKeymaster
+	 * @throws JSONException 
 	 */
 	public void initializeInput() {
-		Map<String, String> keys = snapper.getConfiguration().getMap("hotkeys");
+		JSONObject keys = snapper.getConfiguration().getJSONObject("hotkeys");
 		//A little sanity check, just in case we don't have ANY keys set
 		if(keys == null) {
 			return;
 		}
-		if (keys.containsKey("crop")) {
-			provider.register(KeyStroke.getKeyStroke(keys.get("crop")),
+		if (keys.has("crop")) {
+			provider.register(KeyStroke.getKeyStroke(keys.getString("crop")),
 					new HotKeyListener() {
 						@Override
 						public void onHotKey(HotKey hotKey) {
@@ -117,8 +119,8 @@ public class HotkeyManager {
 						}
 					});
 		}
-		if (keys.containsKey("full")) {
-			provider.register(KeyStroke.getKeyStroke(keys.get("full")),
+		if (keys.has("full")) {
+			provider.register(KeyStroke.getKeyStroke(keys.getString("full")),
 					new HotKeyListener() {
 						@Override
 						public void onHotKey(HotKey hotKey) {
@@ -126,8 +128,8 @@ public class HotkeyManager {
 						}
 					});
 		}
-		if (keys.containsKey("clipboard")) {
-			provider.register(KeyStroke.getKeyStroke(keys.get("clipboard")),
+		if (keys.has("clipboard")) {
+			provider.register(KeyStroke.getKeyStroke(keys.getString("clipboard")),
 					new HotKeyListener() {
 						@Override
 						public void onHotKey(HotKey hotKey) {
@@ -135,8 +137,8 @@ public class HotkeyManager {
 						}
 					});
 		}
-		if (keys.containsKey("file")) {
-			provider.register(KeyStroke.getKeyStroke(keys.get("file")),
+		if (keys.has("file")) {
+			provider.register(KeyStroke.getKeyStroke(keys.getString("file")),
 					new HotKeyListener() {
 						@Override
 						public void onHotKey(HotKey hotKey) {
@@ -144,8 +146,8 @@ public class HotkeyManager {
 						}
 					});
 		}
-		if (keys.containsKey("options")) {
-			provider.register(KeyStroke.getKeyStroke(keys.get("options")),
+		if (keys.has("options")) {
+			provider.register(KeyStroke.getKeyStroke(keys.getString("options")),
 					new HotKeyListener() {
 						@Override
 						public void onHotKey(HotKey hotKey) {
@@ -161,8 +163,8 @@ public class HotkeyManager {
 		}
 		// We support active windows only on windows/linux, but OSX SOON!
 		if ((Platform.isWindows() || Platform.isLinux())
-				&& keys.containsKey("active")) {
-			provider.register(KeyStroke.getKeyStroke(keys.get("active")),
+				&& keys.has("active")) {
+			provider.register(KeyStroke.getKeyStroke(keys.getString("active")),
 					new HotKeyListener() {
 						@Override
 						public void onHotKey(HotKey hotKey) {

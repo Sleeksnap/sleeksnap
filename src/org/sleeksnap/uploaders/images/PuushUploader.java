@@ -1,22 +1,44 @@
+/**
+ * Sleeksnap, the open source cross-platform screenshot uploader
+ * Copyright (C) 2012 Nikki <nikki@nikkii.us>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.sleeksnap.uploaders.images;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
+import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.http.MultipartPostMethod;
+import org.sleeksnap.http.MultipartPostMethod.MultipartFile;
+import org.sleeksnap.http.PostData;
+import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.UploaderConfigurationException;
-import org.sleeksnap.util.HttpUtil;
-import org.sleeksnap.util.MultipartPostMethod;
-import org.sleeksnap.util.MultipartPostMethod.FileUpload;
+import org.sleeksnap.uploaders.settings.UploaderSettings;
 import org.sleeksnap.util.Utils.DateUtil;
-import org.sleeksnap.util.Utils.ImageUtil;
 
-@Settings(required = { "apikey" }, optional = { })
-public class PuushUploader extends Uploader<BufferedImage> {
+/**
+ * An uploader for puush.me
+ * 
+ * @author Nikki
+ *
+ */
+@Settings(required = { "email", "password|password" }, optional = { })
+public class PuushUploader extends Uploader<ImageUpload> {
 
 	/**
 	 * The auth page URL
@@ -34,22 +56,20 @@ public class PuushUploader extends Uploader<BufferedImage> {
 	}
 
 	@Override
-	public String upload(BufferedImage t) throws Exception {
-		if (!settings.containsKey("apikey")) {
-			throw new UploaderConfigurationException("API Key is not set! Get one by visiting http://puush.me/account/settings and copying 'API Key'");
+	public String upload(ImageUpload image) throws Exception {
+		if (!settings.has("apikey")) {
+			throw new UploaderConfigurationException("API Key is not set! Please configure this uploader's settings.");
 		}
 
 		MultipartPostMethod post = new MultipartPostMethod(API_UPLOAD_URL);
 
-		InputStream input = ImageUtil.toInputStream(t);
-
-		post.setParameter("k", settings.getProperty("apikey"));
+		post.setParameter("k", settings.getString("apikey"));
 
 		post.setParameter("z", "sleeksnap");
 
 		post.setParameter("f",
-				new FileUpload("Sleeksnap-" + DateUtil.getCurrentDate()
-						+ ".png", input));
+				new MultipartFile("Sleeksnap-" + DateUtil.getCurrentDate()
+						+ ".png", image.asInputStream()));
 
 		post.execute();
 
@@ -62,14 +82,25 @@ public class PuushUploader extends Uploader<BufferedImage> {
 	}
 	
 	@Override
-	public boolean validateSettings(Properties properties) throws UploaderConfigurationException {
-		if (!properties.containsKey("apikey")) {
-			throw new UploaderConfigurationException("API Key is not set! Get one by visiting http://puush.me/account/settings and copying 'API Key'");
+	public boolean validateSettings(UploaderSettings properties) throws UploaderConfigurationException {
+		if (!properties.has("username") || !properties.has("password")) {
+			throw new UploaderConfigurationException("Username or password not set, please reconfigure puush's uploader!");
 		}
 		try {
-			String resp = HttpUtil.executePost(API_AUTH_URL, "k="+properties.getProperty("apikey")).trim();
-			if(resp.equals("-1")) {
-				throw new UploaderConfigurationException("Invalid API Key!");
+			PostData data = new PostData();
+			
+			data.put("e", properties.getString("email"));
+			data.put("p", properties.getString("password"));
+			
+			String resp = HttpUtil.executePost(API_AUTH_URL, data).trim();
+			if(resp.startsWith("-1")) {
+				throw new UploaderConfigurationException("Invalid login, please try again.");
+			}
+			
+			String[] s = resp.split(",");
+			
+			if(s[1].length() > 0) {
+				properties.set("apikey", s[1]);
 			}
 		} catch (IOException e) {
 			throw new UploaderConfigurationException("Unable to validate auth due to unexpected error");

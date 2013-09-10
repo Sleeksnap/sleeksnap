@@ -20,6 +20,7 @@ package org.sleeksnap.gui;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 
 import javax.swing.GroupLayout;
 import javax.swing.JPanel;
@@ -33,6 +34,8 @@ import org.sleeksnap.gui.options.HistoryPanel;
 import org.sleeksnap.gui.options.HotkeyPanel;
 import org.sleeksnap.gui.options.InfoPanel;
 import org.sleeksnap.gui.options.LogPanel;
+import org.sleeksnap.gui.options.OptionSubPanel;
+import org.sleeksnap.gui.options.UpdaterPanel;
 import org.sleeksnap.gui.options.UploaderPanel;
 import org.sleeksnap.impl.History;
 import org.sleeksnap.util.StreamUtils;
@@ -109,12 +112,14 @@ public class OptionPanel extends JPanel {
 		jTabbedPane1.addTab("History", historyPanel);
 
 		jTabbedPane1.addTab("Log", logPanel);
+		
+		initializeTab("Updater", UpdaterPanel.class);
 
 		GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
 		layout.setHorizontalGroup(layout.createParallelGroup(
 				GroupLayout.Alignment.LEADING).addComponent(jTabbedPane1,
-				GroupLayout.PREFERRED_SIZE, 500, GroupLayout.PREFERRED_SIZE));
+				GroupLayout.PREFERRED_SIZE, 520, GroupLayout.PREFERRED_SIZE));
 		layout.setVerticalGroup(layout.createParallelGroup(
 				GroupLayout.Alignment.LEADING).addComponent(jTabbedPane1,
 				GroupLayout.PREFERRED_SIZE, 470, GroupLayout.PREFERRED_SIZE));
@@ -146,6 +151,23 @@ public class OptionPanel extends JPanel {
 
 		// Do any loading/initializing
 		hotkeyPanel.loadCurrentHotkeys();
+	}
+	
+	public void initializeTab(String name, Class<?> cl) {
+		try {
+			Constructor<?> c = cl.getConstructor(OptionPanel.class);
+			if(c == null) {
+				throw new NoSuchMethodException("Unable to find a valid constructor!");
+			}
+			
+			OptionSubPanel panel = (OptionSubPanel) c.newInstance(this);
+			
+			panel.initComponents();
+			
+			jTabbedPane1.addTab(name, panel);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void setHistory(History history) {

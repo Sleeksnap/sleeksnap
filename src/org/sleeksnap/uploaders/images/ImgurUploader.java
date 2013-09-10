@@ -17,7 +17,6 @@
  */
 package org.sleeksnap.uploaders.images;
 
-import java.awt.image.BufferedImage;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
@@ -27,8 +26,9 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.uploaders.Uploader;
-import org.sleeksnap.util.HttpUtil;
 import org.sleeksnap.util.Utils.ImageUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -42,7 +42,7 @@ import org.w3c.dom.NodeList;
  * @author Nikki
  * 
  */
-public class ImgurUploader extends Uploader<BufferedImage> {
+public class ImgurUploader extends Uploader<ImageUpload> {
 	
 	private static final String API_KEY = "a071fe99cee17999a8ff93b282cd602f";
 
@@ -52,13 +52,13 @@ public class ImgurUploader extends Uploader<BufferedImage> {
 	}
 
 	@Override
-	public String upload(BufferedImage image) throws Exception {
+	public String upload(ImageUpload image) throws Exception {
 		URL url = new URL("http://api.imgur.com/2/upload.xml");
 		/**
 		 * Encode the image into a base64 string using apache commons codec
 		 */
 		Map<String, Object> req = new HashMap<String, Object>();
-		req.put("image", ImageUtil.toBase64(image));
+		req.put("image", ImageUtil.toBase64(image.getImage()));
 		req.put("key", API_KEY);
 		
 		URLConnection connection = url.openConnection();

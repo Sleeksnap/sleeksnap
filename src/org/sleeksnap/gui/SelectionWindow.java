@@ -32,6 +32,7 @@ import javax.swing.JWindow;
 import javax.swing.event.MouseInputAdapter;
 
 import org.sleeksnap.ScreenSnapper;
+import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.util.ScreenshotUtil;
 import org.sleeksnap.util.Utils.ImageUtil;
 
@@ -48,7 +49,7 @@ public class SelectionWindow extends JWindow {
 	 * A <code>javax.swing.event.MouseInputAdapter</code> which listens for
 	 * selections
 	 * 
-	 * @author User
+	 * @author Nikki
 	 * 
 	 */
 	private class ScreenSelectionListener extends MouseInputAdapter {
@@ -130,7 +131,7 @@ public class SelectionWindow extends JWindow {
 		if (sub == null) {
 			throw new RuntimeException("Unable to crop!");
 		}
-		snapper.upload(ImageUtil.toBufferedImage(sub));
+		snapper.upload(new ImageUpload(ImageUtil.toBufferedImage(sub)));
 		sub.flush();
 		sub = null;
 		close();
@@ -140,14 +141,15 @@ public class SelectionWindow extends JWindow {
 		dispose();
 		snapper.clearWindow();
 	}
+	
+	private static Color rectColor = new Color(0, 0, 0, 50);
 
 	public void paint() {
 		g.clearRect(area.x, area.y, area.width, area.height);
 		g.drawImage(image, 0, 0, null);
 
-		Color color = new Color(0, 0, 0, 50);
 		if (currentRect != null) {
-			g.setColor(color);
+			g.setColor(rectColor);
 			g.drawRect(rectToDraw.x, rectToDraw.y, rectToDraw.width,
 					rectToDraw.height);
 			g.fillRect(rectToDraw.x, rectToDraw.y, rectToDraw.width,

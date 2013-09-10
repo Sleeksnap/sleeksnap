@@ -1,6 +1,22 @@
+/**
+ * Sleeksnap, the open source cross-platform screenshot uploader
+ * Copyright (C) 2012 Nikki <nikki@nikkii.us>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.sleeksnap.filter;
 
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +26,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 import org.sleeksnap.ScreenSnapper;
+import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.util.Util;
 
 import com.sun.jna.Platform;
@@ -21,7 +38,7 @@ import com.sun.jna.Platform;
  * @author Nikki
  *
  */
-public class PNGCompressionFilter implements UploadFilter<BufferedImage> {
+public class PNGCompressionFilter implements UploadFilter<ImageUpload> {
 	
 	/**
 	 * Logger object
@@ -49,7 +66,7 @@ public class PNGCompressionFilter implements UploadFilter<BufferedImage> {
 	}
 	
 	@Override
-	public BufferedImage filter(BufferedImage object) {
+	public ImageUpload filter(ImageUpload object) {
 		if(parent.getConfiguration().getBoolean("compressImages")) {
 			File pngOut = null;
 			File pngCrush = null;
@@ -66,7 +83,7 @@ public class PNGCompressionFilter implements UploadFilter<BufferedImage> {
 					File input = new File(Util.getWorkingDirectory(), "sleeksnap_original.png");
 					File output = new File(Util.getWorkingDirectory(), "sleeksnap_compressed.png");
 					
-					ImageIO.write(object, "png", input);
+					ImageIO.write(object.getImage(), "png", input);
 					
 					String[] opts = new String[3];
 					opts[0] = strPad((pngOut.exists() ? pngOut : pngCrush).getAbsolutePath(), '"');
@@ -84,9 +101,11 @@ public class PNGCompressionFilter implements UploadFilter<BufferedImage> {
 					
 					logger.info("Compressed image, original size: "+input.length()+", compressed size: "+output.length());
 					
+					object.setImage(ImageIO.read(output));
+					
 					try {
 						//Finally, read the new file.
-						return ImageIO.read(output);
+						return object;
 					} finally {
 						input.delete();
 						output.delete();

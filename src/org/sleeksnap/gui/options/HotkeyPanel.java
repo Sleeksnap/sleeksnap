@@ -22,15 +22,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 
+import org.json.JSONObject;
 import org.sleeksnap.Configuration;
 import org.sleeksnap.gui.OptionPanel;
+import org.sleeksnap.impl.Language;
 import org.sleeksnap.util.Util;
 
 import com.sun.jna.Platform;
@@ -92,52 +92,44 @@ public class HotkeyPanel extends OptionSubPanel {
 		hotkeyResetButton = new JButton();
 		hotkeySaveButton = new JButton();
 
-		hotkeySettingsLabel
-				.setText("Hotkey settings (click the button to change)");
+		hotkeySettingsLabel.setText("Hotkey settings (click the button to change)");
 
 		fullscreenLabel.setText("Fullscreen shot:");
 
-		fullHotkeyButton.setText("Not set");
+		fullHotkeyButton.setText(Language.getString("hotkeyNotSet"));
 
-		fullHotkeyButton.addKeyListener(new HotkeyChangeListener(
-				fullHotkeyButton));
+		fullHotkeyButton.addKeyListener(new HotkeyChangeListener(fullHotkeyButton));
 
 		cropLabel.setText("Crop shot:");
 
-		cropHotkeyButton.setText("Not set");
+		cropHotkeyButton.setText(Language.getString("hotkeyNotSet"));
 
-		cropHotkeyButton.addKeyListener(new HotkeyChangeListener(
-				cropHotkeyButton));
+		cropHotkeyButton.addKeyListener(new HotkeyChangeListener(cropHotkeyButton));
 
 		clipboardLabel.setText("Clipboard upload:");
 
-		clipboardHotkeyButton.setText("Not set");
+		clipboardHotkeyButton.setText(Language.getString("hotkeyNotSet"));
 
-		clipboardHotkeyButton.addKeyListener(new HotkeyChangeListener(
-				clipboardHotkeyButton));
+		clipboardHotkeyButton.addKeyListener(new HotkeyChangeListener(clipboardHotkeyButton));
 
 		fileLabel.setText("File upload:");
 
-		fileHotkeyButton.setText("Not set");
-		fileHotkeyButton.addKeyListener(new HotkeyChangeListener(
-				fileHotkeyButton));
+		fileHotkeyButton.setText(Language.getString("hotkeyNotSet"));
+		fileHotkeyButton.addKeyListener(new HotkeyChangeListener(fileHotkeyButton));
 
 		activeLabel.setText("Active window:");
 
-		activeHotkeyButton.setText("Not set");
+		activeHotkeyButton.setText(Language.getString("hotkeyNotSet"));
 
-		activeHotkeyButton.addKeyListener(new HotkeyChangeListener(
-				activeHotkeyButton));
+		activeHotkeyButton.addKeyListener(new HotkeyChangeListener(activeHotkeyButton));
 
 		optionsLabel.setText("Open settings:");
 
-		optionsHotkeyButton.setText("Not set");
+		optionsHotkeyButton.setText(Language.getString("hotkeyNotSet"));
 
-		optionsHotkeyButton.addKeyListener(new HotkeyChangeListener(
-				optionsHotkeyButton));
+		optionsHotkeyButton.addKeyListener(new HotkeyChangeListener(optionsHotkeyButton));
 
-		noteLabel
-				.setText("Note: All hotkeys are temporarily disabled when you click a button");
+		noteLabel.setText("Note: All hotkeys are temporarily disabled when you click a button");
 
 		hotkeyResetButton.setText("Reset");
 
@@ -271,8 +263,7 @@ public class HotkeyPanel extends OptionSubPanel {
 										.addContainerGap()
 										.addComponent(noteLabel)
 										.addContainerGap(137, Short.MAX_VALUE)));
-		hotkeyPanelLayout
-				.setVerticalGroup(hotkeyPanelLayout
+		hotkeyPanelLayout.setVerticalGroup(hotkeyPanelLayout
 						.createParallelGroup(
 								javax.swing.GroupLayout.Alignment.LEADING)
 						.addGroup(
@@ -355,40 +346,40 @@ public class HotkeyPanel extends OptionSubPanel {
 	}
 
 	public void loadCurrentHotkeys() {
-		Map<String, String> keys = configuration.getMap("hotkeys");
+		JSONObject keys = configuration.getJSONObject("hotkeys");
 		if (keys == null) {
 			return;
 		}
-		if (keys.containsKey("full")) {
-			fullHotkeyButton.setText(getButtonText(keys.get("full")));
+		if (keys.has("full")) {
+			fullHotkeyButton.setText(getButtonText(keys.getString("full")));
 		} else {
-			fullHotkeyButton.setText("Not set");
+			fullHotkeyButton.setText(Language.getString("hotkeyNotSet"));
 		}
-		if (keys.containsKey("crop")) {
-			cropHotkeyButton.setText(getButtonText(keys.get("crop")));
+		if (keys.has("crop")) {
+			cropHotkeyButton.setText(getButtonText(keys.getString("crop")));
 		} else {
-			cropHotkeyButton.setText("Not set");
+			cropHotkeyButton.setText(Language.getString("hotkeyNotSet"));
 		}
-		if (keys.containsKey("clipboard")) {
-			clipboardHotkeyButton.setText(getButtonText(keys.get("clipboard")));
+		if (keys.has("clipboard")) {
+			clipboardHotkeyButton.setText(getButtonText(keys.getString("clipboard")));
 		} else {
-			clipboardHotkeyButton.setText("Not set");
+			clipboardHotkeyButton.setText(Language.getString("hotkeyNotSet"));
 		}
-		if (keys.containsKey("options")) {
-			optionsHotkeyButton.setText(getButtonText(keys.get("options")));
+		if (keys.has("options")) {
+			optionsHotkeyButton.setText(getButtonText(keys.getString("options")));
 		} else {
-			optionsHotkeyButton.setText("Not set");
+			optionsHotkeyButton.setText(Language.getString("hotkeyNotSet"));
 		}
-		if (keys.containsKey("file")) {
-			fileHotkeyButton.setText(getButtonText(keys.get("file")));
+		if (keys.has("file")) {
+			fileHotkeyButton.setText(getButtonText(keys.getString("file")));
 		} else {
-			fileHotkeyButton.setText("Not set");
+			fileHotkeyButton.setText(Language.getString("hotkeyNotSet"));
 		}
 		if (Platform.isWindows() || Platform.isLinux()) {
-			if (keys.containsKey("active")) {
-				activeHotkeyButton.setText(getButtonText(keys.get("active")));
+			if (keys.has("active")) {
+				activeHotkeyButton.setText(getButtonText(keys.getString("active")));
 			} else {
-				activeHotkeyButton.setText("Not set");
+				activeHotkeyButton.setText(Language.getString("hotkeyNotSet"));
 			}
 		} else {
 			activeHotkeyButton.setText("Unavailable");
@@ -397,29 +388,29 @@ public class HotkeyPanel extends OptionSubPanel {
 	}
 
 	public void savePreferences() {
-		Map<String, String> keys = new HashMap<String, String>();
+		JSONObject keys = new JSONObject();
 		String full = fullHotkeyButton.getText();
-		if (!full.equals("Not set")) {
+		if (!full.equals(Language.getString("hotkeyNotSet"))) {
 			keys.put("full", getFormattedKeyStroke(full));
 		}
 		String crop = cropHotkeyButton.getText();
-		if (!crop.equals("Not set")) {
+		if (!crop.equals(Language.getString("hotkeyNotSet"))) {
 			keys.put("crop", getFormattedKeyStroke(crop));
 		}
 		String clipboard = clipboardHotkeyButton.getText();
-		if (!clipboard.equals("Not set")) {
+		if (!clipboard.equals(Language.getString("hotkeyNotSet"))) {
 			keys.put("clipboard", getFormattedKeyStroke(clipboard));
 		}
 		String active = activeHotkeyButton.getText();
-		if (!active.equals("Not set")) {
+		if (!active.equals(Language.getString("hotkeyNotSet"))) {
 			keys.put("active", getFormattedKeyStroke(active));
 		}
 		String file = fileHotkeyButton.getText();
-		if (!file.equals("Not set")) {
+		if (!file.equals(Language.getString("hotkeyNotSet"))) {
 			keys.put("file", getFormattedKeyStroke(file));
 		}
 		String options = optionsHotkeyButton.getText();
-		if (!options.equals("Not set")) {
+		if (!options.equals(Language.getString("hotkeyNotSet"))) {
 			keys.put("options", getFormattedKeyStroke(options));
 		}
 		configuration.put("hotkeys", keys);
@@ -442,10 +433,7 @@ public class HotkeyPanel extends OptionSubPanel {
 		@Override
 		public void keyPressed(KeyEvent e) {
 			// If the key is unknown/a function key
-			if (e.getKeyCode() == 0 || e.getKeyCode() == KeyEvent.VK_ALT
-					|| e.getKeyCode() == KeyEvent.VK_CONTROL
-					|| e.getKeyCode() == KeyEvent.VK_SHIFT
-					|| e.getKeyCode() == KeyEvent.VK_META) {
+			if (e.getKeyCode() == 0 || e.getKeyCode() == KeyEvent.VK_ALT || e.getKeyCode() == KeyEvent.VK_CONTROL || e.getKeyCode() == KeyEvent.VK_SHIFT || e.getKeyCode() == KeyEvent.VK_META) {
 				return;
 			}
 			// Consume any keys that may cause tab changes/other undesired
@@ -459,10 +447,7 @@ public class HotkeyPanel extends OptionSubPanel {
 				parent.getSnapper().getKeyManager().resetKeys();
 			}
 			// If the key is unknown/a function key
-			if (e.getKeyCode() == 0 || e.getKeyCode() == KeyEvent.VK_ALT
-					|| e.getKeyCode() == KeyEvent.VK_CONTROL
-					|| e.getKeyCode() == KeyEvent.VK_SHIFT
-					|| e.getKeyCode() == KeyEvent.VK_META) {
+			if (e.getKeyCode() == 0 || e.getKeyCode() == KeyEvent.VK_ALT || e.getKeyCode() == KeyEvent.VK_CONTROL || e.getKeyCode() == KeyEvent.VK_SHIFT || e.getKeyCode() == KeyEvent.VK_META) {
 				return;
 			}
 			button.setText(formatKeyStroke(KeyStroke.getKeyStrokeForEvent(e)));
@@ -477,7 +462,7 @@ public class HotkeyPanel extends OptionSubPanel {
 
 	public static String formatKeyStroke(KeyStroke stroke) {
 		if (stroke == null) {
-			return "Not set";
+			return Language.getString("hotkeyNotSet");
 		}
 		String s = stroke.toString();
 		s = s.replace("released ", "");

@@ -1,13 +1,30 @@
+/**
+ * Sleeksnap, the open source cross-platform screenshot uploader
+ * Copyright (C) 2012 Nikki <nikki@nikkii.us>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.sleeksnap.uploaders.files;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.sleeksnap.http.MultipartPostMethod;
+import org.sleeksnap.upload.FileUpload;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
-import org.sleeksnap.util.MultipartPostMethod;
 
 /**
  * An uploader for http://filebin.ca
@@ -17,7 +34,7 @@ import org.sleeksnap.util.MultipartPostMethod;
  *
  */
 @Settings(required = {}, optional = { "api_key" })
-public class FilebinUploader extends Uploader<File> {
+public class FilebinUploader extends Uploader<FileUpload> {
 	
 	/**
 	 * The Filebin API URL
@@ -30,11 +47,11 @@ public class FilebinUploader extends Uploader<File> {
 	}
 
 	@Override
-	public String upload(File file) throws Exception {
+	public String upload(FileUpload file) throws Exception {
 		MultipartPostMethod post = new MultipartPostMethod(API_URL);
-		post.setParameter("file", file);
-		if(settings.containsKey("api_key")) {
-			post.setParameter("key", settings.getProperty("api_key"));
+		post.setParameter("file", file.getFile());
+		if(settings.has("api_key")) {
+			post.setParameter("key", settings.getString("api_key"));
 		}
 		post.execute();
 		String resp = post.getResponse();

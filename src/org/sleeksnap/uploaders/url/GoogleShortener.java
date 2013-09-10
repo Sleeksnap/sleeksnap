@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import org.json.JSONObject;
+import org.sleeksnap.upload.URLUpload;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.util.StreamUtils;
@@ -32,7 +33,7 @@ import org.sleeksnap.util.StreamUtils;
  * @author Nikki
  * 
  */
-public class GoogleShortener extends Uploader<URL> {
+public class GoogleShortener extends Uploader<URLUpload> {
 
 	/**
 	 * The page url
@@ -45,17 +46,18 @@ public class GoogleShortener extends Uploader<URL> {
 	}
 
 	@Override
-	public String upload(URL url) throws Exception {
+	public String upload(URLUpload url) throws Exception {
 		//Sanity check, otherwise google's api returns a 400
-		if(url.toString().startsWith("http://goo.gl/")) {
-			throw new UploadException("Unable to shorten URL that has already been shortened");
+		if(url.toString().matches("http://goo.gl/[a-zA-Z0-9]{1,10}")) {
+			return url.toString();
 		}
+		
 		URLConnection connection = new URL(PAGE_URL).openConnection();
 		connection.setDoOutput(true);
 		connection.setRequestProperty("Content-type", "application/json");
 		
 		JSONObject out = new JSONObject();
-		out.put("longUrl", url);
+		out.put("longUrl", url.getURL());
 		
 		OutputStreamWriter writer = new OutputStreamWriter(
 				connection.getOutputStream());

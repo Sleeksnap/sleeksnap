@@ -17,9 +17,13 @@
  */
 package org.sleeksnap.util;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
+
+import javax.swing.JFrame;
 
 import org.sleeksnap.Constants;
 import org.sleeksnap.Constants.Application;
@@ -113,16 +117,13 @@ public class Util {
 		if (Utils.class.getResource(name) != null) {
 			return Utils.class.getResource(name);
 		} else {
-			File file = new File("resources" + name);
-			if (file.exists()) {
+			File file = null;
+			if ((file = new File("resources" + name)).exists() || (file = new File(Util.getWorkingDirectory(), "resources" + name)).exists()) {
 				try {
 					return file.toURI().toURL();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			} else {
-				System.out.println("File does not exist : "
-						+ file.getAbsolutePath());
 			}
 		}
 		return null;
@@ -279,5 +280,12 @@ public class Util {
 			}
 		}
 		return out.toString();
+	}
+
+	public static void centerFrame(JFrame frame) {
+		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+	    int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+	    int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+	    frame.setLocation(x, y);
 	}
 }
