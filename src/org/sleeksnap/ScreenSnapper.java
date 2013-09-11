@@ -86,6 +86,7 @@ import org.sleeksnap.uploaders.files.FilebinUploader;
 import org.sleeksnap.uploaders.files.UppitUploader;
 import org.sleeksnap.uploaders.generic.FTPUploader;
 import org.sleeksnap.uploaders.generic.GenericUploader;
+import org.sleeksnap.uploaders.images.ImagebinUploader;
 import org.sleeksnap.uploaders.images.ImgurUploader;
 import org.sleeksnap.uploaders.images.ImmioUploader;
 import org.sleeksnap.uploaders.images.PuushUploader;
@@ -777,6 +778,7 @@ public class ScreenSnapper {
 		registerUploader(new ImgurUploader());
 		registerUploader(new ImmioUploader());
 		registerUploader(new PuushUploader());
+		registerUploader(new ImagebinUploader());
 		// Text uploaders
 		registerUploader(new PasteeUploader());
 		registerUploader(new PastebinUploader());

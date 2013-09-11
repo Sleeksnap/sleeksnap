@@ -68,6 +68,7 @@ public class Updater {
 	 */
 	public Updater() {
 		binDirectory = new File(Util.getWorkingDirectory(), "bin");
+		binDirectory.mkdirs();
 	}
 
 	/**
@@ -134,10 +135,12 @@ public class Updater {
 	 * 			If an error occurred while downloading
 	 */
 	public void applyUpdate(String version, URL url) throws IOException {
-		//Construct the new path
+		// Construct the new path
 		File out = new File(binDirectory, "Sleeksnap-v" + version + ".jar");
+		// Create the new file
+		out.createNewFile();
 		
-		//Download the new file
+		// Download the new file
 		download(url, out);
 	}
 	
