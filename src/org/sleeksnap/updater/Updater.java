@@ -137,9 +137,12 @@ public class Updater {
 	public void applyUpdate(String version, URL url) throws IOException {
 		// Construct the new path
 		File out = new File(binDirectory, "Sleeksnap-v" + version + ".jar");
+		
+		logger.info("Creating new file...");
 		// Create the new file
 		out.createNewFile();
 		
+		logger.info("Downloading " + url + "...");
 		// Download the new file
 		download(url, out);
 	}
@@ -187,8 +190,10 @@ public class Updater {
 	 * @param file	The newly downloaded jar file
 	 */
 	public void updateFinished(File file) {
+		logger.info("Checking autostart...");
 		verifyAutostart(file, VerificationMode.VERIFY);
 		
+		logger.info("Launching new file...");
 		try {
 			Launcher.launch(file, Launcher.class.getName());
 			
@@ -248,7 +253,7 @@ public class Updater {
 		}
 	}
 	
-	public static enum VerificationMode {
+	public enum VerificationMode {
 		INSERT, VERIFY, REMOVE
 	}
 }
