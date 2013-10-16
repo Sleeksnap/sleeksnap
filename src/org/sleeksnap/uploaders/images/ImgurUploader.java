@@ -18,33 +18,28 @@
 package org.sleeksnap.uploaders.images;
 
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
+import org.json.JSONObject;
 import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.http.PostData;
 import org.sleeksnap.upload.ImageUpload;
+import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.util.StreamUtils;
 import org.sleeksnap.util.Utils.ImageUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
- * An uploader to upload images to imgur.com The included API Key is for use by
- * Sleeksnap ONLY, If you would like a key you may register one at imgur's
- * website
+ * An uploader to upload images to imgur.com
+ * The included API Key is for use by Sleeksnap ONLY, If you would like a key you may register one at imgur's website
  * 
  * @author Nikki
  * 
  */
 public class ImgurUploader extends Uploader<ImageUpload> {
 	
-	private static final String API_KEY = "a071fe99cee17999a8ff93b282cd602f";
+	private static final String API_ID = "b1793cd0a2c3844";
 
 	@Override
 	public String getName() {
@@ -53,37 +48,39 @@ public class ImgurUploader extends Uploader<ImageUpload> {
 
 	@Override
 	public String upload(ImageUpload image) throws Exception {
-		URL url = new URL("http://api.imgur.com/2/upload.xml");
-		/**
-		 * Encode the image into a base64 string using apache commons codec
-		 */
-		Map<String, Object> req = new HashMap<String, Object>();
-		req.put("image", ImageUtil.toBase64(image.getImage()));
-		req.put("key", API_KEY);
+		// The API URL
+		URL url = new URL("https://api.imgur.com/3/image.json");
 		
-		URLConnection connection = url.openConnection();
+		// Encode the image using our utility class
+		PostData req = new PostData();
+		req.put("image", ImageUtil.toBase64(image.getImage()));
+		
+		// Open a connection to the API and add our Client ID
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setRequestMethod("POST");
+		connection.addRequestProperty("Authorization", "Client-ID " + API_ID);
 		connection.setDoOutput(true);
 		
 		/**
 		 * Write the image data and api key
 		 */
-		OutputStreamWriter writer = new OutputStreamWriter(
-				connection.getOutputStream());
+		OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
 		writer.write(HttpUtil.implode(req));
 		writer.flush();
 		writer.close();
 		
-		
 		/**
 		 * Parse the URL from the response
 		 */
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document d = db.parse(connection.getInputStream());
-		NodeList nodeList = d.getElementsByTagName("original").item(0)
-				.getChildNodes();
-		Node n = (Node) nodeList.item(0);
+		JSONObject object = new JSONObject(StreamUtils.readContents(connection.getInputStream()));
+		
+		JSONObject data = object.getJSONObject("data");
 
-		return n.getNodeValue();
+		if(!object.getBoolean("success")) {
+			JSONObject error = data.getJSONObject("error");
+			throw new UploadException(error.getString("message"));
+		}
+		
+		return data.getString("link");
 	}
 }

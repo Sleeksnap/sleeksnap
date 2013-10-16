@@ -1083,6 +1083,8 @@ public class ScreenSnapper {
 								output.close();
 							}
 						}
+						((ImageUpload) object).getImage().flush();
+						((ImageUpload) object).setImage(null);
 					}
 					url = url.trim();
 					ClipboardUtil.setClipboard(url);
