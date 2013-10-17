@@ -607,7 +607,7 @@ public class ScreenSnapper {
 		});
 		tray.add(exit);
 		SystemTrayAdapter adapter = SystemTrayProvider.getSystemTray();
-		icon = adapter.createAndAddTrayIcon(Util.getResourceByName(Resources.ICON_PATH), Application.NAME + " v" + Version.getVersionString(), tray);
+		icon = adapter.createAndAddTrayIcon(Resources.ICON, Application.NAME + " v" + Version.getVersionString(), tray);
 		icon.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1043,7 +1043,9 @@ public class ScreenSnapper {
 
 		uploadService.execute(new Runnable() {
 			public void run() {
+				icon.setImage(Resources.ICON_BUSY);
 				executeUpload(upload);
+				icon.setImage(Resources.ICON);
 			}
 		});
 	}

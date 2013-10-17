@@ -17,6 +17,10 @@
  */
 package org.sleeksnap;
 
+import java.net.URL;
+
+import org.sleeksnap.util.Util;
+
 /**
  * Contains constant names for the configuration file and misc settings
  * 
@@ -37,12 +41,16 @@ public class Constants {
 	public static class Resources {
 		public static final String LOGO_PATH = "/logo.png";
 		public static final String ICON_PATH = "/icon.png";
+		public static final String ICON_BUSY_PATH = "/icon-busy.png";
+		
+		public static final URL ICON = Util.getResourceByName(Resources.ICON_PATH);
+		public static final URL ICON_BUSY = Util.getResourceByName(Resources.ICON_BUSY_PATH);
 	}
 	
 	public static class Version {
 		public static final int MAJOR = 1;
 		public static final int MINOR = 3;
-		public static final int PATCH = 6;
+		public static final int PATCH = 7;
 		
 		private static String versionString = null;
 		
