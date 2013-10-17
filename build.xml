@@ -54,7 +54,7 @@
         </javadoc>
     </target>
 
-    <target name="dist" depends="build" description="generate the distribution">        
+    <target name="dist" depends="rebuild" description="generate the distribution">
         <jar jarfile="${dist}/Sleeksnap-${commitid}.jar">
             <fileset dir="${bin}" />
             <fileset dir="resources" />
