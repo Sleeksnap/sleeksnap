@@ -55,7 +55,6 @@ public class Updater {
 	private static final Logger logger = Logger.getLogger(Updater.class.getName());
 	
 	public static void main(String[] args) {
-		new Updater().checkUpdate(true);
 	}
 	
 	/**
@@ -223,7 +222,7 @@ public class Updater {
 				//Ignore it.
 			}
 		} else if(Platform.isX11()) {
-			File autostartDir = new File(System.getenv("XDG_CONFIG_HOME") != null ? System.getenv("XDG_CONFIG_HOME") : "~/.config/autostart");
+			File autostartDir = new File(System.getenv("XDG_CONFIG_HOME") != null ? System.getenv("XDG_CONFIG_HOME") : System.getProperty("user.home") + "/.config/autostart");
 			if(autostartDir.exists()) {
 				File autostart = new File(autostartDir, Application.NAME.toLowerCase() + ".desktop");
 				
