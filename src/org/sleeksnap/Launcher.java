@@ -21,6 +21,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.sleeksnap.util.Util;
+import org.sleeksnap.util.Util.OperatingSystem;
 import org.sleeksnap.util.Utils.FileUtils;
 
 import com.sanityinc.jargs.CmdLineParser;
@@ -99,18 +101,18 @@ public class Launcher {
 		if(javaArgs != null)
 			params.addAll(Arrays.asList(javaArgs));
 		
+		if(Util.getPlatform() == OperatingSystem.MAC) {
+			params.add("-Dapple.awt.UIElement=true");
+		}
+		
 		params.add("-classpath");
 		params.add(jarFile.getAbsolutePath());
 		params.add(className);
 		
-		if(Platform.isMac()) {
-			params.add("-Dapple.awt.UIElement=true");
-		}
-		
 		if(args != null)
 			params.addAll(Arrays.asList(args));
 		
-		String[] cmd = params.toArray(new String[0]);
+		String[] cmd = params.toArray(new String[params.size()]);
 		
 		Runtime.getRuntime().exec(cmd);
 	}
