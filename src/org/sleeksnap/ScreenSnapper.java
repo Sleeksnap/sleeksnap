@@ -172,6 +172,8 @@ public class ScreenSnapper {
 	 */
 	static {
 		System.setProperty("http.agent", Util.getHttpUserAgent());
+		if(Platform.isMac())
+			System.setProperty("apple.awt.UIElement", "true");
 
 		names.put(ImageUpload.class, "Images");
 		names.put(TextUpload.class, "Text");
