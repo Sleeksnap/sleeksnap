@@ -86,6 +86,8 @@ import org.sleeksnap.uploaders.files.FilebinUploader;
 import org.sleeksnap.uploaders.files.UppitUploader;
 import org.sleeksnap.uploaders.generic.FTPUploader;
 import org.sleeksnap.uploaders.generic.GenericUploader;
+import org.sleeksnap.uploaders.generic.LocalFileUploader;
+import org.sleeksnap.uploaders.generic.LocalFileUploader.ImageLocalFileUploader;
 import org.sleeksnap.uploaders.images.ImagebinUploader;
 import org.sleeksnap.uploaders.images.ImgurUploader;
 import org.sleeksnap.uploaders.images.ImmioUploader;
@@ -774,6 +776,7 @@ public class ScreenSnapper {
 	private void loadUploaders() throws Exception {
 		// Generic uploaders
 		registerUploader(new FTPUploader());
+		registerUploader(new LocalFileUploader());
 		// Image Uploaders
 		registerUploader(new ImgurUploader());
 		registerUploader(new ImmioUploader());
@@ -1077,7 +1080,7 @@ public class ScreenSnapper {
 						}
 					}
 					if (object instanceof ImageUpload) {
-						if (configuration.getBoolean("savelocal")) {
+						if (configuration.getBoolean("savelocal") && !(uploader instanceof ImageLocalFileUploader)) {
 							FileOutputStream output = new FileOutputStream(getLocalFile(DateUtil.getCurrentDate() + ".png"));
 							try {
 								ImageIO.write(((ImageUpload) object).getImage(), "png", output);

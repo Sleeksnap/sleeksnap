@@ -28,7 +28,6 @@ import org.sleeksnap.util.Utils.FileUtils;
 import com.sanityinc.jargs.CmdLineParser;
 import com.sanityinc.jargs.CmdLineParser.Option;
 import com.sanityinc.jargs.CmdLineParser.OptionException;
-import com.sun.jna.Platform;
 
 /**
  * A simple launcher which will re-launch Sleeksnap with the specified memory (Default is 128MB)
