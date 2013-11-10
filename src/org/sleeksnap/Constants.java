@@ -17,6 +17,8 @@
  */
 package org.sleeksnap;
 
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.net.URL;
 
 import org.sleeksnap.util.Util;
@@ -45,12 +47,15 @@ public class Constants {
 		
 		public static final URL ICON = Util.getResourceByName(Resources.ICON_PATH);
 		public static final URL ICON_BUSY = Util.getResourceByName(Resources.ICON_BUSY_PATH);
+		
+		public static final Image ICON_IMAGE = Toolkit.getDefaultToolkit().getImage(ICON);
+		public static final Image ICON_BUSY_IMAGE = Toolkit.getDefaultToolkit().getImage(ICON_BUSY);
 	}
 	
 	public static class Version {
 		public static final int MAJOR = 1;
 		public static final int MINOR = 3;
-		public static final int PATCH = 10;
+		public static final int PATCH = 11;
 		
 		private static String versionString = null;
 		

@@ -17,10 +17,13 @@
  */
 package org.sleeksnap;
 
+import java.awt.AWTException;
 import java.awt.Desktop;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
@@ -109,10 +112,6 @@ import org.sleeksnap.util.Utils.DisplayUtil;
 import org.sleeksnap.util.Utils.FileUtils;
 import org.sleeksnap.util.active.WindowUtilProvider;
 import org.sleeksnap.util.logging.LogPanelHandler;
-
-import tray.SystemTrayAdapter;
-import tray.SystemTrayProvider;
-import tray.TrayIconAdapter;
 
 import com.sun.jna.Platform;
 
@@ -218,12 +217,9 @@ public class ScreenSnapper {
 	private ExecutorService uploadService = Executors.newSingleThreadExecutor();
 
 	/**
-	 * The tray icon, used from a github repository which adds native support to
-	 * allow linux transparency
-	 * 
-	 * @see tray.TrayIconAdapter
+	 * The tray icon
 	 */
-	private TrayIconAdapter icon;
+	private TrayIcon icon;
 
 	/**
 	 * The configuration instance
@@ -500,7 +496,7 @@ public class ScreenSnapper {
 	 * 
 	 * @return The instance of the Tray Icon
 	 */
-	public TrayIconAdapter getTrayIcon() {
+	public TrayIcon getTrayIcon() {
 		return icon;
 	}
 
@@ -608,8 +604,7 @@ public class ScreenSnapper {
 			}
 		});
 		tray.add(exit);
-		SystemTrayAdapter adapter = SystemTrayProvider.getSystemTray();
-		icon = adapter.createAndAddTrayIcon(Resources.ICON, Application.NAME + " v" + Version.getVersionString(), tray);
+		icon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(Resources.ICON), Application.NAME + " v" + Version.getVersionString());
 		icon.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -626,6 +621,11 @@ public class ScreenSnapper {
 				}
 			}
 		});
+		try {
+			SystemTray.getSystemTray().add(icon);
+		} catch (AWTException e1) {
+			this.showException(e1);
+		}
 	}
 
 	/**
@@ -1046,9 +1046,9 @@ public class ScreenSnapper {
 
 		uploadService.execute(new Runnable() {
 			public void run() {
-				icon.setImage(Resources.ICON_BUSY);
+				icon.setImage(Resources.ICON_BUSY_IMAGE);
 				executeUpload(upload);
-				icon.setImage(Resources.ICON);
+				icon.setImage(Resources.ICON_IMAGE);
 			}
 		});
 	}

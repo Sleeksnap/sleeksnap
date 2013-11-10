@@ -5,7 +5,6 @@ import java.io.FileWriter;
 
 import javax.imageio.ImageIO;
 
-import org.sleeksnap.upload.FileUpload;
 import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.upload.Upload;
