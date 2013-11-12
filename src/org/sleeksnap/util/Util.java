@@ -17,6 +17,7 @@
  */
 package org.sleeksnap.util;
 
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.File;
@@ -287,5 +288,51 @@ public class Util {
 	    int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
 	    int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
 	    frame.setLocation(x, y);
+	}
+	
+	/**
+	 * A list of popular browsers
+	 */
+	private static final String[] BROWSERS = new String[] {
+		"google-chrome", "firefox", "opera",  "epiphany", "konqueror", "conkeror", "midori", "kazehakase", "mozilla"
+	};
+	
+	/**
+	 * Open a URL using java.awt.Desktop or a couple different manual methods
+	 * @param url
+	 * 			The URL to open
+	 * @throws Exception
+	 * 			If an error occurs attempting to open the url
+	 */
+	public static void openURL(URL url) throws Exception {
+		Desktop desktop = Desktop.getDesktop();
+		if(desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+			desktop.browse(url.toURI());
+		} else {
+			OperatingSystem system = Util.getPlatform();
+			switch(system) {
+			case MAC:
+				Class.forName("com.apple.eio.FileManager").getDeclaredMethod(
+		                  "openURL", new Class[] {String.class}).invoke(null,
+		                  new Object[] {url.toString()});
+				break;
+			case WINDOWS:
+				Runtime.getRuntime().exec(new String[] { "rundll32", "url.dll,FileProtocolHandler", url.toString() });
+				break;
+			default:
+				String browser = null;
+				for(String b : BROWSERS) {
+					Process p = Runtime.getRuntime().exec(new String[] { "which", browser });
+					if(p.waitFor() == 0) {
+						browser = b;
+						break;
+					}
+				}
+				if(browser != null)
+					Runtime.getRuntime().exec(new String[] { browser, url.toString() });
+				else
+					throw new Exception("Unable to find browser");
+			}
+		}
 	}
 }

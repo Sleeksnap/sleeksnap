@@ -33,7 +33,8 @@ public interface UploadFilter<T extends Upload> {
 	 * 			The object to apply to
 	 * @return
 	 * 			The modified object, or original object.
+	 * @throws FilterException 
 	 */
-	public T filter(T object);
+	public T filter(T object) throws FilterException;
 	
 }

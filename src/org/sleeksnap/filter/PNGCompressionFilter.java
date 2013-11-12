@@ -66,7 +66,7 @@ public class PNGCompressionFilter implements UploadFilter<ImageUpload> {
 	}
 	
 	@Override
-	public ImageUpload filter(ImageUpload object) {
+	public ImageUpload filter(ImageUpload object) throws FilterException {
 		if(parent.getConfiguration().getBoolean("compressImages")) {
 			File pngOut = null;
 			File pngCrush = null;
@@ -111,7 +111,7 @@ public class PNGCompressionFilter implements UploadFilter<ImageUpload> {
 						output.delete();
 					}
 				} catch (IOException e) {
-					e.printStackTrace();
+					throw new FilterException(e, "Unable to compress image");
 				}
 			}
 		}

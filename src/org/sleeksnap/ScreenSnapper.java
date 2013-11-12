@@ -18,8 +18,6 @@
 package org.sleeksnap;
 
 import java.awt.AWTException;
-import java.awt.Desktop;
-import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
@@ -37,8 +35,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
@@ -63,6 +59,7 @@ import org.json.JSONTokener;
 import org.sleeksnap.Constants.Application;
 import org.sleeksnap.Constants.Resources;
 import org.sleeksnap.Constants.Version;
+import org.sleeksnap.filter.FilterException;
 import org.sleeksnap.filter.PNGCompressionFilter;
 import org.sleeksnap.filter.UploadFilter;
 import org.sleeksnap.filter.WatermarkFilter;
@@ -577,15 +574,20 @@ public class ScreenSnapper {
 		// Add uploaders from the list we loaded earlier
 		PopupMenu tray = new PopupMenu();
 		// Add the action menu
-		Menu actions = new Menu(Language.getString("actions"));
-		actions.add(new ActionMenuItem(Language.getString("crop"), ScreenshotAction.CROP));
-		actions.add(new ActionMenuItem(Language.getString("full"), ScreenshotAction.FULL));
-		actions.add(new ActionMenuItem(Language.getString("clipboard"), ScreenshotAction.CLIPBOARD));
-		actions.add(new ActionMenuItem(Language.getString("file"), ScreenshotAction.FILE));
+		tray.add(new ActionMenuItem(Language.getString("cropupload"), ScreenshotAction.CROP));
+		tray.add(new ActionMenuItem(Language.getString("fullupload"), ScreenshotAction.FULL));
+		
 		if (Platform.isWindows() || Platform.isLinux()) {
-			actions.add(new ActionMenuItem(Language.getString("active"), ScreenshotAction.ACTIVE));
+			tray.add(new ActionMenuItem(Language.getString("activeupload"), ScreenshotAction.ACTIVE));
 		}
-		tray.add(actions);
+		
+		tray.addSeparator();
+		
+		tray.add(new ActionMenuItem(Language.getString("clipboardupload"), ScreenshotAction.CLIPBOARD));
+		tray.add(new ActionMenuItem(Language.getString("fileupload"), ScreenshotAction.FILE));
+		
+		tray.addSeparator();
+		
 		MenuItem settings = new MenuItem(Language.getString("options"));
 		settings.addActionListener(new ActionListener() {
 			@Override
@@ -596,6 +598,7 @@ public class ScreenSnapper {
 			}
 		});
 		tray.add(settings);
+		
 		MenuItem exit = new MenuItem(Language.getString("exit"));
 		exit.addActionListener(new ActionListener() {
 			@Override
@@ -604,19 +607,17 @@ public class ScreenSnapper {
 			}
 		});
 		tray.add(exit);
+		
 		icon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(Resources.ICON), Application.NAME + " v" + Version.getVersionString());
+		icon.setPopupMenu(tray);
 		icon.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (lastUrl != null) {
 					try {
-						Desktop.getDesktop().browse(new URL(lastUrl).toURI());
-					} catch (MalformedURLException e1) {
-						e1.printStackTrace();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					} catch (URISyntaxException e1) {
-						e1.printStackTrace();
+						Util.openURL(new URL(lastUrl));
+					} catch (Exception e1) {
+						showException(e1, "Unable to open URL");
 					}
 				}
 			}
@@ -1027,8 +1028,18 @@ public class ScreenSnapper {
 	 * @param e
 	 *            The exception
 	 */
-	private void showException(Exception e) {
+	public void showException(Exception e) {
 		icon.displayMessage(Language.getString("error"), Language.getString("exceptionCause", e.getMessage()), MessageType.ERROR);
+	}
+	
+	/**
+	 * Show a TrayIcon message for an exception
+	 * 
+	 * @param e
+	 *            The exception
+	 */
+	public void showException(Exception e, String errorMessage) {
+		icon.displayMessage(Language.getString("error"), Language.getString("exceptionCauseWithMessage", errorMessage, e.getMessage()), MessageType.ERROR);
 	}
 
 	/**
@@ -1064,7 +1075,13 @@ public class ScreenSnapper {
 		// Run the object through the filters
 		if (filters.containsKey(object.getClass())) {
 			for (UploadFilter filter : filters.get(object.getClass())) {
-				object = filter.filter(object);
+				try {
+					object = filter.filter(object);
+				} catch (FilterException e) {
+					// FilterExceptions when thrown should interrupt the upload.
+					showException(e, e.getErrorMessage());
+					return;
+				}
 			}
 		}
 		// Then upload it
@@ -1092,6 +1109,7 @@ public class ScreenSnapper {
 						((ImageUpload) object).setImage(null);
 					}
 					url = url.trim();
+					
 					ClipboardUtil.setClipboard(url);
 
 					lastUrl = url;
