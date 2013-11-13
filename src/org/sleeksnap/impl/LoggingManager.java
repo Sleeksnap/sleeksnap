@@ -17,9 +17,11 @@
  */
 package org.sleeksnap.impl;
 
-import java.util.logging.LogManager;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 
-import org.sleeksnap.util.Util;
+import org.sleeksnap.util.logging.FileLogHandler;
+import org.sleeksnap.util.logging.LogPanelHandler;
 
 /**
  * A class to load the logging properties of this application, allows the use of
@@ -29,13 +31,17 @@ import org.sleeksnap.util.Util;
  * 
  */
 public class LoggingManager {
+	
 	/**
-	 * Load the configuration from the jar file
+	 * Load the configuration from a byte array
 	 */
+	@SuppressWarnings("unchecked")
 	public static void configure() {
 		try {
-			LogManager.getLogManager().readConfiguration(
-					Util.getResourceByName("/logging.props").openStream());
+			LoggerConfiguration config = new LoggerConfiguration();
+			config.addHandlers(ConsoleHandler.class, FileLogHandler.class, LogPanelHandler.class);
+			config.setLevel(Level.INFO);
+			config.apply();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

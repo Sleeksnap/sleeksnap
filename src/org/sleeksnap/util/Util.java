@@ -23,6 +23,8 @@ import java.awt.Toolkit;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -334,5 +336,16 @@ public class Util {
 					throw new Exception("Unable to find browser");
 			}
 		}
+	}
+
+	public static String implodeList(List<?> list, String glue) {
+		StringBuilder builder = new StringBuilder();
+		for(Iterator<?> it = list.iterator(); it.hasNext();) {
+			builder.append(it.next());
+			if(it.hasNext()) {
+				builder.append(glue);
+			}
+		}
+		return builder.toString();
 	}
 }

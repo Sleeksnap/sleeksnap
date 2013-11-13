@@ -57,6 +57,7 @@ public class Language {
 	 */
 	public static void load(String lang) throws IOException {
 		tokens.clear();
+		
 		loadAndMerge("english");
 		if(!lang.equals("english")) {
 			loadAndMerge(lang);
@@ -75,16 +76,17 @@ public class Language {
 		URL url = Util.getResourceByName("/languages/" + lang + ".json");
 		if(url != null) {
 			InputStream input = url.openStream();
-			
-			JSONObject obj = new JSONObject(new JSONTokener(input));
-			
-			JSONObject tokenObj = obj.getJSONObject("tokens");
-			
-			for(String s : (Set<String>) tokenObj.keySet()) {
-				tokens.put(s, tokenObj.getString(s));
+			try {
+				JSONObject obj = new JSONObject(new JSONTokener(input));
+				
+				JSONObject tokenObj = obj.getJSONObject("tokens");
+				
+				for(String s : (Set<String>) tokenObj.keySet()) {
+					tokens.put(s, tokenObj.getString(s));
+				}
+			} finally {
+				input.close();
 			}
-			
-			input.close();
 		} else {
 			throw new IOException("Invalid language " + lang);
 		}
