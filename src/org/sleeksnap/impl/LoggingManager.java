@@ -17,6 +17,7 @@
  */
 package org.sleeksnap.impl;
 
+import java.io.IOException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 
@@ -34,16 +35,13 @@ public class LoggingManager {
 	
 	/**
 	 * Load the configuration from a byte array
+	 * @throws IOException 
 	 */
 	@SuppressWarnings("unchecked")
-	public static void configure() {
-		try {
-			LoggerConfiguration config = new LoggerConfiguration();
-			config.addHandlers(ConsoleHandler.class, FileLogHandler.class, LogPanelHandler.class);
-			config.setLevel(Level.INFO);
-			config.apply();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	public static void configure() throws IOException {
+		LoggerConfiguration config = new LoggerConfiguration();
+		config.addHandlers(ConsoleHandler.class, FileLogHandler.class, LogPanelHandler.class);
+		config.setLevel(Level.INFO);
+		config.apply();
 	}
 }

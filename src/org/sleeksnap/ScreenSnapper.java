@@ -285,7 +285,12 @@ public class ScreenSnapper {
 			e.printStackTrace();
 		}
 		// Then start
-		LoggingManager.configure();
+		try {
+			LoggingManager.configure();
+		} catch(IOException e) {
+			logger.log(Level.WARNING, "Unable to configure logger, file logging and logging panel will not work.", e);
+			JOptionPane.showMessageDialog(null, "Unable to configure logger, file logging and logging panel will not work.", "Error", JOptionPane.ERROR_MESSAGE);
+		}
 		logger.info("Loading plugins...");
 		try {
 			loadUploaders();

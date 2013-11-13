@@ -26,6 +26,7 @@ import java.io.IOException;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 import org.sleeksnap.gui.OptionPanel;
 import org.sleeksnap.updater.Updater;
@@ -93,6 +94,7 @@ public class UpdaterPanel extends OptionSubPanel {
 				checkButton.setEnabled(false);
 				
 				if(!updater.checkUpdate(true)) {
+					JOptionPane.showMessageDialog(UpdaterPanel.this, "No new updates available.", "Sleeksnap Update", JOptionPane.INFORMATION_MESSAGE);
 					checkButton.setEnabled(true);
 				}
 			}

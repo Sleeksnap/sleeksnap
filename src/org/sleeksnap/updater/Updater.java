@@ -113,6 +113,8 @@ public class Updater {
 					
 					return true;
 				}
+			} else {
+				logger.info("No updates available.");
 			}
 		} catch (JSONException e) {
 			logger.severe("Unable to check for update due to web service error.");
