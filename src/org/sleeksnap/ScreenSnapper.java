@@ -888,7 +888,7 @@ public class ScreenSnapper {
 	 * Gets a filter's parent class type
 	 * 
 	 * @param filter
-	 * @return
+	 * @return The class representing the filter's upload type
 	 */
 	@SuppressWarnings("unchecked")
 	public Class<? extends Upload> getFilterType(UploadFilter<?> filter) {
