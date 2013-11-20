@@ -18,6 +18,7 @@
 package org.sleeksnap.uploaders.images;
 
 import org.json.JSONObject;
+import org.sleeksnap.Constants.Application;
 import org.sleeksnap.http.MultipartPostMethod;
 import org.sleeksnap.http.MultipartPostMethod.MultipartFile;
 import org.sleeksnap.upload.ImageUpload;
@@ -44,6 +45,7 @@ public class ImmioUploader extends Uploader<ImageUpload> {
 	public String upload(ImageUpload image) throws Exception {
 		MultipartPostMethod post = new MultipartPostMethod(API_URL);
 		post.setParameter("image", new MultipartFile(FileUtils.generateFileName("png"), image.asInputStream()));
+		post.setParameter("meta", new JSONObject().put("referer", new JSONObject().put("name", Application.NAME).put("url", Application.URL)).toString());
 		post.execute();
 		//Read the response as JSON
 		JSONObject object = new JSONObject(post.getResponse());

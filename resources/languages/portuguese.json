@@ -1,0 +1,37 @@
+{
+        "language" : "Portuguese",
+        "tokens" : {
+                "errorLoadingSettings" : "Erro ao carregar configurações",
+                "settingsCorrupted" : "Parece que suas configurações estão corrompidas, gostaria de carregar as configurações padrão?\nPressione \"Não\" para abrir o painel de configurações",
+                "invalidClipboard" : "Conteúdos do clipboard são inválidos.",
+                "invalidClipboardTitle" : "Não foi possível fazer upload dos conteúdos do clipboard, tipo inválido",
+                "uploadConfirm" : "Você tem certeza que deseja fazer upload de {1}?",
+                "uploadConfirmTitle" : "Confirmar upload",
+                "fileUploading" : "Upload de arquivo em processo.",
+                "fileUploadCanceled" : "Upload de arquivo foi cancelado.",
+                "fileUploadTitle" : "Upload de arquivo",
+                "cropupload" : "Seleção",
+                "fullupload" : "Tela cheia",
+                "clipboardupload" : "Upload do Clipboard",
+                "fileupload" : "Upload de arquivo",
+                "activeupload" : "Janela Ativa",
+                "options" : "Opções",
+                "error" : "Erro",
+                "exit" : "Sair",
+                "optionsOpenError" : "Não foi possível abrir as configurações, existe outra janela aberta?",
+                "loadingError" : "Occorreu um erro ao carregar {1} : {2}, pode estar dezatualizado.",
+                "filterLoadError" : "Não foi possível carregar o filtro : {1}",
+                "exceptionCause" : "Ocorreu um erro durante à performance da ação selecionada, causa: {1}",
+                "exceptionCauseWithMessage" : "Ocorreu um erro durante à performance da ação selecionada, mensagem: {1}, causa: {2}",
+                "noUploaderTitle" : "Sem serviço de upload disponível",
+                "noUploader" : "Sem serviço de upload disponível para {1}!",
+                "uploadComplete" : "Upload completo",
+                "uploadFailed" : "Falha no upload",
+                "uploadFailedError" : "Ocorreu uma falha no upload devido à um erro desconhecido",
+                "uploadedTo" : "Enviado para {1}",
+                "uploaderConfigError" : "Erro de configuração do Uploader",
+                "uploaderConfigErrorMessage" : "Você deve configurar o uploader corretamente antes de usar!",
+                
+                "hotkeyNotSet" : "Não definido"
+        }
+}

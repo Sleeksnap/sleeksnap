@@ -45,6 +45,7 @@ public class ProgramOptions {
 		CmdLineParser parser = new CmdLineParser();
 		
 		Option<String> dir = parser.addStringOption('d', "dir");
+		Option<String> language = parser.addStringOption('l', "language");
 		Option<Boolean> resetConfig = parser.addBooleanOption("resetconfig");
 		
 		try {
@@ -55,6 +56,10 @@ public class ProgramOptions {
 		
 		if(dir.getOptionValue(parser) != null) {
 			out.put("dir", dir.getOptionValue(parser));
+		}
+		
+		if(language.getOptionValue(parser) != null) {
+			out.put("language", dir.getOptionValue(parser));
 		}
 		
 		if(resetConfig.getOptionValue(parser, false)) {

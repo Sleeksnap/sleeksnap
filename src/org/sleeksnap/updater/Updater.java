@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
@@ -53,9 +54,6 @@ import com.sun.jna.Platform;
 public class Updater {
 	
 	private static final Logger logger = Logger.getLogger(Updater.class.getName());
-	
-	public static void main(String[] args) {
-	}
 	
 	/**
 	 * The binary directory to use.
@@ -194,6 +192,15 @@ public class Updater {
 		logger.info("Checking autostart...");
 		verifyAutostart(file, VerificationMode.VERIFY);
 		
+		if(Platform.isWindows()) {
+			logger.info("Checking start menu icon...");
+			try {
+				WindowsUpdater.checkStartMenu(file);
+			} catch (Exception e) {
+				logger.log(Level.WARNING, "Unable to update start menu icon", e);
+			}
+		}
+		
 		logger.info("Launching new file...");
 		try {
 			Launcher.launch(file, Launcher.class.getName());
@@ -203,7 +210,7 @@ public class Updater {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * If on windows or linux, verify that the registry entry is intact and pointing to the correct version.
 	 * @param file
@@ -237,7 +244,7 @@ public class Updater {
 						.addEntry("Name", Application.NAME)
 						.addEntry("Comment", "Sleeksnap - Java Screenshot Program")
 						.addEntry("Terminal", false)
-						.addEntry("Exec", FileUtils.getJavaExecutable().getAbsoluteFile() + " -jar " + file.getAbsolutePath())
+						.addEntry("Exec", FileUtils.getJavaExecutable().getAbsoluteFile() + " -jar \"" + file.getAbsolutePath() + "\"")
 					.build();
 					
 					try {

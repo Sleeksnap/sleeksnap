@@ -32,6 +32,7 @@ import org.sleeksnap.util.Util;
 public class Constants {
 	public static class Application {
 		public static final String NAME = "Sleeksnap";
+		public static final String URL = "http://sleeksnap.com";
 		public static final String UPDATE_URL = "http://sleeksnap.com/build/latest.json";
 	}
 
@@ -55,7 +56,7 @@ public class Constants {
 	public static class Version {
 		public static final int MAJOR = 1;
 		public static final int MINOR = 3;
-		public static final int PATCH = 13;
+		public static final int PATCH = 14;
 		
 		private static String versionString = null;
 		
