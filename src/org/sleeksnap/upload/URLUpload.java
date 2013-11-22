@@ -17,6 +17,7 @@
  */
 package org.sleeksnap.upload;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -44,7 +45,7 @@ public class URLUpload implements Upload {
 
 	@Override
 	public InputStream asInputStream() {
-		return null;
+		throw new IOException("URLs cannot be transformed into InputStreams!");
 	}
 	
 	/**

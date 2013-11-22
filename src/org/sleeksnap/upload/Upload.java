@@ -17,6 +17,7 @@
  */
 package org.sleeksnap.upload;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -32,5 +33,5 @@ public interface Upload {
 	 * @return
 	 * 			The InputStream containing the upload data
 	 */
-	public InputStream asInputStream();
+	public InputStream asInputStream() throws IOException;
 }

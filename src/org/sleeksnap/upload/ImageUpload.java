@@ -41,12 +41,8 @@ public class ImageUpload implements Upload {
 	}
 
 	@Override
-	public InputStream asInputStream() {
-		try {
-			return ImageUtil.toInputStream(image);
-		} catch (IOException e) {
-			return null;
-		}
+	public InputStream asInputStream() throws IOException {
+		return ImageUtil.toInputStream(image);
 	}
 	
 	/**
