@@ -18,6 +18,7 @@
 package org.sleeksnap.uploaders.text;
 
 import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.http.PostData;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Uploader;
 
@@ -29,7 +30,7 @@ import org.sleeksnap.uploaders.Uploader;
  */
 public class PastieUploader extends Uploader<TextUpload> {
 
-	private static final String PASTEBIN_URL = "http://pastie.org/pastes";
+	private static final String PASTIE_URL = "http://pastie.org/pastes";
 
 	@Override
 	public String getName() {
@@ -38,12 +39,11 @@ public class PastieUploader extends Uploader<TextUpload> {
 
 	@Override
 	public String upload(TextUpload t) throws Exception {
-		String url = HttpUtil.executePostForLocation(PASTEBIN_URL,
-				"paste[parser]=plain_text&paste[body]=" + HttpUtil.encode(t.getText())
-						+ "&paste[authorization]=burger&paste[restricted]=0");
-		if (url == null) {
-			throw new Exception("Failed to paste!");
-		}
-		return url;
+		PostData data = new PostData();
+		data.put("paste[parser]", "plain_text");
+		data.put("paste[body]", t.getText());
+		data.put("paste[authorization]", "burger");
+		data.put("paste[restricted]", "0");
+		return HttpUtil.executePostForLocation(PASTIE_URL, data);
 	}
 }

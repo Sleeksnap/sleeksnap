@@ -18,10 +18,9 @@
 package org.sleeksnap.uploaders.text;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.http.PostData;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.UploadException;
@@ -65,7 +64,7 @@ public class PastebinUploader extends Uploader<TextUpload> {
 
 	@Override
 	public String upload(TextUpload contents) throws Exception {
-		Map<String, Object> req = new HashMap<String, Object>();
+		PostData req = new PostData();
 		req.put("api_dev_key", API_KEY);
 		req.put("api_option", API_OPTION_PASTE);
 		req.put("api_paste_code", contents.getText());
@@ -105,7 +104,7 @@ public class PastebinUploader extends Uploader<TextUpload> {
 					.getString("password");
 			if (!username.equals("") && !password.equals("")) {
 				// Validate the username and password, then get us a key.
-				Map<String, Object> req = new HashMap<String, Object>();
+				PostData req = new PostData();
 				req.put("api_dev_key", API_KEY);
 				req.put("api_user_name", username);
 				req.put("api_user_password", password);

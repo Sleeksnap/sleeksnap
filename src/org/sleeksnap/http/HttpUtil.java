@@ -110,9 +110,9 @@ public class HttpUtil {
 	 * @throws IOException
 	 *             If an error occurred while connecting/receiving the data
 	 */
-	public static String executePost(String url, Map<String, Object> values)
+	public static String executePost(String url, PostData data)
 			throws IOException {
-		return executePost(url, implode(values));
+		return executePost(url, data.toPostString());
 	}
 	
 	/**
@@ -126,9 +126,9 @@ public class HttpUtil {
 	 * @throws IOException
 	 *             If an error occurred while connecting/receiving the data
 	 */
-	public static String executePost(URL url, Map<String, Object> values)
+	public static String executePost(URL url, PostData data)
 			throws IOException {
-		return executePost(url, implode(values));
+		return executePost(url, data.toPostString());
 	}
 	
 	/**
@@ -157,6 +157,22 @@ public class HttpUtil {
 		} finally {
 			connection.disconnect();
 		}
+	}
+
+	/**
+	 * Alias for <code>executePostWithLocation(URL url, String data)</code>,
+	 * constructs the url and request data
+	 * 
+	 * @param url
+	 *            The URL
+	 * @param data
+	 *            The data
+	 * @return The response
+	 * @throws IOException
+	 *             If an error occurred
+	 */
+	public static String executePostForLocation(String url, PostData data) throws IOException {
+		return executePostForLocation(url, data.toPostString());
 	}
 
 	/**
@@ -201,7 +217,11 @@ public class HttpUtil {
 			writer.flush();
 			writer.close();
 
-			return connection.getHeaderField("Location");
+			String location = connection.getHeaderField("Location");
+			if(location == null) {
+				throw new IOException("No location header found");
+			}
+			return location;
 		} finally {
 			connection.disconnect();
 		}
@@ -224,9 +244,7 @@ public class HttpUtil {
 			builder.append(entry.getKey());
 
 			if (entry.getValue() != null) {
-				builder.append("=")
-						.append(URLEncoder.encode(entry.getValue().toString(),
-								"UTF-8"));
+				builder.append("=").append(URLEncoder.encode(entry.getValue().toString(), "UTF-8"));
 			}
 			if (iterator.hasNext())
 				builder.append("&");

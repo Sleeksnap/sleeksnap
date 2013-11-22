@@ -16,11 +16,7 @@ public class LaravelUploader extends Uploader<TextUpload> {
 
 	@Override
 	public String upload(TextUpload t) throws Exception {
-		String url = HttpUtil.executePostForLocation(LARAVEL_URL, "paste=" + HttpUtil.encode(t.getText()));
-		if (url == null) {
-			throw new Exception("Failed to paste!");
-		}
-		return url;
+		return HttpUtil.executePostForLocation(LARAVEL_URL, "paste=" + HttpUtil.encode(t.getText()));
 	}
 
 	@Override

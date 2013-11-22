@@ -44,7 +44,7 @@ public class URLUpload implements Upload {
 	}
 
 	@Override
-	public InputStream asInputStream() {
+	public InputStream asInputStream() throws IOException {
 		throw new IOException("URLs cannot be transformed into InputStreams!");
 	}
 	

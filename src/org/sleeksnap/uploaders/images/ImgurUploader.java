@@ -22,7 +22,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.json.JSONObject;
-import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.PostData;
 import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.uploaders.UploadException;
@@ -65,7 +64,7 @@ public class ImgurUploader extends Uploader<ImageUpload> {
 		 * Write the image data and api key
 		 */
 		OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
-		writer.write(HttpUtil.implode(req));
+		writer.write(req.toPostString());
 		writer.flush();
 		writer.close();
 		
