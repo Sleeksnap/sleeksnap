@@ -92,6 +92,7 @@ import org.sleeksnap.uploaders.images.ImagebinUploader;
 import org.sleeksnap.uploaders.images.ImgurUploader;
 import org.sleeksnap.uploaders.images.ImmioUploader;
 import org.sleeksnap.uploaders.images.PuushUploader;
+import org.sleeksnap.uploaders.text.LaravelUploader;
 import org.sleeksnap.uploaders.text.PastebinUploader;
 import org.sleeksnap.uploaders.text.PastebincaUploader;
 import org.sleeksnap.uploaders.text.PasteeUploader;
@@ -793,6 +794,7 @@ public class ScreenSnapper {
 		registerUploader(new PastebinUploader());
 		registerUploader(new PastebincaUploader());
 		registerUploader(new PastieUploader());
+		registerUploader(new LaravelUploader());
 		// URL Shorteners
 		registerUploader(new GoogleShortener());
 		registerUploader(new TinyURLShortener());

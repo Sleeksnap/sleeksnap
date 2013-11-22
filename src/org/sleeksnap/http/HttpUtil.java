@@ -171,9 +171,9 @@ public class HttpUtil {
 	 * @throws IOException
 	 *             If an error occurred
 	 */
-	public static String executePostWithLocation(String url, String data)
+	public static String executePostForLocation(String url, String data)
 			throws IOException {
-		return executePostWithLocation(new URL(url), data);
+		return executePostForLocation(new URL(url), data);
 	}
 
 	/**
@@ -187,7 +187,7 @@ public class HttpUtil {
 	 * @throws IOException
 	 *             If an error occurred
 	 */
-	public static String executePostWithLocation(URL url, String data)
+	public static String executePostForLocation(URL url, String data)
 			throws IOException {
 		if (HttpURLConnection.getFollowRedirects()) {
 			HttpURLConnection.setFollowRedirects(false);

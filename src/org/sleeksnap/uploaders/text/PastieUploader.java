@@ -38,7 +38,7 @@ public class PastieUploader extends Uploader<TextUpload> {
 
 	@Override
 	public String upload(TextUpload t) throws Exception {
-		String url = HttpUtil.executePostWithLocation(PASTEBIN_URL,
+		String url = HttpUtil.executePostForLocation(PASTEBIN_URL,
 				"paste[parser]=plain_text&paste[body]=" + HttpUtil.encode(t.getText())
 						+ "&paste[authorization]=burger&paste[restricted]=0");
 		if (url == null) {
