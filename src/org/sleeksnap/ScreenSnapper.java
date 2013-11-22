@@ -949,8 +949,6 @@ public class ScreenSnapper {
 	/**
 	 * Register an uploader
 	 * 
-	 * @param type
-	 *            The type
 	 * @param uploader
 	 *            The uploader
 	 */
@@ -1052,8 +1050,8 @@ public class ScreenSnapper {
 	/**
 	 * Upload an object
 	 * 
-	 * @param object
-	 *            The object
+	 * @param upload
+	 *            The upload object
 	 */
 	public void upload(final Upload upload) {
 		// Check associations

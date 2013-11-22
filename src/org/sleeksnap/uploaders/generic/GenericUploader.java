@@ -25,7 +25,7 @@ import org.sleeksnap.uploaders.Uploader;
  * 
  * @author Nikki
  * 
- * @param <Object>
+ * @param <Upload>
  *            The upload type
  */
 public abstract class GenericUploader extends Uploader<Upload> {

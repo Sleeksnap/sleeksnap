@@ -228,7 +228,7 @@ public class MultipartPostMethod {
 	/**
 	 * Generate a random string
 	 * 
-	 * @return
+	 * @return	A (semi-random) string built from a random long... this can be redone a lot better, but it's simple enough and works for now.
 	 */
 	protected static String randomString() {
 		return Long.toString(random.nextLong(), 36);
