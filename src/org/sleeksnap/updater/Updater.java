@@ -71,12 +71,12 @@ public class Updater {
 	/**
 	 * Check for updates
 	 */
-	public boolean checkUpdate(boolean prompt) {
+	public boolean checkUpdate(UpdaterReleaseType type, boolean prompt) {
 		//Check for an update.
 		try {
 			logger.info("Checking for updates...");
 			
-			String data = HttpUtil.executeGet(Application.UPDATE_URL);
+			String data = HttpUtil.executeGet(Application.UPDATE_URL + type.getFeedPath());
 			
 			JSONObject obj = new JSONObject(data);
 			

@@ -33,12 +33,16 @@ public class Constants {
 	public static class Application {
 		public static final String NAME = "Sleeksnap";
 		public static final String URL = "http://sleeksnap.com";
-		public static final String UPDATE_URL = "http://sleeksnap.com/build/latest.json";
+		public static final String UPDATE_URL = "http://sleeksnap.com/build/";
 	}
 
 	public static class Configuration {
 		public static final String FILE_NAME = Application.NAME.toLowerCase()
 				+ ".conf";
+
+		public static final int DEFAULT_MAX_RETRIES = 3;
+		
+		public static final String DEFAULT_LANGUAGE = "english";
 	}
 
 	public static class Resources {
@@ -56,12 +60,13 @@ public class Constants {
 	public static class Version {
 		public static final int MAJOR = 1;
 		public static final int MINOR = 3;
-		public static final int PATCH = 16;
+		public static final int PATCH = 17;
 		
 		private static String versionString = null;
 		
 		public static String getVersionString() {
 			if(versionString == null) {
+				// Construct string normally
 				versionString = MAJOR + "." + MINOR + "." + PATCH;
 			}
 			return  versionString;

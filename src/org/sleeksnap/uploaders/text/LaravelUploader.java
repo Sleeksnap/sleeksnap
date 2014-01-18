@@ -7,9 +7,12 @@ import org.sleeksnap.uploaders.Uploader;
 /**
  * An uploader for Laravel's Paste Bucket
  * 
+ * @deprecated Laravel removed their paste bucket due to terms of use problems.
+ * 
  * @author Nikki
  *
  */
+@Deprecated
 public class LaravelUploader extends Uploader<TextUpload> {
 
 	private static final String LARAVEL_URL = "http://paste.laravel.com/";

@@ -83,6 +83,18 @@ public class Configuration {
 	}
 
 	/**
+	 * Get an integer
+	 * 
+	 * @param key
+	 *            The key
+	 * @return The integer
+	 * @throws JSONException 
+	 */
+	public int getInteger(String key, int def) {
+		return config.getInt(key, def);
+	}
+
+	/**
 	 * Get a map which is automatically cast to the class specified
 	 * 
 	 * @param key

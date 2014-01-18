@@ -20,6 +20,7 @@ package org.sleeksnap;
 import java.awt.AWTException;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
+import java.awt.Rectangle;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
@@ -73,12 +74,12 @@ import org.sleeksnap.impl.LoggingManager;
 import org.sleeksnap.updater.Updater;
 import org.sleeksnap.updater.Updater.VerificationMode;
 import org.sleeksnap.updater.UpdaterMode;
+import org.sleeksnap.updater.UpdaterReleaseType;
 import org.sleeksnap.upload.FileUpload;
 import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.upload.URLUpload;
 import org.sleeksnap.upload.Upload;
-import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.UploaderConfigurationException;
 import org.sleeksnap.uploaders.UploaderLoader;
@@ -92,7 +93,6 @@ import org.sleeksnap.uploaders.images.ImagebinUploader;
 import org.sleeksnap.uploaders.images.ImgurUploader;
 import org.sleeksnap.uploaders.images.ImmioUploader;
 import org.sleeksnap.uploaders.images.PuushUploader;
-import org.sleeksnap.uploaders.text.LaravelUploader;
 import org.sleeksnap.uploaders.text.PastebinUploader;
 import org.sleeksnap.uploaders.text.PastebincaUploader;
 import org.sleeksnap.uploaders.text.PasteeUploader;
@@ -225,9 +225,9 @@ public class ScreenSnapper {
 	private Configuration configuration = new Configuration();
 
 	/**
-	 * The selection window instance
+	 * The selection window instances
 	 */
-	private SelectionWindow window = null;
+	private SelectionWindow[] windows = null;
 
 	/**
 	 * Defines whether the options panel is open
@@ -248,6 +248,8 @@ public class ScreenSnapper {
 	 * The last uploaded URL, used for clicking tray icon
 	 */
 	private String lastUrl;
+
+	private int retries;
 
 	/**
 	 * Initialize the program
@@ -308,15 +310,16 @@ public class ScreenSnapper {
 		}
 		// Load the selected language
 		try {
-			Language.load(map.containsKey("language") ? map.get("language").toString() : configuration.getString("language", "english"));
+			Language.load(map.containsKey("language") ? map.get("language").toString() : configuration.getString("language", Constants.Configuration.DEFAULT_LANGUAGE));
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, "Failed to load language file!", e);
 		}
 		// Check the update mode
 		UpdaterMode mode = configuration.getEnumValue("updateMode", UpdaterMode.class);
 		if (mode != UpdaterMode.MANUAL) {
+			UpdaterReleaseType type = configuration.getEnumValue("updateReleaseType", UpdaterReleaseType.class);
 			Updater updater = new Updater();
-			if (updater.checkUpdate(mode == UpdaterMode.PROMPT)) {
+			if (updater.checkUpdate(type, mode == UpdaterMode.PROMPT)) {
 				return;
 			}
 		}
@@ -383,7 +386,10 @@ public class ScreenSnapper {
 	 * Clear the screenshot selection window
 	 */
 	public void clearWindow() {
-		window = null;
+		for(int i = 0; i < windows.length; i++) {
+			windows[i] = null;
+		}
+		windows = null;
 	}
 
 	/**
@@ -430,13 +436,19 @@ public class ScreenSnapper {
 	 * Perform a screenshot crop action
 	 */
 	public void crop() {
-		if (window != null) {
+		if (windows != null) {
 			return;
 		}
-		window = new SelectionWindow(this, DisplayUtil.getRealScreenSize());
-		window.pack();
-		window.setAlwaysOnTop(true);
-		window.setVisible(true);
+		Rectangle[] screens = DisplayUtil.getAllScreenBounds();
+		
+		windows = new SelectionWindow[screens.length];
+		
+		for(int i = 0; i < screens.length; i++) {
+			SelectionWindow window = windows[i] = new SelectionWindow(this, screens[i]);
+			window.pack();
+			window.setAlwaysOnTop(true);
+			window.setVisible(true);
+		}
 	}
 
 	/**
@@ -471,7 +483,7 @@ public class ScreenSnapper {
 	 *            The uploader's class
 	 * @return The settings file path
 	 */
-	public File getSettingsFile(Class<?> uploader) {
+	public static File getSettingsFile(Class<?> uploader) {
 		return getSettingsFile(uploader, "json");
 	}
 
@@ -482,7 +494,7 @@ public class ScreenSnapper {
 	 *            The uploader's class
 	 * @return The settings file path
 	 */
-	public File getSettingsFile(Class<?> uploader, String ext) {
+	public static File getSettingsFile(Class<?> uploader, String ext) {
 		String name = uploader.getName();
 		if (name.contains("$")) {
 			name = name.substring(0, name.indexOf('$'));
@@ -794,7 +806,6 @@ public class ScreenSnapper {
 		registerUploader(new PastebinUploader());
 		registerUploader(new PastebincaUploader());
 		registerUploader(new PastieUploader());
-		registerUploader(new LaravelUploader());
 		// URL Shorteners
 		registerUploader(new GoogleShortener());
 		registerUploader(new TinyURLShortener());
@@ -1114,6 +1125,8 @@ public class ScreenSnapper {
 						((ImageUpload) object).setImage(null);
 					}
 					url = url.trim();
+
+					retries = 0;
 					
 					ClipboardUtil.setClipboard(url);
 
@@ -1128,12 +1141,21 @@ public class ScreenSnapper {
 			} catch (UploaderConfigurationException e) {
 				icon.displayMessage(Language.getString("uploaderConfigError"), Language.getString("uploaderConfigErrorMessage"), TrayIcon.MessageType.ERROR);
 				logger.log(Level.SEVERE, "Upload failed to execute", e);
-			} catch (UploadException e) {
-				icon.displayMessage(Language.getString("uploadFailed"), "The upload failed to execute: " + e.getMessage(), TrayIcon.MessageType.ERROR);
-				logger.log(Level.SEVERE, "Upload failed to execute", e);
 			} catch (Exception e) {
-				icon.displayMessage(Language.getString("uploadFailed"), Language.getString("uploadFailedError"), TrayIcon.MessageType.ERROR);
-				logger.log(Level.SEVERE, "Upload failed to execute", e);
+				// Retry until retries > max
+				StringBuilder msg = new StringBuilder("The upload failed to execute: ");
+				msg.append(e.getMessage());
+				int max = configuration.getInteger("max_retries", Constants.Configuration.DEFAULT_MAX_RETRIES);
+				if(retries++ < max) {
+					logger.info("Retrying upload (" + retries + " of " + max + " retries)...");
+					msg.append("\nRetrying...");
+					upload(object);
+				} else {
+					msg.append("\nReached retry limit, upload aborted.");
+					logger.log(Level.SEVERE, "Upload failed to execute, retries: " + retries, e);
+					retries = 0;
+				}
+				icon.displayMessage(Language.getString("uploadFailed"), msg.toString(), TrayIcon.MessageType.ERROR);
 			}
 		}
 	}

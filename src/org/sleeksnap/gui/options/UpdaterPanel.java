@@ -31,6 +31,7 @@ import javax.swing.JOptionPane;
 import org.sleeksnap.gui.OptionPanel;
 import org.sleeksnap.updater.Updater;
 import org.sleeksnap.updater.UpdaterMode;
+import org.sleeksnap.updater.UpdaterReleaseType;
 
 /**
  * An OptionSubPanel for the Updater settings
@@ -43,7 +44,9 @@ public class UpdaterPanel extends OptionSubPanel {
 
 	private JLabel updaterSettingLabel;
 	private JLabel updaterModeLabel;
+	private JLabel releaseTypeLabel;
 	private JComboBox updaterMode;
+	private JComboBox releaseType;
 	private JButton checkButton;
 	private OptionPanel optionPanel;
 
@@ -55,21 +58,32 @@ public class UpdaterPanel extends OptionSubPanel {
 	public void initComponents() {
 		updaterSettingLabel = new JLabel();
 		updaterModeLabel = new JLabel();
+		releaseTypeLabel = new JLabel();
 		updaterMode = new JComboBox();
+		releaseType = new JComboBox();
 		checkButton = new JButton();
 		
 		updaterSettingLabel.setText("Updater Settings");
 
-        updaterModeLabel.setText("Updater Mode:");
+		updaterModeLabel.setText("Updater Mode:");
+		
+		releaseTypeLabel.setText("Release Type: ");
 
-        updaterMode.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Automatic", "Prompt", "Manual" }));
-        
-        UpdaterMode mode = optionPanel.getSnapper().getConfiguration().getEnumValue("updateMode", UpdaterMode.class);
+		updaterMode.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Automatic", "Prompt", "Manual" }));
+
+		releaseType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Recommended", "Development" }));
+		
+		UpdaterMode mode = optionPanel.getSnapper().getConfiguration().getEnumValue("updateMode", UpdaterMode.class);
 		if(mode != null) {
 			updaterMode.setSelectedIndex(mode.ordinal());
 		}
-        
-        updaterMode.addItemListener(new ItemListener() {
+		
+		UpdaterReleaseType type = optionPanel.getSnapper().getConfiguration().getEnumValue("updateReleaseType", UpdaterReleaseType.class);
+		if(mode != null) {
+			releaseType.setSelectedIndex(type.ordinal());
+		}
+		
+		updaterMode.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.SELECTED) {
@@ -82,56 +96,83 @@ public class UpdaterPanel extends OptionSubPanel {
 					}
 				}
 			}
-        });
+		});
+		
+		releaseType.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if(e.getStateChange() == ItemEvent.SELECTED) {
+					// Set config to this.
+					optionPanel.getSnapper().getConfiguration().put("updateReleaseType", releaseType.getSelectedIndex());
+					try {
+						optionPanel.getSnapper().getConfiguration().save();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+		});
 
-        checkButton.setText("Check for Updates");
-        
-        checkButton.addActionListener(new ActionListener() {
+		checkButton.setText("Check for Updates");
+		
+		checkButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Updater updater = new Updater();
 				
 				checkButton.setEnabled(false);
 				
-				if(!updater.checkUpdate(true)) {
+				UpdaterReleaseType type = optionPanel.getSnapper().getConfiguration().getEnumValue("updateReleaseType", UpdaterReleaseType.class);
+				if(type == null) {
+					type = UpdaterReleaseType.RECOMMENDED;
+				}
+				
+				if(!updater.checkUpdate(type, true)) {
 					JOptionPane.showMessageDialog(UpdaterPanel.this, "No new updates available.", "Sleeksnap Update", JOptionPane.INFORMATION_MESSAGE);
 					checkButton.setEnabled(true);
 				}
 			}
-        });
-
-        javax.swing.GroupLayout updaterPanelLayout = new javax.swing.GroupLayout(this);
-        this.setLayout(updaterPanelLayout);
-        updaterPanelLayout.setHorizontalGroup(
-                updaterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(updaterPanelLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(updaterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(updaterPanelLayout.createSequentialGroup()
-                            .addGap(10, 10, 10)
-                            .addComponent(updaterModeLabel)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(updaterMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(272, 272, 272))
-                        .addGroup(updaterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(updaterSettingLabel)
-                            .addGroup(updaterPanelLayout.createSequentialGroup()
-                                .addComponent(checkButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGap(316, 316, 316)))))
-            );
-            updaterPanelLayout.setVerticalGroup(
-                updaterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(updaterPanelLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(updaterSettingLabel)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                    .addGroup(updaterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(updaterModeLabel)
-                        .addComponent(updaterMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(18, 18, 18)
-                    .addComponent(checkButton)
-                    .addContainerGap(368, Short.MAX_VALUE))
-            );
+		});
+		
+		javax.swing.GroupLayout updaterPanelLayout = new javax.swing.GroupLayout(this);
+		this.setLayout(updaterPanelLayout);
+		updaterPanelLayout.setHorizontalGroup(
+				updaterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+			.addGroup(updaterPanelLayout.createSequentialGroup()
+				.addContainerGap()
+				.addGroup(updaterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+					.addComponent(updaterSettingLabel)
+					.addGroup(updaterPanelLayout.createSequentialGroup()
+						.addGap(10, 10, 10)
+						.addGroup(updaterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+							.addComponent(releaseTypeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(updaterModeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+						.addGroup(updaterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+							.addComponent(releaseType, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(updaterMode, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+						.addGap(272, 272, 272))
+					.addGroup(updaterPanelLayout.createSequentialGroup()
+						.addComponent(checkButton, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
+						.addGap(316, 316, 316))))
+		);
+		updaterPanelLayout.setVerticalGroup(
+			updaterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+			.addGroup(updaterPanelLayout.createSequentialGroup()
+				.addContainerGap()
+				.addComponent(updaterSettingLabel)
+				.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+				.addGroup(updaterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+					.addComponent(updaterModeLabel)
+					.addComponent(updaterMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+				.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+				.addGroup(updaterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+					.addComponent(releaseTypeLabel)
+					.addComponent(releaseType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+				.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+				.addComponent(checkButton)
+				.addContainerGap(344, Short.MAX_VALUE))
+		);
 	}
 
 }

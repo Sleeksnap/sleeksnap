@@ -574,6 +574,23 @@ public class Utils {
 			}
 			return allScreenBounds;
 		}
+
+		/**
+		 * Get the real screen size, multiple screens..
+		 * 
+		 * @return The screen size
+		 */
+		public static Rectangle[] getAllScreenBounds() {
+			GraphicsEnvironment ge = GraphicsEnvironment
+					.getLocalGraphicsEnvironment();
+			GraphicsDevice[] screens = ge.getScreenDevices();
+
+			Rectangle[] allScreenBounds = new Rectangle[screens.length];
+			for (int i = 0; i < screens.length; i++) {
+				allScreenBounds[i] = screens[i].getDefaultConfiguration().getBounds();
+			}
+			return allScreenBounds;
+		}
 	}
 
 	/**

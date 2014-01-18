@@ -452,7 +452,7 @@ public class UploaderPanel extends OptionSubPanel {
 						actualUploader.setSettings(newSettings);
 						// Finally, save the settings
 						try {
-							actualUploader.saveSettings(parent.getSnapper().getSettingsFile(
+							actualUploader.saveSettings(ScreenSnapper.getSettingsFile(
 									actualUploader.getClass()));
 						} catch (Exception ex) {
 							JOptionPane.showMessageDialog(null,
