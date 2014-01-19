@@ -104,8 +104,8 @@ public class HttpUtil {
 	 * 
 	 * @param url
 	 *            The URL
-	 * @param values
-	 *            The values to implode
+	 * @param data
+	 *            The form data
 	 * @return The HTTP response
 	 * @throws IOException
 	 *             If an error occurred while connecting/receiving the data
@@ -120,8 +120,8 @@ public class HttpUtil {
 	 * 
 	 * @param url
 	 *            The URL
-	 * @param values
-	 *            The values to implode
+	 * @param data
+	 *            The form data
 	 * @return The HTTP response
 	 * @throws IOException
 	 *             If an error occurred while connecting/receiving the data
