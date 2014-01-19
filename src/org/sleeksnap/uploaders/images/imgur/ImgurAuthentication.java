@@ -83,6 +83,7 @@ public class ImgurAuthentication {
 		account.remove("access_token");
 
 		HttpURLConnection conn = (HttpURLConnection) new URL(TOKEN_URL).openConnection();
+		conn.setReadTimeout(10000);
 		try {
 			PostData data = new PostData();
 			data.put("refresh_token", refreshToken);
