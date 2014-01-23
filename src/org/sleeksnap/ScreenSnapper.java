@@ -20,7 +20,6 @@ package org.sleeksnap;
 import java.awt.AWTException;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
-import java.awt.Rectangle;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
@@ -227,7 +226,7 @@ public class ScreenSnapper {
 	/**
 	 * The selection window instances
 	 */
-	private SelectionWindow[] windows = null;
+	private SelectionWindow window = null;
 
 	/**
 	 * Defines whether the options panel is open
@@ -386,10 +385,7 @@ public class ScreenSnapper {
 	 * Clear the screenshot selection window
 	 */
 	public void clearWindow() {
-		for(int i = 0; i < windows.length; i++) {
-			windows[i] = null;
-		}
-		windows = null;
+		window = null;
 	}
 
 	/**
@@ -436,19 +432,14 @@ public class ScreenSnapper {
 	 * Perform a screenshot crop action
 	 */
 	public void crop() {
-		if (windows != null) {
+		if (window != null) {
 			return;
 		}
-		Rectangle[] screens = DisplayUtil.getAllScreenBounds();
 		
-		windows = new SelectionWindow[screens.length];
-		
-		for(int i = 0; i < screens.length; i++) {
-			SelectionWindow window = windows[i] = new SelectionWindow(this, screens[i]);
-			window.pack();
-			window.setAlwaysOnTop(true);
-			window.setVisible(true);
-		}
+		window = new SelectionWindow(this, DisplayUtil.getRealScreenSize());
+		window.pack();
+		window.setAlwaysOnTop(true);
+		window.setVisible(true);
 	}
 
 	/**
