@@ -37,8 +37,8 @@ import org.sleeksnap.util.Utils.DateUtil;
  * @author Nikki
  * 
  */
-@Settings(required = { "hostname", "username", "password", "baseurl" }, optional = {
-		"port", "remotedir" })
+@Settings(required = { "hostname", "username", "password|password", "baseurl" }, optional = {
+		"port|spinner[default=21,min=0,max=65535]", "remotedir" })
 public class FTPUploader extends GenericUploader {
 
 	/**
@@ -73,18 +73,31 @@ public class FTPUploader extends GenericUploader {
 					"Missing hostname, username, password or baseurl!");
 		}
 		SimpleFTP ftp = new SimpleFTP();
-		ftp.connect(settings.getString("hostname"),
-				Integer.parseInt(settings.getString("port", "21")));
-		if (settings.has("remotedir")) {
-			ftp.cwd(settings.getString("remotedir"));
+		
+		try {
+			ftp.connect(settings.getString("hostname"), settings.getInt("port", 21), settings.getString("username"), settings.getString("password"));
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new UploaderConfigurationException("Unable to connect to FTP server, please check your username and password.");
 		}
+		
+		if (settings.has("remotedir")) {
+			if(!ftp.cwd(settings.getString("remotedir"))) {
+				throw new UploaderConfigurationException("Unable to change FTP directory.");
+			}
+		}
+		
 		try {
 			ftp.stor(input, fileName);
 		} finally {
 			ftp.disconnect();
 			input.close();
 		}
-		return String.format(settings.getString("baseurl", "%s"), fileName);
+		String baseUrl = settings.getString("baseurl", "%s");
+		if(!baseUrl.contains("%s")) {
+			baseUrl = baseUrl + "%s";
+		}
+		return String.format(baseUrl, fileName);
 	}
 
 	/**

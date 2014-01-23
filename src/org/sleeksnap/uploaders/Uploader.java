@@ -33,7 +33,6 @@ import org.sleeksnap.uploaders.settings.UploaderSettings;
  * @param <T>
  *            The upload type
  */
-@Settings(required = {}, optional = {})
 public abstract class Uploader<T extends Upload> {
 
 	/**
@@ -165,15 +164,22 @@ public abstract class Uploader<T extends Upload> {
 		return parent != null;
 	}
 	
+	/**
+	 * Check if this class directly has settings
+	 * @return
+	 * 		True if this class has settings
+	 */
+	public boolean hasDirectSettings() {
+		return getClass().isAnnotationPresent(Settings.class);
+	}
+	
+	/**
+	 * Check if this uploader (or generic uploader parent) has settings
+	 * @return
+	 * 		True if this uploader has settings
+	 */
 	public boolean hasSettings() {
-		boolean classHas = getClass().isAnnotationPresent(Settings.class);
-		if (classHas)
-			return true;
-		Class<?> enclosing = getClass().getEnclosingClass();
-		if (enclosing != null) {
-			return enclosing.isAnnotationPresent(Settings.class);
-		}
-		return false;
+		return hasDirectSettings() || parent != null && parent.hasSettings();
 	}
 
 	/**
@@ -183,9 +189,9 @@ public abstract class Uploader<T extends Upload> {
 	 */
 	public Settings getSettingsAnnotation() {
 		Settings settings = getClass().getAnnotation(Settings.class);
-		Class<?> enclosing = getClass().getEnclosingClass();
-		if (settings == null && enclosing != null) {
-			settings = enclosing.getAnnotation(Settings.class);
+		
+		if (settings == null && parent != null) {
+			settings = parent.getSettingsAnnotation();
 		}
 		return settings;
 	}

@@ -75,6 +75,7 @@ public class UploaderSettings {
 	}
 
 	public String getString(String key, String defaultValue) {
+		
 		if (!settings.has(key)) {
 			return defaultValue;
 		}

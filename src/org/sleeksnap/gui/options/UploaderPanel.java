@@ -434,10 +434,13 @@ public class UploaderPanel extends OptionSubPanel {
 		}
 		
 		Settings settings = actualUploader.getSettingsAnnotation();
+		
 		JFrame frame = null;
+		
 		if (this.getParent().getParent() instanceof JFrame) {
 			frame = (JFrame) this.getParent().getParent();
 		}
+		
 		final ParametersDialog dialog = new ParametersDialog(frame, actualUploader, settings);
 		dialog.setModal(true);
 		dialog.setOkAction(new ActionListener() {
@@ -452,8 +455,7 @@ public class UploaderPanel extends OptionSubPanel {
 						actualUploader.setSettings(newSettings);
 						// Finally, save the settings
 						try {
-							actualUploader.saveSettings(ScreenSnapper.getSettingsFile(
-									actualUploader.getClass()));
+							actualUploader.saveSettings(ScreenSnapper.getSettingsFile(actualUploader.getClass()));
 						} catch (Exception ex) {
 							JOptionPane.showMessageDialog(null,
 									"Save failed! Caused by: " + ex, "Save failed",
@@ -469,7 +471,7 @@ public class UploaderPanel extends OptionSubPanel {
 	}
 	
 	public Uploader<?> getActualUploader(Uploader<?> uploader) {
-		if(uploader.hasSettings()) {
+		if(uploader.hasDirectSettings()) {
 			return uploader;
 		} else if(uploader.hasParent() && uploader.getParentUploader().hasSettings()) {
 			return uploader.getParentUploader();

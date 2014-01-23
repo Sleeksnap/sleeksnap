@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JFrame;
 
@@ -336,6 +337,30 @@ public class Util {
 					throw new Exception("Unable to find browser");
 			}
 		}
+	}
+	
+	/**
+	 * A utility method used for parsing uploader data (like what is used in the Spinner type)
+	 * @param string
+	 * 			The string to parse
+	 * @return
+	 * 			The data map
+	 */
+	public static Map<String, String> parseDataList(String string) {
+		Map<String, String> ret = new HashMap<String, String>();
+		String[] split = string.split(",");
+		for(String s : split) {
+			int idx = s.indexOf('=');
+			if(idx != -1) {
+				String key = s.substring(0, idx);
+				String value = s.substring(idx + 1);
+				
+				ret.put(key, value);
+			} else {
+				ret.put(s, null);
+			}
+		}
+		return ret;
 	}
 
 	public static String implodeList(List<?> list, String glue) {
