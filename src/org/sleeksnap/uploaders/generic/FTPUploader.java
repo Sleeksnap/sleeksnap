@@ -65,10 +65,10 @@ public class FTPUploader extends GenericUploader {
 	 */
 	public String ftpUpload(String fileName, InputStream input)
 			throws IOException, UploaderConfigurationException {
-		if (!settings.has("hostname")
-				|| !settings.has("username")
-				|| !settings.has("password")
-				|| !settings.has("baseurl")) {
+		if (!settings.has("hostname") && !settings.isEmpty("hostname")
+				|| !settings.has("username") && !settings.isEmpty("username")
+				|| !settings.has("password") // Password can be empty.
+				|| !settings.has("baseurl") && !settings.isEmpty("baseurl")) {
 			throw new UploaderConfigurationException(
 					"Missing hostname, username, password or baseurl!");
 		}
