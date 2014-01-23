@@ -172,4 +172,8 @@ public class UploaderSettings {
 	public String toString() {
 		return settings.toString();
 	}
+
+	public boolean isEmpty(String string) {
+		return settings.getString(string, "").equals("");
+	}
 }

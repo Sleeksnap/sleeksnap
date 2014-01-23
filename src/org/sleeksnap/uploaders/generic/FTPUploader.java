@@ -81,7 +81,7 @@ public class FTPUploader extends GenericUploader {
 			throw new UploaderConfigurationException("Unable to connect to FTP server, please check your username and password.");
 		}
 		
-		if (settings.has("remotedir")) {
+		if (settings.has("remotedir") && !settings.isEmpty("remotedir")) {
 			if(!ftp.cwd(settings.getString("remotedir"))) {
 				throw new UploaderConfigurationException("Unable to change FTP directory.");
 			}
