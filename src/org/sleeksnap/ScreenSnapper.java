@@ -92,11 +92,14 @@ import org.sleeksnap.uploaders.images.ImagebinUploader;
 import org.sleeksnap.uploaders.images.ImgurUploader;
 import org.sleeksnap.uploaders.images.ImmioUploader;
 import org.sleeksnap.uploaders.images.PuushUploader;
+import org.sleeksnap.uploaders.text.Paste2Uploader;
 import org.sleeksnap.uploaders.text.PastebinUploader;
 import org.sleeksnap.uploaders.text.PastebincaUploader;
 import org.sleeksnap.uploaders.text.PasteeUploader;
 import org.sleeksnap.uploaders.text.PastieUploader;
+import org.sleeksnap.uploaders.text.SlexyUploader;
 import org.sleeksnap.uploaders.url.GoogleShortener;
+import org.sleeksnap.uploaders.url.IsgdShortener;
 import org.sleeksnap.uploaders.url.TUrlShortener;
 import org.sleeksnap.uploaders.url.TinyURLShortener;
 import org.sleeksnap.util.ProgramOptions;
@@ -793,14 +796,17 @@ public class ScreenSnapper {
 		registerUploader(new PuushUploader());
 		registerUploader(new ImagebinUploader());
 		// Text uploaders
+		registerUploader(new Paste2Uploader());
 		registerUploader(new PasteeUploader());
 		registerUploader(new PastebinUploader());
 		registerUploader(new PastebincaUploader());
 		registerUploader(new PastieUploader());
+		registerUploader(new SlexyUploader());
 		// URL Shorteners
 		registerUploader(new GoogleShortener());
 		registerUploader(new TinyURLShortener());
 		registerUploader(new TUrlShortener());
+		registerUploader(new IsgdShortener());
 		// File uploaders
 		registerUploader(new FilebinUploader());
 		registerUploader(new UppitUploader());

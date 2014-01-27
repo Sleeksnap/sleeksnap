@@ -107,6 +107,8 @@ public class UploaderSettings {
 	/**
 	 * Set a password value (Encrypted by a user's password if saved to a file)
 	 * 
+	 * TODO encrypt it on file
+	 * 
 	 * @param key
 	 *            The password key
 	 * @param value
@@ -116,6 +118,15 @@ public class UploaderSettings {
 		set(key, value.toString());
 	}
 	
+	/**
+	 * Get a password
+	 * 
+	 * TODO decrypt
+	 * @param key
+	 * 			The key to get
+	 * @return
+	 * 			The password
+	 */
 	public String getPassword(String key) {
 		if(settings.has(key)) {
 			JSONObject obj = settings.getJSONObject(key);
@@ -157,23 +168,52 @@ public class UploaderSettings {
 		}
 	}
 
+	/**
+	 * Set the JSONObject which this settings object gets it's information from
+	 * @param object
+	 * 			The object
+	 */
 	public void setBaseObject(JSONObject object) {
 		this.settings = object;
 	}
 
+	/**
+	 * Get a generic Object
+	 * @param name
+	 * 			The object key
+	 * @return
+	 * 			The object
+	 */
 	public Object get(String name) {
 		return settings.get(name);
 	}
 
+	/**
+	 * Get a JSONObject value
+	 * @param string
+	 * 			The object key
+	 * @return
+	 * 			The JSONObject
+	 */
 	public JSONObject getJSONObject(String string) {
 		return settings.getJSONObject(string);
 	}
 	
+	/**
+	 * Get this object as a JSON String
+	 * 
+	 * @return The JSON data
+	 */
+	@Override
 	public String toString() {
 		return settings.toString();
 	}
 
 	public boolean isEmpty(String string) {
 		return settings.getString(string, "").equals("");
+	}
+
+	public boolean getBoolean(String key, boolean defaultValue) {
+		return settings.getBoolean(key, defaultValue);
 	}
 }

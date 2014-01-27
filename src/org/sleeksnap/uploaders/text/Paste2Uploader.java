@@ -18,38 +18,34 @@
 package org.sleeksnap.uploaders.text;
 
 import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.http.PostData;
+import org.sleeksnap.http.ResponseType;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Uploader;
 
 /**
- * A text uploader for http://pastebin.ca
+ * An uploader for the Paste2 pastebin.
  * 
  * @author Nikki
- * 
+ *
  */
-public class PastebincaUploader extends Uploader<TextUpload> {
-
-	/**
-	 * Basic variables, such as the API Key and URL
-	 */
-	private static final String PASTEBINCA_URL = "http://pastebin.ca/";
-	private static final String PASTEBINCA_SCRIPTURL = PASTEBINCA_URL
-			+ "quiet-paste.php";
+public class Paste2Uploader extends Uploader<TextUpload> {
 	
-	private static final String PASTEBINCA_KEY = "cjONz2tQBu4kZxDcugEVAdkSELcD77No";
+	private static final String APIURL = "http://paste2.org/new-paste";
 
 	@Override
-	public String getName() {
-		return "Pastebin.ca";
+	public String upload(TextUpload t) throws Exception {
+		PostData data = new PostData();
+		data.put("code", t.getText());
+		data.put("description", "");
+		data.put("lang", "text");
+		data.put("parent", "");
+		
+		return HttpUtil.executePost(APIURL, data, ResponseType.REDIRECT_URL);
 	}
 
 	@Override
-	public String upload(TextUpload text) throws Exception {
-		String data = "api=" + PASTEBINCA_KEY + "&content="
-				+ HttpUtil.encode(text.getText()) + "&s=true&type=1&expiry=Never&name=";
-		
-		String resp = HttpUtil.executePost(PASTEBINCA_SCRIPTURL, data);
-
-		return PASTEBINCA_URL + resp.substring(resp.indexOf(':') + 1);
+	public String getName() {
+		return "Paste2";
 	}
 }

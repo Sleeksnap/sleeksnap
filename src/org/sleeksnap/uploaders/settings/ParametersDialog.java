@@ -43,7 +43,7 @@ import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.settings.types.CheckBoxSettingType;
 import org.sleeksnap.uploaders.settings.types.ComboBoxSettingType;
 import org.sleeksnap.uploaders.settings.types.PasswordSettingType;
-import org.sleeksnap.uploaders.settings.types.SpinnerSettingType;
+import org.sleeksnap.uploaders.settings.types.NumberSpinnerSettingType;
 import org.sleeksnap.uploaders.settings.types.TextSettingType;
 import org.sleeksnap.util.Util;
 import org.sleeksnap.util.Utils.ClassUtil;
@@ -182,7 +182,7 @@ public class ParametersDialog extends JDialog {
 		put("password", new PasswordSettingType());
 		put("combobox", new ComboBoxSettingType());
 		put("checkbox", new CheckBoxSettingType());
-		put("spinner", new SpinnerSettingType());
+		put("numspinner", new NumberSpinnerSettingType());
 	}};
 	
 	/**

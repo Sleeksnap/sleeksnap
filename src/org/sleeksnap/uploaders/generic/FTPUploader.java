@@ -38,7 +38,7 @@ import org.sleeksnap.util.Utils.DateUtil;
  * 
  */
 @Settings(required = { "hostname", "username", "password|password", "baseurl" }, optional = {
-		"port|spinner[default=21,min=0,max=65535]", "remotedir" })
+		"port|numspinner[default=21,min=0,max=65535]", "remotedir" })
 public class FTPUploader extends GenericUploader {
 
 	/**

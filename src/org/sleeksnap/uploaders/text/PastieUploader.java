@@ -1,6 +1,6 @@
 /**
  * Sleeksnap, the open source cross-platform screenshot uploader
- * Copyright (C) 2012 Nikki <nikki@nikkii.us>
+ * Copyright (C) 2014 Nikki <nikki@nikkii.us>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ package org.sleeksnap.uploaders.text;
 
 import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.PostData;
+import org.sleeksnap.http.ResponseType;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Uploader;
 
@@ -44,6 +45,6 @@ public class PastieUploader extends Uploader<TextUpload> {
 		data.put("paste[body]", t.getText());
 		data.put("paste[authorization]", "burger");
 		data.put("paste[restricted]", "0");
-		return HttpUtil.executePostForLocation(PASTIE_URL, data);
+		return HttpUtil.executePost(PASTIE_URL, data, ResponseType.REDIRECT_URL);
 	}
 }

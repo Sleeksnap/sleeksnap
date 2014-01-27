@@ -1,6 +1,7 @@
 package org.sleeksnap.uploaders.text;
 
 import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.http.ResponseType;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Uploader;
 
@@ -19,7 +20,7 @@ public class LaravelUploader extends Uploader<TextUpload> {
 
 	@Override
 	public String upload(TextUpload t) throws Exception {
-		return HttpUtil.executePostForLocation(LARAVEL_URL, "paste=" + HttpUtil.encode(t.getText()));
+		return HttpUtil.executePost(LARAVEL_URL, "paste=" + HttpUtil.encode(t.getText()), ResponseType.REDIRECT_URL);
 	}
 
 	@Override

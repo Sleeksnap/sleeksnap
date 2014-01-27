@@ -15,41 +15,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.sleeksnap.uploaders.text;
+package org.sleeksnap.uploaders.url;
 
 import org.sleeksnap.http.HttpUtil;
-import org.sleeksnap.upload.TextUpload;
+import org.sleeksnap.upload.URLUpload;
+import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
 
 /**
- * A text uploader for http://pastebin.ca
+ * A URL Shortener for is.gd
  * 
  * @author Nikki
  * 
  */
-public class PastebincaUploader extends Uploader<TextUpload> {
+public class IsgdShortener extends Uploader<URLUpload> {
 
 	/**
-	 * Basic variables, such as the API Key and URL
+	 * The page URL Format
 	 */
-	private static final String PASTEBINCA_URL = "http://pastebin.ca/";
-	private static final String PASTEBINCA_SCRIPTURL = PASTEBINCA_URL
-			+ "quiet-paste.php";
-	
-	private static final String PASTEBINCA_KEY = "cjONz2tQBu4kZxDcugEVAdkSELcD77No";
+	private static final String PAGE_URL = "http://is.gd/api.php?longurl=%s";
 
 	@Override
-	public String getName() {
-		return "Pastebin.ca";
+	public String upload(URLUpload t) throws Exception {
+		String contents = HttpUtil.executeGet(String.format(PAGE_URL,
+				HttpUtil.encode(t.getURL().toString())));
+		
+		if(contents.startsWith("http")) {
+			return contents;
+		}
+		throw new UploadException("Unexpected response from server.");
 	}
 
 	@Override
-	public String upload(TextUpload text) throws Exception {
-		String data = "api=" + PASTEBINCA_KEY + "&content="
-				+ HttpUtil.encode(text.getText()) + "&s=true&type=1&expiry=Never&name=";
-		
-		String resp = HttpUtil.executePost(PASTEBINCA_SCRIPTURL, data);
-
-		return PASTEBINCA_URL + resp.substring(resp.indexOf(':') + 1);
+	public String getName() {
+		return "is.gd";
 	}
 }

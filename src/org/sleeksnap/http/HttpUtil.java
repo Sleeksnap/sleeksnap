@@ -94,9 +94,8 @@ public class HttpUtil {
 	 * @throws IOException
 	 *             If an error occurred
 	 */
-	public static String executePost(String url, String data)
-			throws IOException {
-		return executePost(new URL(url), data);
+	public static String executePost(String url, String data) throws IOException {
+		return executePost(new URL(url), data, ResponseType.CONTENTS);
 	}
 	
 	/**
@@ -116,6 +115,38 @@ public class HttpUtil {
 	}
 	
 	/**
+	 * Alias for <code>executePost(URL url, String data)</code>, constructs the
+	 * url
+	 * 
+	 * @param url
+	 *            The URL
+	 * @param data
+	 *            The data
+	 * @return The response
+	 * @throws IOException
+	 *             If an error occurred
+	 */
+	public static String executePost(String url, String data, ResponseType responseType) throws IOException {
+		return executePost(new URL(url), data, responseType);
+	}
+	
+	/**
+	 * Alias for <code>executePost(URL url, String data)</code>, constructs the
+	 * url
+	 * 
+	 * @param url
+	 *            The URL
+	 * @param data
+	 *            The data
+	 * @return The response
+	 * @throws IOException
+	 *             If an error occurred
+	 */
+	public static String executePost(String url, PostData data, ResponseType responseType) throws IOException {
+		return executePost(new URL(url), data.toPostString(), responseType);
+	}
+	
+	/**
 	 * POST to the specified URL with the specified map of values.
 	 * 
 	 * @param url
@@ -126,9 +157,8 @@ public class HttpUtil {
 	 * @throws IOException
 	 *             If an error occurred while connecting/receiving the data
 	 */
-	public static String executePost(URL url, PostData data)
-			throws IOException {
-		return executePost(url, data.toPostString());
+	public static String executePost(URL url, PostData data) throws IOException {
+		return executePost(url, data.toPostString(), ResponseType.CONTENTS);
 	}
 	
 	/**
@@ -142,7 +172,12 @@ public class HttpUtil {
 	 * @throws IOException
 	 *             If an error occurred
 	 */
-	public static String executePost(URL url, String data) throws IOException {
+	public static String executePost(URL url, String data, ResponseType responseType) throws IOException {
+		// Set redirect following to false if we want the redirect url
+		if (responseType == ResponseType.REDIRECT_URL) {
+			HttpURLConnection.setFollowRedirects(false);
+		}
+		// Execute the request
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		connection.setRequestProperty("User-Agent", Util.getHttpUserAgent());
 		connection.setDoOutput(true);
@@ -153,77 +188,21 @@ public class HttpUtil {
 			writer.flush();
 			writer.close();
 
-			return StreamUtils.readContents(connection.getInputStream());
-		} finally {
-			connection.disconnect();
-		}
-	}
-
-	/**
-	 * Alias for <code>executePostWithLocation(URL url, String data)</code>,
-	 * constructs the url and request data
-	 * 
-	 * @param url
-	 *            The URL
-	 * @param data
-	 *            The data
-	 * @return The response
-	 * @throws IOException
-	 *             If an error occurred
-	 */
-	public static String executePostForLocation(String url, PostData data) throws IOException {
-		return executePostForLocation(url, data.toPostString());
-	}
-
-	/**
-	 * Alias for <code>executePostWithLocation(URL url, String data)</code>,
-	 * constructs the url
-	 * 
-	 * @param url
-	 *            The URL
-	 * @param data
-	 *            The data
-	 * @return The response
-	 * @throws IOException
-	 *             If an error occurred
-	 */
-	public static String executePostForLocation(String url, String data)
-			throws IOException {
-		return executePostForLocation(new URL(url), data);
-	}
-
-	/**
-	 * POST to a URL, then get the Location header for the result
-	 * 
-	 * @param url
-	 *            The url
-	 * @param data
-	 *            The data
-	 * @return The result
-	 * @throws IOException
-	 *             If an error occurred
-	 */
-	public static String executePostForLocation(URL url, String data)
-			throws IOException {
-		if (HttpURLConnection.getFollowRedirects()) {
-			HttpURLConnection.setFollowRedirects(false);
-		}
-		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		connection.setDoOutput(true);
-		try {
-			OutputStreamWriter writer = new OutputStreamWriter(
-					connection.getOutputStream());
-			writer.write(data);
-			writer.flush();
-			writer.close();
-
-			String location = connection.getHeaderField("Location");
-			if(location == null) {
-				throw new IOException("No location header found");
+			switch(responseType) {
+			case REDIRECT_URL:
+				String location = connection.getHeaderField("Location");
+				if (location == null) {
+					throw new IOException("No location header found, body: " + StreamUtils.readContents(connection.getInputStream()));
+				}
+				return location;
+			default:
+				return StreamUtils.readContents(connection.getInputStream());
 			}
-			return location;
 		} finally {
 			connection.disconnect();
+			
+			// Reset redirect following
+			HttpURLConnection.setFollowRedirects(true);
 		}
 	}
 	

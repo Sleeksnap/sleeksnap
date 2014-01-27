@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 
 /**
  * Basic file/stream utilities
@@ -53,5 +54,13 @@ public class StreamUtils {
 			reader.close();
 		}
 		return contents.toString().trim();
+	}
+	
+	public static void copy(InputStream inputStream, OutputStream outputStream) throws IOException {
+		int read;
+		byte[] buf = new byte[1024];
+		while((read = inputStream.read(buf, 0, buf.length)) != -1) {
+			outputStream.write(buf, 0, read);
+		}
 	}
 }
