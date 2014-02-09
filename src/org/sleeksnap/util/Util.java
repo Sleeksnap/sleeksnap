@@ -362,7 +362,44 @@ public class Util {
 		}
 		return ret;
 	}
+	
+	/**
+	 * A utility method for parsing response data (Useful for k: v etc)
+	 * @param input
+	 * 			The input string
+	 * @param kvSeparator
+	 * 			The value separating key and value
+	 * @param entrySeparator
+	 * 			The value separating entries
+	 * @return
+	 * 			The parsed map
+	 */
+	public static Map<String, String> parseKeyValues(String input, String kvSeparator, String entrySeparator) {
+		Map<String, String> ret = new HashMap<String, String>();
+		String[] split = input.split(entrySeparator);
+		for(String s : split) {
+			int idx = s.indexOf(kvSeparator);
+			if(idx != -1) {
+				String key = s.substring(0, idx);
+				String value = s.substring(idx + 1);
+				
+				ret.put(key, value);
+			} else {
+				ret.put(s, null);
+			}
+		}
+		return ret;
+	}
 
+	/**
+	 * Implode a list of values (Like php's implode)
+	 * @param list
+	 * 			The list to implode
+	 * @param glue
+	 * 			The glue to use between values
+	 * @return
+	 * 			The imploded string
+	 */
 	public static String implodeList(List<?> list, String glue) {
 		StringBuilder builder = new StringBuilder();
 		for(Iterator<?> it = list.iterator(); it.hasNext();) {

@@ -82,6 +82,21 @@ public class UploaderSettings {
 
 		return settings.getString(key);
 	}
+	
+	public String getStringBlankDefault(String key, String defaultValue) {
+		
+		if (!settings.has(key)) {
+			return defaultValue;
+		}
+		
+		String ret = settings.getString(key);
+		
+		if(ret == null || ret.trim().equals("")) {
+			return defaultValue;
+		}
+
+		return ret;
+	}
 
 	public boolean has(String name) {
 		return settings.has(name);

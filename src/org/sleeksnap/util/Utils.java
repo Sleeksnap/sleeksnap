@@ -133,6 +133,37 @@ public class Utils {
 		}
 		
 		/**
+		 * Parse a formatted 'expiration' time (for example 6 hours) to minutes.
+		 * @param str
+		 * 			The input string
+		 * @return
+		 * 			The time parsed, defaults to 0 if unable to parse.
+		 */
+		public static int formattedTimeToMinutes(String str) {
+			int mod = 0;
+			if (str.endsWith("minute") || str.endsWith("minutes")) {
+				mod = 60;
+			} else if (str.endsWith("hour") || str.endsWith("hours")) {
+				mod = 3600;
+			} else if (str.endsWith("day") || str.endsWith("days")) {
+				mod = 86400;
+			} else if (str.endsWith("month") || str.endsWith("months")) {
+				mod = 2592000;
+			}
+			int res = 0;
+			if (mod != 0) {
+				res = Integer.parseInt(str.substring(0, str.indexOf(' '))) * mod;
+			} else {
+				try {
+					res = Integer.parseInt(str);
+				} catch(NumberFormatException e) {
+					// Default.
+				}
+			}
+			return res;
+		}
+		
+		/**
 		 * Pad a number less than 10 with a zero
 		 * @param num
 		 * 			The number to pad
