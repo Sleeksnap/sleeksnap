@@ -23,7 +23,7 @@ import java.net.URL;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.sleeksnap.http.PostData;
+import org.sleeksnap.http.RequestData;
 import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.UploadException;
@@ -65,7 +65,7 @@ public class ImgurUploader extends Uploader<ImageUpload> {
 		URL url = new URL("https://api.imgur.com/3/image.json");
 
 		// Encode the image using our utility class
-		PostData req = new PostData();
+		RequestData req = new RequestData();
 		req.put("image", ImageUtil.toBase64(image.getImage()));
 
 		// Open a connection to the API and add our Client ID
@@ -79,7 +79,7 @@ public class ImgurUploader extends Uploader<ImageUpload> {
 			 * Write the image data and api key
 			 */
 			OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
-			writer.write(req.toPostString());
+			writer.write(req.toURLEncodedString());
 			writer.flush();
 			writer.close();
 	

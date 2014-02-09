@@ -22,7 +22,7 @@ import java.io.IOException;
 import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.MultipartPostMethod;
 import org.sleeksnap.http.MultipartPostMethod.MultipartFile;
-import org.sleeksnap.http.PostData;
+import org.sleeksnap.http.RequestData;
 import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.UploadException;
@@ -87,7 +87,7 @@ public class PuushUploader extends Uploader<ImageUpload> {
 			throw new UploaderConfigurationException("Username or password not set, please reconfigure puush's uploader!");
 		}
 		try {
-			PostData data = new PostData();
+			RequestData data = new RequestData();
 			
 			data.put("e", properties.getString("email"));
 			data.put("p", properties.getString("password"));

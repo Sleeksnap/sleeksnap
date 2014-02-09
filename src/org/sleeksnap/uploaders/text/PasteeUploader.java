@@ -18,7 +18,7 @@
 package org.sleeksnap.uploaders.text;
 
 import org.sleeksnap.http.HttpUtil;
-import org.sleeksnap.http.PostData;
+import org.sleeksnap.http.RequestData;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
@@ -33,7 +33,7 @@ public class PasteeUploader extends Uploader<TextUpload> {
 
 	@Override
 	public String upload(TextUpload upload) throws Exception {
-		PostData data = new PostData();
+		RequestData data = new RequestData();
 		
 		data.put("key", settings.getStringBlankDefault("apikey", "public"))
 			.put("language", "plain")

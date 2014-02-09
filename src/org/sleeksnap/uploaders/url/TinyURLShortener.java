@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.http.RequestData;
 import org.sleeksnap.upload.URLUpload;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
@@ -40,9 +41,9 @@ public class TinyURLShortener extends Uploader<URLUpload> {
 			.compile("<blockquote><b>(.*?)</b>");
 
 	/**
-	 * The page URL Format
+	 * The page URL
 	 */
-	private static final String PAGE_URL = "http://tinyurl.com/create.php?url=%s";
+	private static final String PAGE_URL = "http://tinyurl.com/create.php";
 
 	@Override
 	public String getName() {
@@ -50,9 +51,13 @@ public class TinyURLShortener extends Uploader<URLUpload> {
 	}
 
 	@Override
-	public String upload(URLUpload t) throws Exception {
-		String contents = HttpUtil.executeGet(String.format(PAGE_URL,
-				HttpUtil.encode(t.getURL().toString())));
+	public String upload(URLUpload url) throws Exception {
+		RequestData data = new RequestData();
+		
+		data.put("url", url.getURL());
+		
+		String contents = HttpUtil.executeGet(PAGE_URL, data);
+		
 		Matcher matcher = urlPattern.matcher(contents);
 		if (matcher.find()) {
 			return matcher.group(1);

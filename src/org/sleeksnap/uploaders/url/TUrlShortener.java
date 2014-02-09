@@ -17,10 +17,8 @@
  */
 package org.sleeksnap.uploaders.url;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.http.RequestData;
 import org.sleeksnap.upload.URLUpload;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
@@ -51,17 +49,19 @@ public class TUrlShortener extends Uploader<URLUpload> {
 
 	@Override
 	public String upload(URLUpload url) throws Exception {
-		//Format the request
-		Map<String, Object> req = new HashMap<String, Object>();
-		req.put("url", url.getURL().toString());
-		//Implode the request properties (Automatically encodes)
-		String resp = HttpUtil.executeGet(API_URL + '?' + HttpUtil.implode(req));
+		RequestData data = new RequestData();
+		
+		data.put("url", url.getURL());
+		
+		// Request the page with the specified data
+		String resp = HttpUtil.executeGet(API_URL, data);
+		
 		//Response is in STATUS:data format, data can be an error message or the shortened url.
 		String status = resp.substring(0, resp.indexOf(':'));
-		String data = resp.substring(resp.indexOf(':')+1);
+		String resStr = resp.substring(resp.indexOf(':')+1);
 		if (status.equalsIgnoreCase("ERROR")) {
-			throw new UploadException(data);
+			throw new UploadException(resStr);
 		}
-		return TURL_BASE + data;
+		return TURL_BASE + resStr;
 	}
 }

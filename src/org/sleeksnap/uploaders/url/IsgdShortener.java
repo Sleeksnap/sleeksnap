@@ -18,6 +18,7 @@
 package org.sleeksnap.uploaders.url;
 
 import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.http.RequestData;
 import org.sleeksnap.upload.URLUpload;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
@@ -33,16 +34,20 @@ public class IsgdShortener extends Uploader<URLUpload> {
 	/**
 	 * The page URL Format
 	 */
-	private static final String PAGE_URL = "http://is.gd/api.php?longurl=%s";
+	private static final String PAGE_URL = "http://is.gd/api.php";
 
 	@Override
-	public String upload(URLUpload t) throws Exception {
-		String contents = HttpUtil.executeGet(String.format(PAGE_URL,
-				HttpUtil.encode(t.getURL().toString())));
+	public String upload(URLUpload url) throws Exception {
+		RequestData data = new RequestData();
+		
+		data.put("longurl", url.getURL());
+		
+		String contents = HttpUtil.executeGet(PAGE_URL, data);
 		
 		if(contents.startsWith("http")) {
 			return contents;
 		}
+		
 		throw new UploadException("Unexpected response from server.");
 	}
 

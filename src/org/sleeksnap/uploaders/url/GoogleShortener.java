@@ -57,6 +57,7 @@ public class GoogleShortener extends Uploader<URLUpload> {
 		connection.setRequestProperty("Content-type", "application/json");
 		
 		JSONObject out = new JSONObject();
+		
 		out.put("longUrl", url.getURL());
 		
 		OutputStreamWriter writer = new OutputStreamWriter(
@@ -68,6 +69,7 @@ public class GoogleShortener extends Uploader<URLUpload> {
 		String contents = StreamUtils.readContents(connection.getInputStream());
 		
 		JSONObject resp = new JSONObject(contents);
+		
 		if(resp.has("id")) {
 			return resp.getString("id");
 		} else {

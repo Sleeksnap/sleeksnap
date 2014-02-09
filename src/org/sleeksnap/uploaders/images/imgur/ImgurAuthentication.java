@@ -9,7 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.sleeksnap.ScreenSnapper;
 import org.sleeksnap.http.HttpUtil;
-import org.sleeksnap.http.PostData;
+import org.sleeksnap.http.RequestData;
 import org.sleeksnap.uploaders.UploaderConfigurationException;
 import org.sleeksnap.uploaders.images.ImgurUploader;
 import org.sleeksnap.util.Util;
@@ -85,7 +85,7 @@ public class ImgurAuthentication {
 		HttpURLConnection conn = (HttpURLConnection) new URL(TOKEN_URL).openConnection();
 		conn.setReadTimeout(10000);
 		try {
-			PostData data = new PostData();
+			RequestData data = new RequestData();
 			data.put("refresh_token", refreshToken);
 			data.put("client_id", ImgurUploader.CLIENT_ID);
 			data.put("client_secret", ImgurUploader.CLIENT_SECRET);

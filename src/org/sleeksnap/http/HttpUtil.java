@@ -83,6 +83,38 @@ public class HttpUtil {
 	}
 
 	/**
+	 * Executes a GET request with the specified query
+	 * 
+	 * @param url
+	 *            The URL
+	 * @param data
+	 * 			  The GET query
+	 * 
+	 * @return The response
+	 * @throws IOException
+	 *             If an error occurred
+	 */
+	public static String executeGet(String url, RequestData data) throws IOException {
+		return executeGet(url + '?' + data.toURLEncodedString());
+	}
+
+	/**
+	 * Executes a GET request with the specified query
+	 * Wrapper for <code>executeGet(String, RequestData)</code>
+	 * 
+	 * @param url
+	 *            The URL
+	 * @param data
+	 * 			  The GET query
+	 * @return The response
+	 * @throws IOException
+	 *             If an error occurred
+	 */
+	public static String executeGet(URL url, RequestData data) throws IOException {
+		return executeGet(url.toString(), data);
+	}
+
+	/**
 	 * Alias for <code>executePost(URL url, String data)</code>, constructs the
 	 * url
 	 * 
@@ -109,9 +141,9 @@ public class HttpUtil {
 	 * @throws IOException
 	 *             If an error occurred while connecting/receiving the data
 	 */
-	public static String executePost(String url, PostData data)
+	public static String executePost(String url, RequestData data)
 			throws IOException {
-		return executePost(url, data.toPostString());
+		return executePost(url, data.toURLEncodedString());
 	}
 	
 	/**
@@ -142,8 +174,8 @@ public class HttpUtil {
 	 * @throws IOException
 	 *             If an error occurred
 	 */
-	public static String executePost(String url, PostData data, ResponseType responseType) throws IOException {
-		return executePost(new URL(url), data.toPostString(), responseType);
+	public static String executePost(String url, RequestData data, ResponseType responseType) throws IOException {
+		return executePost(new URL(url), data.toURLEncodedString(), responseType);
 	}
 	
 	/**
@@ -157,8 +189,8 @@ public class HttpUtil {
 	 * @throws IOException
 	 *             If an error occurred while connecting/receiving the data
 	 */
-	public static String executePost(URL url, PostData data) throws IOException {
-		return executePost(url, data.toPostString(), ResponseType.CONTENTS);
+	public static String executePost(URL url, RequestData data) throws IOException {
+		return executePost(url, data.toURLEncodedString(), ResponseType.CONTENTS);
 	}
 	
 	/**
