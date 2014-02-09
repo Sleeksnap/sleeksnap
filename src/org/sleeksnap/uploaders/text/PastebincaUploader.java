@@ -18,6 +18,7 @@
 package org.sleeksnap.uploaders.text;
 
 import org.sleeksnap.http.HttpUtil;
+import org.sleeksnap.http.PostData;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Uploader;
 
@@ -44,9 +45,15 @@ public class PastebincaUploader extends Uploader<TextUpload> {
 	}
 
 	@Override
-	public String upload(TextUpload text) throws Exception {
-		String data = "api=" + PASTEBINCA_KEY + "&content="
-				+ HttpUtil.encode(text.getText()) + "&s=true&type=1&expiry=Never&name=";
+	public String upload(TextUpload text) throws Exception {		
+		PostData data = new PostData();
+		
+		data.put("api", PASTEBINCA_KEY)
+			.put("content", text.getText())
+			.put("s", true)
+			.put("type", "1")
+			.put("expiry", "Never")
+			.put("name", "");
 		
 		String resp = HttpUtil.executePost(PASTEBINCA_SCRIPTURL, data);
 

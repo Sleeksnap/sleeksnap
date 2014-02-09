@@ -34,10 +34,11 @@ public class PasteeUploader extends Uploader<TextUpload> {
 	@Override
 	public String upload(TextUpload upload) throws Exception {
 		PostData data = new PostData();
-		data.put("key", settings.getString("apikey", "public"));
-		data.put("language", "plain");
-		data.put("format", "simple");
-		data.put("paste", upload.getText());
+		
+		data.put("key", settings.getStringBlankDefault("apikey", "public"))
+			.put("language", "plain")
+			.put("format", "simple")
+			.put("paste", upload.getText());
 		
 		return HttpUtil.executePost("http://paste.ee/api", data);
 	}

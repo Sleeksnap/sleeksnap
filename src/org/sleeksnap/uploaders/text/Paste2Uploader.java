@@ -36,10 +36,11 @@ public class Paste2Uploader extends Uploader<TextUpload> {
 	@Override
 	public String upload(TextUpload t) throws Exception {
 		PostData data = new PostData();
-		data.put("code", t.getText());
-		data.put("description", "");
-		data.put("lang", "text");
-		data.put("parent", "");
+		
+		data.put("code", t.getText())
+			.put("description", "")
+			.put("lang", "text")
+			.put("parent", "");
 		
 		return HttpUtil.executePost(APIURL, data, ResponseType.REDIRECT_URL);
 	}

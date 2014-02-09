@@ -42,11 +42,10 @@ import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.settings.types.CheckBoxSettingType;
 import org.sleeksnap.uploaders.settings.types.ComboBoxSettingType;
-import org.sleeksnap.uploaders.settings.types.PasswordSettingType;
 import org.sleeksnap.uploaders.settings.types.NumberSpinnerSettingType;
+import org.sleeksnap.uploaders.settings.types.PasswordSettingType;
 import org.sleeksnap.uploaders.settings.types.TextSettingType;
 import org.sleeksnap.util.Util;
-import org.sleeksnap.util.Utils.ClassUtil;
 
 /**
  * The dialog which shows the simulation's parameters before it is ran.
@@ -245,7 +244,7 @@ public class ParametersDialog extends JDialog {
 	 */
 	private void initComponents() {
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setTitle(ClassUtil.formatName(uploader.getClass()) + " Settings");
+		setTitle(uploader.getName() + " Settings");
 		setResizable(false);
 
 		GroupLayout layout = new GroupLayout(getContentPane());

@@ -64,14 +64,17 @@ public class PastebinUploader extends Uploader<TextUpload> {
 
 	@Override
 	public String upload(TextUpload contents) throws Exception {
-		PostData req = new PostData();
-		req.put("api_dev_key", API_KEY);
-		req.put("api_option", API_OPTION_PASTE);
-		req.put("api_paste_code", contents.getText());
+		PostData data = new PostData();
+		
+		data.put("api_dev_key", API_KEY)
+			.put("api_option", API_OPTION_PASTE)
+			.put("api_paste_code", contents.getText());
+		
 		// User signed in through API
 		if (settings.has("apikey")) {
-			req.put("api_user_key", settings.getString("apikey"));
+			data.put("api_user_key", settings.getString("apikey"));
 		}
+		
 		// Paste exposure is set.
 		if (settings.has("paste_exposure")) {
 			PastebinExposure exp = PastebinExposure.valueOf(settings
@@ -83,15 +86,18 @@ public class PastebinUploader extends Uploader<TextUpload> {
 					throw new UploaderConfigurationException(
 							"Pastebin.com only supports private pastes while logged in!");
 				} else {
-					req.put("api_paste_private", exp.ordinal());
+					data.put("api_paste_private", exp.ordinal());
 				}
 			}
 		}
+		
 		// Execute it and let the user know if something is wrong with it.
-		String resp = HttpUtil.executePost(API_URL, req);
+		String resp = HttpUtil.executePost(API_URL, data);
+		
 		if (resp.startsWith("Bad")) {
 			throw new UploadException(resp.substring(resp.indexOf(',') + 2));
 		}
+		
 		return resp;
 	}
 
@@ -104,12 +110,12 @@ public class PastebinUploader extends Uploader<TextUpload> {
 					.getString("password");
 			if (!username.equals("") && !password.equals("")) {
 				// Validate the username and password, then get us a key.
-				PostData req = new PostData();
-				req.put("api_dev_key", API_KEY);
-				req.put("api_user_name", username);
-				req.put("api_user_password", password);
+				PostData data = new PostData();
+				data.put("api_dev_key", API_KEY)
+					.put("api_user_name", username)
+					.put("api_user_password", password);
 				try {
-					String resp = HttpUtil.executePost(API_AUTH_URL, req);
+					String resp = HttpUtil.executePost(API_AUTH_URL, data);
 					if (resp.startsWith("Bad")) {
 						throw new UploaderConfigurationException(
 								resp.substring(resp.indexOf(',') + 2));

@@ -23,6 +23,7 @@ import org.sleeksnap.http.ResponseType;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.util.Utils.FormatUtil;
 
 /**
  * An uploader for slexy.org
@@ -38,33 +39,17 @@ public class SlexyUploader extends Uploader<TextUpload> {
 	@Override
 	public String upload(TextUpload t) throws Exception {
 		PostData data = new PostData();
-		data.put("raw_paste", t.getText());
-		data.put("author", settings.getString("author", ""));
-		data.put("comment", "");
-		data.put("desc", settings.getString("description", ""));
-		// Format the expiration
-		int mod = 0;
-		String exp = settings.getString("expiration", "0");
-		if (exp.endsWith("minute") || exp.endsWith("minutes")) {
-			mod = 60;
-		} else if (exp.endsWith("hour") || exp.endsWith("hours")) {
-			mod = 3600;
-		} else if (exp.endsWith("day") || exp.endsWith("days")) {
-			mod = 86400;
-		} else if (exp.endsWith("month") || exp.endsWith("months")) {
-			mod = 2592000;
-		}
-		int expiration = 0;
-		if (mod != 0) {
-			expiration = Integer.parseInt(exp.substring(0, exp.indexOf(' '))) * mod;
-		}
-		data.put("expire", expiration);
-		data.put("language", "text");
-		data.put("linenumbers", settings.getBoolean("line_numbers", true));
-		data.put("permissions", settings.getString("visibility").equals("Private") ? 1 : 0);
-		data.put("submit", "Submit Paste");
-		data.put("tabbing", "true");
-		data.put("tabtype", "real");
+		data.put("raw_paste", t.getText())
+			.put("author", settings.getString("author", ""))
+			.put("comment", "")
+			.put("desc", settings.getString("description", ""))
+			.put("expire", FormatUtil.formattedTimeToMinutes(settings.getString("expiration", "0")))
+			.put("language", "text")
+			.put("linenumbers", settings.getBoolean("line_numbers", true))
+			.put("permissions", settings.getString("visibility").equals("Private") ? 1 : 0)
+			.put("submit", "Submit Paste")
+			.put("tabbing", "true")
+			.put("tabtype", "real");
 		
 		return HttpUtil.executePost(APIURL, data, ResponseType.REDIRECT_URL);
 	}
