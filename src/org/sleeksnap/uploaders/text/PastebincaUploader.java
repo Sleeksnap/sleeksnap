@@ -54,7 +54,7 @@ public class PastebincaUploader extends Uploader<TextUpload> {
 			.put("content", text.getText())
 			.put("s", true)
 			.put("type", "1")
-			.put("expiry", "Never")
+			.put("expiry", settings.getString("expiration", "Never"))
 			.put("name", "");
 		
 		String resp = HttpUtil.executePost(PASTEBINCA_SCRIPTURL, data);
