@@ -101,6 +101,7 @@ import org.sleeksnap.uploaders.text.SlexyUploader;
 import org.sleeksnap.uploaders.text.UpasteUploader;
 import org.sleeksnap.uploaders.url.GoogleShortener;
 import org.sleeksnap.uploaders.url.IsgdShortener;
+import org.sleeksnap.uploaders.url.PostShortener;
 import org.sleeksnap.uploaders.url.TUrlShortener;
 import org.sleeksnap.uploaders.url.TinyURLShortener;
 import org.sleeksnap.util.ProgramOptions;
@@ -809,6 +810,7 @@ public class ScreenSnapper {
 		registerUploader(new TinyURLShortener());
 		registerUploader(new TUrlShortener());
 		registerUploader(new IsgdShortener());
+		registerUploader(new PostShortener());
 		// File uploaders
 		registerUploader(new FilebinUploader());
 		registerUploader(new UppitUploader());
