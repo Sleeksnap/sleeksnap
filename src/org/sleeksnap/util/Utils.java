@@ -131,6 +131,7 @@ public class Utils {
 			
 			return bldr.toString();
 		}
+
 		
 		/**
 		 * Parse a formatted 'expiration' time (for example 6 hours) to minutes.
@@ -141,14 +142,14 @@ public class Utils {
 		 */
 		public static int formattedTimeToMinutes(String str) {
 			int mod = 0;
-			if (str.endsWith("minute") || str.endsWith("minutes")) {
+			if (str.endsWith("hour") || str.endsWith("hours")) {
 				mod = 60;
-			} else if (str.endsWith("hour") || str.endsWith("hours")) {
-				mod = 3600;
 			} else if (str.endsWith("day") || str.endsWith("days")) {
-				mod = 86400;
+				mod = 1440;
 			} else if (str.endsWith("month") || str.endsWith("months")) {
-				mod = 2592000;
+				mod = 43200;
+			} else if (str.endsWith("year") || str.endsWith("years")) {
+				mod = 525600;
 			}
 			int res = 0;
 			if (mod != 0) {
@@ -161,6 +162,17 @@ public class Utils {
 				}
 			}
 			return res;
+		}
+		
+		/**
+		 * Parse a formatted 'expiration' time (for example 6 hours) to seconds.
+		 * @param str
+		 * 			The input string
+		 * @return
+		 * 			The time parsed, defaults to 0 if unable to parse.
+		 */
+		public static int formattedTimeToSeconds(String str) {
+			return formattedTimeToMinutes(str) * 60;
 		}
 		
 		/**

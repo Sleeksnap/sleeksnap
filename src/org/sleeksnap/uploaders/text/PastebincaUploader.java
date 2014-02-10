@@ -20,6 +20,7 @@ package org.sleeksnap.uploaders.text;
 import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.RequestData;
 import org.sleeksnap.upload.TextUpload;
+import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
 
 /**
@@ -28,6 +29,7 @@ import org.sleeksnap.uploaders.Uploader;
  * @author Nikki
  * 
  */
+@Settings(required = { }, optional = { "expiration|combobox[Never,5 minutes,10 minutes,15 minutes,30 minutes,45 minutes,1 hour,2 hours,4 hours,8 hours,12 hours,1 day,2 days,3 days,1 week,2 weeks,3 weeks,1 month,2 months,3 months,4 months,5 months,6 months,1 year]" })
 public class PastebincaUploader extends Uploader<TextUpload> {
 
 	/**

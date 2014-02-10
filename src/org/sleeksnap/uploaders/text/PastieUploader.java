@@ -21,6 +21,7 @@ import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.RequestData;
 import org.sleeksnap.http.ResponseType;
 import org.sleeksnap.upload.TextUpload;
+import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
 
 /**
@@ -29,6 +30,7 @@ import org.sleeksnap.uploaders.Uploader;
  * @author Nikki
  * 
  */
+@Settings(required = {}, optional = { "privacy|combobox[Public,Private]" })
 public class PastieUploader extends Uploader<TextUpload> {
 
 	private static final String PASTIE_URL = "http://pastie.org/pastes";
@@ -45,7 +47,7 @@ public class PastieUploader extends Uploader<TextUpload> {
 		data.put("paste[parser]", "plain_text")
 			.put("paste[body]", t.getText())
 			.put("paste[authorization]", "burger")
-			.put("paste[restricted]", "0");
+			.put("paste[restricted]", settings.getString("privacy", "Public").equals("Private") ? 1 : 0);
 		
 		return HttpUtil.executePost(PASTIE_URL, data, ResponseType.REDIRECT_URL);
 	}

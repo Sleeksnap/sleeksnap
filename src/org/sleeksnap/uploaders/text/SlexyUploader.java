@@ -39,11 +39,12 @@ public class SlexyUploader extends Uploader<TextUpload> {
 	@Override
 	public String upload(TextUpload t) throws Exception {
 		RequestData data = new RequestData();
+		
 		data.put("raw_paste", t.getText())
 			.put("author", settings.getString("author", ""))
 			.put("comment", "")
 			.put("desc", settings.getString("description", ""))
-			.put("expire", FormatUtil.formattedTimeToMinutes(settings.getString("expiration", "0")))
+			.put("expire", FormatUtil.formattedTimeToSeconds(settings.getString("expiration", "0")))
 			.put("language", "text")
 			.put("linenumbers", settings.getBoolean("line_numbers", true))
 			.put("permissions", settings.getString("visibility").equals("Private") ? 1 : 0)

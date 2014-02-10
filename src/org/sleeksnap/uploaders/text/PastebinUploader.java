@@ -34,7 +34,7 @@ import org.sleeksnap.uploaders.settings.UploaderSettings;
  * @author Nikki
  * 
  */
-@Settings(required = { "paste_exposure|combobox[Public,Unlisted,Private]" }, optional = { "username", "password|password" })
+@Settings(required = { }, optional = { "username", "password|password", "paste_exposure|combobox[Public,Unlisted,Private]", "expiration|combobox[Never,10 minutes,1 hour,1 day,1 week,2 weeks,1 month]" })
 public class PastebinUploader extends Uploader<TextUpload> {
 
 	/**
@@ -88,6 +88,19 @@ public class PastebinUploader extends Uploader<TextUpload> {
 				} else {
 					data.put("api_paste_private", exp.ordinal());
 				}
+			}
+		}
+		
+		// Expiration, this'll probably be set.
+		if (settings.has("expiration")) {
+			String exp = settings.getString("expiration", "N");
+			
+			if(exp.indexOf(' ') != -1) {
+				exp = exp.substring(0, exp.indexOf(' ')) + Character.toUpperCase(exp.charAt(exp.indexOf(' ')+1));
+			}
+			
+			if (!exp.equals("Never")) {
+				data.put("api_paste_expire_date", exp);
 			}
 		}
 		

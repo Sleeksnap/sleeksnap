@@ -270,8 +270,8 @@ public class HttpUtil {
 	 * @return
 	 * 			The parsed string in a map.
 	 */
-	public static Map<String, Object> parseQueryString(String string) {
-		Map<String, Object> values = new HashMap<String, Object>();
+	public static Map<String, String> parseQueryString(String string) {
+		Map<String, String> values = new HashMap<String, String>();
 		String[] split = string.split("&");
 
 		for(String s : split) {

@@ -44,6 +44,7 @@ public class UpasteUploader extends Uploader<TextUpload> {
 	@Override
 	public String upload(TextUpload t) throws Exception {
 		RequestData data = new RequestData();
+		
 		data.put("api_key", settings.getStringBlankDefault("private_token", APIKEY))
 			.put("paste", t.getText())
 			.put("name", settings.getString("name", ""))

@@ -22,9 +22,12 @@ import org.sleeksnap.http.RequestData;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.util.Utils.FormatUtil;
 
-@Settings(required = {}, optional = { "apikey" })
+@Settings(required = {}, optional = { "apikey", "description", "expiration|combobox[No expiration,5 minutes,15 minutes,30 minutes,1 hour,6 hours,12 hours,1 day,3 days,5 days,10 days,15 days,1 month]", "expire_views|numspinner[default=0,min=0]"  })
 public class PasteeUploader extends Uploader<TextUpload> {
+	
+	private static final String APIKEY = "public";
 
 	@Override
 	public String getName() {
@@ -35,10 +38,18 @@ public class PasteeUploader extends Uploader<TextUpload> {
 	public String upload(TextUpload upload) throws Exception {
 		RequestData data = new RequestData();
 		
-		data.put("key", settings.getStringBlankDefault("apikey", "public"))
+		data.put("key", settings.getStringBlankDefault("apikey", APIKEY))
 			.put("language", "plain")
 			.put("format", "simple")
 			.put("paste", upload.getText());
+		
+		int expireViews = settings.getInt("expire_views", 0);
+		
+		if(expireViews > 0) {
+			data.put("expire", "views;" + expireViews);
+		} else {
+			data.put("expire", FormatUtil.formattedTimeToMinutes(settings.getString("expiration", "0")));
+		}
 		
 		return HttpUtil.executePost("http://paste.ee/api", data);
 	}
