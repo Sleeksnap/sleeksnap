@@ -253,7 +253,15 @@ public class ScreenSnapper {
 	 */
 	private String lastUrl;
 
+	/**
+	 * The number of retries used
+	 */
 	private int retries;
+
+	/**
+	 * The open settings window
+	 */
+	private JFrame settingsFrame;
 
 	/**
 	 * Initialize the program
@@ -924,11 +932,12 @@ public class ScreenSnapper {
 	 */
 	public boolean openSettings() {
 		if (optionsOpen) {
-			return false;
+			settingsFrame.requestFocus();
+			return true;
 		}
 		optionsOpen = true;
 
-		JFrame frame = new JFrame("Sleeksnap Settings");
+		settingsFrame = new JFrame("Sleeksnap Settings");
 
 		OptionPanel panel = new OptionPanel(this);
 		panel.getUploaderPanel().setImageUploaders(uploaders.get(ImageUpload.class).values());
@@ -938,19 +947,20 @@ public class ScreenSnapper {
 		panel.setHistory(history);
 		panel.doneBuilding();
 
-		frame.add(panel);
-		frame.pack();
-		frame.setVisible(true);
-		frame.setResizable(false);
+		settingsFrame.add(panel);
+		settingsFrame.pack();
+		settingsFrame.setVisible(true);
+		settingsFrame.setResizable(false);
 		try {
-			frame.setIconImage(ImageIO.read(Util.getResourceByName("/icon32x32.png")));
+			settingsFrame.setIconImage(ImageIO.read(Util.getResourceByName("/icon32x32.png")));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		Util.centerFrame(frame);
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		frame.addWindowListener(new WindowAdapter() {
+		Util.centerFrameOnMainDisplay(settingsFrame);
+		settingsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		settingsFrame.addWindowListener(new WindowAdapter() {
 			public void windowClosed(WindowEvent e) {
+				settingsFrame = null;
 				optionsOpen = false;
 				LogPanelHandler.unbind();
 			}
@@ -1148,7 +1158,7 @@ public class ScreenSnapper {
 				msg.append(e.getMessage());
 				int max = configuration.getInteger("max_retries", Constants.Configuration.DEFAULT_MAX_RETRIES);
 				if(retries++ < max) {
-					logger.info("Retrying upload (" + retries + " of " + max + " retries)...");
+					logger.info("Retrying upload (" + (retries - 1) + " of " + max + " retries)...");
 					msg.append("\nRetrying...");
 					upload(object);
 				} else {

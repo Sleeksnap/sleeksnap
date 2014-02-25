@@ -18,8 +18,9 @@
 package org.sleeksnap.util;
 
 import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.Toolkit;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
@@ -286,10 +287,20 @@ public class Util {
 		return out.toString();
 	}
 
-	public static void centerFrame(JFrame frame) {
-		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-	    int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
-	    int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+	/**
+	 * Center a frame on the main display
+	 * @param frame
+	 * 			The frame to center
+	 */
+	public static void centerFrameOnMainDisplay(JFrame frame) {
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] screens = ge.getScreenDevices();
+		if (screens.length < 1) {
+			return; // Silently fail.
+		}
+		Rectangle screenBounds = screens[0].getDefaultConfiguration().getBounds();
+	    int x = (int) ((screenBounds.getWidth() - frame.getWidth()) / 2);
+	    int y = (int) ((screenBounds.getHeight() - frame.getHeight()) / 2);
 	    frame.setLocation(x, y);
 	}
 	

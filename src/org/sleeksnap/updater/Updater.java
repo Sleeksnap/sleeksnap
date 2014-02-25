@@ -171,7 +171,7 @@ public class Updater {
 			e1.printStackTrace();
 		}
 		
-		Util.centerFrame(frame);
+		Util.centerFrameOnMainDisplay(frame);
 		
 		Downloader downloader = new Downloader(url, new FileOutputStream(file));
 		downloader.addListener(panel);
