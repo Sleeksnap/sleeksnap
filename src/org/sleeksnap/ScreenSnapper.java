@@ -883,6 +883,13 @@ public class ScreenSnapper {
 		}
 	}
 	
+	/**
+	 * Set the uploader settings object
+	 * @param uploader
+	 * 			The uploader (or sub uploader) to set the object for
+	 * @param settings
+	 * 			The JSON settings object
+	 */
 	private void setUploaderSettings(Uploader<?> uploader, JSONObject settings) {
 		if(uploader.hasSettings()) {
 			uploader.getSettings().setBaseObject(settings);
@@ -1118,7 +1125,7 @@ public class ScreenSnapper {
 				String url = uploader.upload(object);
 				if (url != null) {
 					if (configuration.getBoolean("shortenurls")) {
-						Uploader shortener = uploaderAssociations.get(URL.class);
+						Uploader shortener = uploaderAssociations.get(URLUpload.class);
 						if (shortener != null) {
 							url = shortener.upload(new URLUpload(url));
 						}
@@ -1153,22 +1160,34 @@ public class ScreenSnapper {
 				icon.displayMessage(Language.getString("uploaderConfigError"), Language.getString("uploaderConfigErrorMessage"), TrayIcon.MessageType.ERROR);
 				logger.log(Level.SEVERE, "Upload failed to execute", e);
 			} catch (Exception e) {
-				// Retry until retries > max
-				StringBuilder msg = new StringBuilder("The upload failed to execute: ");
-				msg.append(e.getMessage());
-				int max = configuration.getInteger("max_retries", Constants.Configuration.DEFAULT_MAX_RETRIES);
-				if(retries++ < max) {
-					logger.info("Retrying upload (" + (retries - 1) + " of " + max + " retries)...");
-					msg.append("\nRetrying...");
-					upload(object);
-				} else {
-					msg.append("\nReached retry limit, upload aborted.");
-					logger.log(Level.SEVERE, "Upload failed to execute, retries: " + retries, e);
-					retries = 0;
-				}
-				icon.displayMessage(Language.getString("uploadFailed"), msg.toString(), TrayIcon.MessageType.ERROR);
+				retryUpload(object, e);
 			}
 		}
+	}
+	
+	/**
+	 * Retry the specified upload because of the specified cause
+	 * 
+	 * @param object
+	 * 			The upload object
+	 * @param cause
+	 * 			The failure cause
+	 */
+	private void retryUpload(Upload object, Exception cause) {
+		// Retry until retries > max
+		StringBuilder msg = new StringBuilder("The upload failed to execute: ");
+		msg.append(cause.getMessage());
+		int max = configuration.getInteger("max_retries", Constants.Configuration.DEFAULT_MAX_RETRIES);
+		if(retries++ < max) {
+			logger.info("Retrying upload (" + (retries - 1) + " of " + max + " retries)...");
+			msg.append("\nRetrying...");
+			upload(object);
+		} else {
+			msg.append("\nReached retry limit, upload aborted.");
+			logger.log(Level.SEVERE, "Upload failed to execute, retries: " + retries, cause);
+			retries = 0;
+		}
+		icon.displayMessage(Language.getString("uploadFailed"), msg.toString(), TrayIcon.MessageType.ERROR);
 	}
 
 	/**
