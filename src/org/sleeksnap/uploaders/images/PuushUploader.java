@@ -83,7 +83,7 @@ public class PuushUploader extends Uploader<ImageUpload> {
 	
 	@Override
 	public boolean validateSettings(UploaderSettings properties) throws UploaderConfigurationException {
-		if (!properties.has("username") || !properties.has("password")) {
+		if (!properties.has("email") || !properties.has("password")) {
 			throw new UploaderConfigurationException("Username or password not set, please reconfigure puush's uploader!");
 		}
 		try {
