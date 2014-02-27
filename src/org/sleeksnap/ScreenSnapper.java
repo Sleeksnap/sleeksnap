@@ -94,6 +94,7 @@ import org.sleeksnap.uploaders.images.ImgurUploader;
 import org.sleeksnap.uploaders.images.ImmioUploader;
 import org.sleeksnap.uploaders.images.PuushUploader;
 import org.sleeksnap.uploaders.settings.SettingsClass;
+import org.sleeksnap.uploaders.text.LaravelUploader;
 import org.sleeksnap.uploaders.text.Paste2Uploader;
 import org.sleeksnap.uploaders.text.PastebinUploader;
 import org.sleeksnap.uploaders.text.PastebincaUploader;
@@ -811,6 +812,7 @@ public class ScreenSnapper {
 		registerUploaderClass(PuushUploader.class);
 		registerUploaderClass(ImagebinUploader.class);
 		// Text uploaders
+		registerUploaderClass(LaravelUploader.class);
 		registerUploaderClass(Paste2Uploader.class);
 		registerUploaderClass(PasteeUploader.class);
 		registerUploaderClass(PastebinUploader.class);
