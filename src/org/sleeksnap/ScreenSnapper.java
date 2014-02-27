@@ -974,13 +974,20 @@ public class ScreenSnapper {
 			Object settingsInstance = null;
 			
 			if (file.exists()) {
-				Reader reader = new FileReader(file);
 				try {
-					settingsInstance = GSON.fromJson(reader, c.value());
-				} finally {
-					reader.close();
+					Reader reader = new FileReader(file);
+					try {
+						settingsInstance = GSON.fromJson(reader, c.value());
+					} finally {
+						reader.close();
+					}
+				} catch(Exception e) {
+					// Delete a malformed file.
+					file.delete();
 				}
-			} else {
+			}
+			
+			if (settingsInstance == null) {
 				settingsInstance = c.value().newInstance();
 			}
 			
