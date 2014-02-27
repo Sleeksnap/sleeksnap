@@ -194,7 +194,7 @@ public class ScreenSnapper {
 	private static final Logger logger = Logger.getLogger(ScreenSnapper.class.getName());
 
 	public static void main(String[] args) {
-		// Initialize
+		// Initialize program
 		ScreenSnapper instance = new ScreenSnapper();
 		instance.initialize(ProgramOptions.parseSettings(args));
 	}

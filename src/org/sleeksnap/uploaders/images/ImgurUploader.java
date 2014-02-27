@@ -24,6 +24,7 @@ import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.sleeksnap.http.RequestData;
+import org.sleeksnap.impl.APICredentials;
 import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
@@ -46,8 +47,8 @@ import org.sleeksnap.util.Utils.ImageUtil;
 @SettingsClass(ImgurUploader.ImgurSettings.class)
 public class ImgurUploader extends Uploader<ImageUpload> {
 
-	public static final String CLIENT_ID = "b1793cd0a2c3844";
-	public static final String CLIENT_SECRET = "e4027881760afb6bb0e5da5e224827963089c727";
+	public static final String CLIENT_ID = APICredentials.getCredential(ImgurUploader.class, "clientId");
+	public static final String CLIENT_SECRET = APICredentials.getCredential(ImgurUploader.class, "clientSecret");
 
 	private ImgurAuthentication auth = new ImgurAuthentication(this);
 

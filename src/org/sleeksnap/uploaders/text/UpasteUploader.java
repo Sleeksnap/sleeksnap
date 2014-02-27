@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.RequestData;
+import org.sleeksnap.impl.APICredentials;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
@@ -47,7 +48,7 @@ public class UpasteUploader extends Uploader<TextUpload> {
 	/**
 	 * The API Key
 	 */
-	private static final String APIKEY = "91f4d686e87b6ad41755954c4bb1aa96";
+	private static final String APIKEY = APICredentials.getCredential(UpasteUploader.class, "key");
 
 	/**
 	 * The settings object used for this uploader

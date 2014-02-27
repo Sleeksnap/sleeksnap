@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.RequestData;
+import org.sleeksnap.impl.APICredentials;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
@@ -42,7 +43,7 @@ public class PastebinUploader extends Uploader<TextUpload> {
 	/**
 	 * Sleeksnap's API key
 	 */
-	private static final String API_KEY = "c61444e938ad8215390a77e2d64adcfe";
+	private static final String API_KEY = APICredentials.getCredential(PastebinUploader.class, "key");
 
 	/**
 	 * API Options

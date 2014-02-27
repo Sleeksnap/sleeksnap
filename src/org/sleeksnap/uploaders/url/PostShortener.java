@@ -2,6 +2,7 @@ package org.sleeksnap.uploaders.url;
 
 import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.RequestData;
+import org.sleeksnap.impl.APICredentials;
 import org.sleeksnap.upload.URLUpload;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
@@ -19,7 +20,8 @@ public class PostShortener extends Uploader<URLUpload> {
 	/**
 	 * The API KEY and URL
 	 */
-	private static final String API_KEY = "2560371B-8FE7-4674-BB13-D1840B86CF49";
+	private static final String API_KEY = APICredentials.getCredential(PostShortener.class, "key");
+	
 	private static final String API_URL = "http://po.st/api/shorten";
 
 	@Override

@@ -19,6 +19,7 @@ package org.sleeksnap.uploaders.text;
 
 import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.RequestData;
+import org.sleeksnap.impl.APICredentials;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.settings.Setting;
@@ -41,7 +42,7 @@ public class PastebincaUploader extends Uploader<TextUpload> {
 	private static final String PASTEBINCA_SCRIPTURL = PASTEBINCA_URL
 			+ "quiet-paste.php";
 	
-	private static final String PASTEBINCA_KEY = "cjONz2tQBu4kZxDcugEVAdkSELcD77No";
+	private static final String PASTEBINCA_KEY = APICredentials.getCredential(PastebincaUploader.class, "key");
 	
 	/**
 	 * The settings object used for this uploader
