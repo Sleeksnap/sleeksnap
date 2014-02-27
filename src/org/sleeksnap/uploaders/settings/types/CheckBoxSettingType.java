@@ -31,9 +31,9 @@ import org.sleeksnap.uploaders.settings.UploaderSettingType;
 public class CheckBoxSettingType implements UploaderSettingType {
 
 	@Override
-	public JComponent constructComponent(String defaultValue) {
+	public JComponent constructComponent(String[] defaults) {
 		JCheckBox box = new JCheckBox();
-		if(Boolean.parseBoolean(defaultValue)) {
+		if(defaults.length > 0 && Boolean.parseBoolean(defaults[0])) {
 			box.setSelected(true);
 		}
 		return box;

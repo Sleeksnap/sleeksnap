@@ -24,11 +24,12 @@ import org.sleeksnap.http.MultipartPostMethod;
 import org.sleeksnap.http.MultipartPostMethod.MultipartFile;
 import org.sleeksnap.http.RequestData;
 import org.sleeksnap.upload.ImageUpload;
-import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.UploaderConfigurationException;
-import org.sleeksnap.uploaders.settings.UploaderSettings;
+import org.sleeksnap.uploaders.settings.Setting;
+import org.sleeksnap.uploaders.settings.SettingsClass;
+import org.sleeksnap.uploaders.settings.types.PasswordSettingType;
 import org.sleeksnap.util.Utils.DateUtil;
 
 /**
@@ -37,7 +38,7 @@ import org.sleeksnap.util.Utils.DateUtil;
  * @author Nikki
  *
  */
-@Settings(required = { "email", "password|password" }, optional = { })
+@SettingsClass(PuushUploader.PuushSettings.class)
 public class PuushUploader extends Uploader<ImageUpload> {
 
 	/**
@@ -50,6 +51,20 @@ public class PuushUploader extends Uploader<ImageUpload> {
 	 */
 	private static final String API_UPLOAD_URL = "http://puush.me/api/up";
 
+	/**
+	 * The settings object used for this uploader
+	 */
+	private PuushSettings settings;
+	
+	/**
+	 * Construct this uploader with the loaded settings
+	 * @param settings
+	 * 			The settings object
+	 */
+	public PuushUploader(PuushSettings settings) {
+		this.settings = settings;
+	}
+
 	@Override
 	public String getName() {
 		return "Puu.sh";
@@ -57,13 +72,13 @@ public class PuushUploader extends Uploader<ImageUpload> {
 
 	@Override
 	public String upload(ImageUpload image) throws Exception {
-		if (!settings.has("apikey")) {
+		if (settings.apikey == null || settings.apikey.isEmpty()) {
 			throw new UploaderConfigurationException("API Key is not set! Please configure this uploader's settings.");
 		}
 
 		MultipartPostMethod post = new MultipartPostMethod(API_UPLOAD_URL);
 
-		post.setParameter("k", settings.getString("apikey"));
+		post.setParameter("k", settings.apikey);
 
 		post.setParameter("z", "sleeksnap");
 
@@ -82,15 +97,15 @@ public class PuushUploader extends Uploader<ImageUpload> {
 	}
 	
 	@Override
-	public boolean validateSettings(UploaderSettings properties) throws UploaderConfigurationException {
-		if (!properties.has("email") || !properties.has("password")) {
+	public boolean validateSettings() throws UploaderConfigurationException {
+		if (settings.email == null || settings.email.isEmpty() || settings.password == null || settings.password.isEmpty()) {
 			throw new UploaderConfigurationException("Username or password not set, please reconfigure puush's uploader!");
 		}
 		try {
 			RequestData data = new RequestData();
 			
-			data.put("e", properties.getString("email"));
-			data.put("p", properties.getString("password"));
+			data.put("e", settings.email);
+			data.put("p", settings.password);
 			
 			String resp = HttpUtil.executePost(API_AUTH_URL, data).trim();
 			if(resp.startsWith("-1")) {
@@ -100,11 +115,24 @@ public class PuushUploader extends Uploader<ImageUpload> {
 			String[] s = resp.split(",");
 			
 			if(s[1].length() > 0) {
-				properties.set("apikey", s[1]);
+				settings.apikey = s[1];
 			}
 		} catch (IOException e) {
 			throw new UploaderConfigurationException("Unable to validate auth due to unexpected error");
+		} finally {
+			settings.password = null;
 		}
 		return true;
+	}
+	
+	public static class PuushSettings {
+		@Setting(name = "E-mail", description = "Puush Login E-mail")
+		public String email;
+		
+		@Setting(name = "Password", description = "Puush Login Password", type = PasswordSettingType.class)
+		public String password;
+		
+		
+		public String apikey;
 	}
 }

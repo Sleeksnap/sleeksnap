@@ -75,18 +75,14 @@ public class UploaderLoader {
 	 * @param file
 	 * 			The file to load
 	 */
+	@SuppressWarnings("unchecked")
 	private void loadSingleClassUploader(ClassLoader loader, File file) {
 		String name = file.getName().replaceAll(
 				".class", "");
 		try {
 			Class<?> c = loader.loadClass(name);
 			
-			Uploader<?> uploader = (Uploader<?>) c.newInstance();
-			
-			if (uploader == null)
-				throw new Exception();
-			
-			snapper.registerUploader(uploader);
+			snapper.registerUploaderClass((Class<? extends Uploader<?>>) c);
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null,
 				"An exception occured when loading " + name + " : " + e + ", it could be outdated.",
@@ -100,6 +96,7 @@ public class UploaderLoader {
 	 * @param file
 	 * 			The file to load
 	 */
+	@SuppressWarnings("unchecked")
 	private void loadPackedUploader(File file) {
 		String name = file.getName();
 		try {
@@ -119,14 +116,9 @@ public class UploaderLoader {
 				
 				// Attempt to load it
 				
-				Class<?> c = loader.loadClass(uploaderClass);
+				Class<? extends Uploader<?>> c = (Class<? extends Uploader<?>>) loader.loadClass(uploaderClass);
 				
-				Uploader<?> uploader = (Uploader<?>) c.newInstance();
-				
-				if(uploader == null)
-					throw new Exception();
-				
-				snapper.registerUploader(uploader);
+				snapper.registerUploaderClass(c);
 			} else {
 				throw new Exception("Unable to find Manifest file");
 			}

@@ -11,7 +11,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
-import org.json.JSONObject;
 import org.nikkii.embedhttp.HttpServer;
 import org.nikkii.embedhttp.handler.HttpRequestHandler;
 import org.nikkii.embedhttp.impl.HttpRequest;
@@ -26,10 +25,10 @@ public class ImgurOAuthSettingType implements UploaderSettingType {
 	
 	private static final String AUTH_URL = "https://api.imgur.com/oauth2/authorize?client_id=" + ImgurUploader.CLIENT_ID + "&response_type=token";
 
-	private JSONObject obj = null;
+	private ImgurAuthenticationObject obj = null;
 
 	@Override
-	public JComponent constructComponent(String defaultValue) {
+	public JComponent constructComponent(String[] defaults) {
 		final JButton button = new JButton("Click to authorize");
 		button.setPreferredSize(new Dimension(200, 20));
 		button.addActionListener(new ActionListener() {
@@ -75,7 +74,10 @@ public class ImgurOAuthSettingType implements UploaderSettingType {
 	}
 
 	private void processImgurToken(final JComponent component, final Map<String, Object> data) {
-		obj = new JSONObject(data);
+		final ImgurAuthenticationObject obj = new ImgurAuthenticationObject();
+		obj.setAccessToken(data.get("access_token").toString());
+		obj.setRefreshToken(data.get("refresh_token").toString());
+		obj.setAccountUsername(data.get("account_username").toString());
 		
 		new Thread(new Runnable() {
 			public void run() {
@@ -88,10 +90,10 @@ public class ImgurOAuthSettingType implements UploaderSettingType {
 
 	@Override
 	public void setValue(JComponent component, Object value) {
-		if (value instanceof JSONObject) {
-			JSONObject obj = (JSONObject) value;
+		if (value instanceof ImgurAuthenticationObject) {
+			ImgurAuthenticationObject obj = (ImgurAuthenticationObject) value;
 
-			((JButton) component).setText(obj.getString("account_username"));
+			((JButton) component).setText(obj.getAccountUsername());
 
 			this.obj = obj;
 		}

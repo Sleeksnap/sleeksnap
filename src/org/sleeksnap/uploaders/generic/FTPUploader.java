@@ -24,9 +24,11 @@ import java.io.InputStream;
 import org.sleeksnap.upload.FileUpload;
 import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.upload.TextUpload;
-import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.UploaderConfigurationException;
+import org.sleeksnap.uploaders.settings.Password;
+import org.sleeksnap.uploaders.settings.Setting;
+import org.sleeksnap.uploaders.settings.SettingsClass;
 import org.sleeksnap.util.SimpleFTP;
 import org.sleeksnap.util.Utils.DateUtil;
 
@@ -37,20 +39,24 @@ import org.sleeksnap.util.Utils.DateUtil;
  * @author Nikki
  * 
  */
-@Settings(required = { "hostname", "username", "password|password", "baseurl" }, optional = {
-		"port|numspinner[default=21,min=0,max=65535]", "remotedir" })
+@SettingsClass(FTPUploader.FTPUploaderSettings.class)
 public class FTPUploader extends GenericUploader {
+	
+	private Uploader<?>[] uploaders = new Uploader<?>[] { new FTPImageUploader(), new FTPTextUploader(), new FTPFileUploader() };
 
 	/**
-	 * The date format used when uploading
+	 * The settings object used for this uploader
 	 */
-
+	private FTPUploaderSettings settings;
+	
 	/**
-	 * The uploader array
+	 * Construct this uploader with the loaded settings
+	 * @param settings
+	 * 			The settings object
 	 */
-	private Uploader<?>[] uploaders = new Uploader<?>[] {
-			new FTPImageUploader(), new FTPTextUploader(),
-			new FTPFileUploader() };
+	public FTPUploader(FTPUploaderSettings settings) {
+		this.settings = settings;
+	}
 
 	/**
 	 * Upload a file to the FTP server
@@ -65,24 +71,24 @@ public class FTPUploader extends GenericUploader {
 	 */
 	public String ftpUpload(String fileName, InputStream input)
 			throws IOException, UploaderConfigurationException {
-		if (!settings.has("hostname") && !settings.isEmpty("hostname")
-				|| !settings.has("username") && !settings.isEmpty("username")
-				|| !settings.has("password") // Password can be empty.
-				|| !settings.has("baseurl") && !settings.isEmpty("baseurl")) {
+		if (settings.hostname == null || settings.hostname.isEmpty()
+				|| settings.username == null || settings.username.isEmpty()
+				|| settings.password == null // Password can be empty.
+				|| settings.baseurl == null) {
 			throw new UploaderConfigurationException(
 					"Missing hostname, username, password or baseurl!");
 		}
 		SimpleFTP ftp = new SimpleFTP();
 		
 		try {
-			ftp.connect(settings.getString("hostname"), settings.getInt("port", 21), settings.getString("username"), settings.getString("password"));
+			ftp.connect(settings.hostname, settings.port, settings.username, settings.password.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new UploaderConfigurationException("Unable to connect to FTP server, please check your username and password.");
 		}
 		
-		if (settings.has("remotedir") && !settings.isEmpty("remotedir")) {
-			if(!ftp.cwd(settings.getString("remotedir"))) {
+		if (settings.remotedir != null && !settings.remotedir.isEmpty()) {
+			if(!ftp.cwd(settings.remotedir)) {
 				throw new UploaderConfigurationException("Unable to change FTP directory.");
 			}
 		}
@@ -93,7 +99,7 @@ public class FTPUploader extends GenericUploader {
 			ftp.disconnect();
 			input.close();
 		}
-		String baseUrl = settings.getString("baseurl", "%s");
+		String baseUrl = settings.baseurl != null ? settings.baseurl : "%s";
 		if(!baseUrl.contains("%s")) {
 			baseUrl = baseUrl + "%s";
 		}
@@ -187,5 +193,26 @@ public class FTPUploader extends GenericUploader {
 	@Override
 	public String getName() {
 		return "FTP Server";
+	}
+
+	public static class FTPUploaderSettings {
+		
+		@Setting(name = "Host", description = "FTP Server Host")
+		public String hostname;
+
+		@Setting(name = "Username", description = "FTP Server Username")
+		public String username;
+
+		@Setting(name = "Password", description = "FTP Server Password")
+		public Password password;
+		
+		@Setting(name = "Base URL", description = "Webserver base url to use")
+		public String baseurl;
+		
+		@Setting(name = "Port", description = "FTP Server Port", optional = true, defaults = { "min=1", "max=65535", "default=21" })
+		public int port = 21;
+		
+		@Setting(name = "Remote Directory", description = "Remote Directory to upload to", optional = true)
+		public String remotedir;
 	}
 }

@@ -17,17 +17,38 @@
  */
 package org.sleeksnap.uploaders.text;
 
+import java.util.concurrent.TimeUnit;
+
 import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.RequestData;
 import org.sleeksnap.upload.TextUpload;
-import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.uploaders.settings.Setting;
+import org.sleeksnap.uploaders.settings.SettingsClass;
 import org.sleeksnap.util.Utils.FormatUtil;
 
-@Settings(required = {}, optional = { "apikey", "description", "expiration|combobox[No expiration,5 minutes,15 minutes,30 minutes,1 hour,6 hours,12 hours,1 day,3 days,5 days,10 days,15 days,1 month]", "expire_views|numspinner[default=0,min=0]"  })
+/**
+ * An uploader for Paste.ee
+ * 
+ * @author Nikki
+ *
+ */
+@SettingsClass(PasteeUploader.PasteeSettings.class)
 public class PasteeUploader extends Uploader<TextUpload> {
 	
-	private static final String APIKEY = "public";
+	/**
+	 * The settings object used for this uploader
+	 */
+	private PasteeSettings settings;
+	
+	/**
+	 * Construct this uploader with the loaded settings
+	 * @param settings
+	 * 			The settings object
+	 */
+	public PasteeUploader(PasteeSettings settings) {
+		this.settings = settings;
+	}
 
 	@Override
 	public String getName() {
@@ -38,19 +59,83 @@ public class PasteeUploader extends Uploader<TextUpload> {
 	public String upload(TextUpload upload) throws Exception {
 		RequestData data = new RequestData();
 		
-		data.put("key", settings.getStringBlankDefault("apikey", APIKEY))
+		data.put("key", settings.apiKey != null && !settings.apiKey.isEmpty() ? settings.apiKey : "public")
 			.put("language", "plain")
 			.put("format", "simple")
 			.put("paste", upload.getText());
 		
-		int expireViews = settings.getInt("expire_views", 0);
-		
-		if(expireViews > 0) {
-			data.put("expire", "views;" + expireViews);
+		if(settings.expireViews > 0) {
+			data.put("expire", "views;" + settings.expireViews);
 		} else {
-			data.put("expire", FormatUtil.formattedTimeToMinutes(settings.getString("expiration", "0")));
+			data.put("expire", FormatUtil.formattedTimeToMinutes(settings.expiration.toString()));
 		}
 		
 		return HttpUtil.executePost("http://paste.ee/api", data);
+	}
+	
+	public static class PasteeSettings {
+		@Setting(name = "API Key", description = "Paste.ee API Key", defaults = "public", optional = true)
+		public String apiKey = "public";
+
+		@Setting(name = "Description", description = "Paste Description", defaults = "", optional = true)
+		public String description = "";
+
+		@Setting(name = "Expiration", description = "Paste Expiration Time", optional = true)
+		public PasteeExpiration expiration = PasteeExpiration.NO_EXPIRATION;
+
+		@Setting(name = "Expiration Views", description = "Paste Expiration Views", defaults = "0", optional = true)
+		public int expireViews;
+		
+		public enum PasteeExpiration {
+			NO_EXPIRATION(0, TimeUnit.SECONDS),
+			FIVE_MINUTES(5, TimeUnit.MINUTES),
+			FIFTEEN_MINUTES(15, TimeUnit.MINUTES),
+			THIRTY_MINUTES(30, TimeUnit.MINUTES),
+			ONE_HOUR(1, TimeUnit.HOURS),
+			SIX_HOURS(6, TimeUnit.HOURS),
+			TWELVE_HOURS(12, TimeUnit.HOURS),
+			ONE_DAY(1, TimeUnit.DAYS),
+			THREE_DAYS(3, TimeUnit.DAYS),
+			FIVE_DAYS(5, TimeUnit.DAYS),
+			TEN_DAYS(10, TimeUnit.DAYS),
+			FIFTEEN_DAYS(15, TimeUnit.DAYS),
+			ONE_MONTH(30, TimeUnit.DAYS);
+			
+			/**
+			 * The time in the specified unit for this expiration
+			 */
+			private int time;
+			
+			/**
+			 * The time unit for this expiration
+			 */
+			private TimeUnit unit;
+
+			private PasteeExpiration(int time, TimeUnit unit) {
+				this.time = time;
+				this.unit = unit;
+			}
+			
+			/**
+			 * Convert this expiration time to minutes
+			 * @return
+			 * 		The converted time in minutes
+			 */
+			public int toMinutes() {
+				return (int) unit.toMinutes(time);
+			}
+			
+			/**
+			 * Convert this value to a string. This is necessary because we cannot use numbers.
+			 */
+			@Override
+			public String toString() {
+				String name = unit.name().toLowerCase();
+				if (time == 1) {
+					name = name.substring(0, name.length()-1);
+				}
+				return time == 0 ? "No Expiration" : time + " " + name;
+			}
+		}
 	}
 }

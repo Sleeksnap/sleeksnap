@@ -22,11 +22,13 @@ import java.io.IOException;
 import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.RequestData;
 import org.sleeksnap.upload.TextUpload;
-import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.UploaderConfigurationException;
-import org.sleeksnap.uploaders.settings.UploaderSettings;
+import org.sleeksnap.uploaders.settings.Setting;
+import org.sleeksnap.uploaders.settings.SettingsClass;
+import org.sleeksnap.uploaders.settings.types.ComboBoxSettingType;
+import org.sleeksnap.uploaders.settings.types.PasswordSettingType;
 
 /**
  * A text uploader for Pastebin.com (New API)
@@ -34,7 +36,7 @@ import org.sleeksnap.uploaders.settings.UploaderSettings;
  * @author Nikki
  * 
  */
-@Settings(required = { }, optional = { "username", "password|password", "paste_exposure|combobox[Public,Unlisted,Private]", "expiration|combobox[Never,10 minutes,1 hour,1 day,1 week,2 weeks,1 month]" })
+@SettingsClass(PastebinUploader.PastebinSettings.class)
 public class PastebinUploader extends Uploader<TextUpload> {
 
 	/**
@@ -57,6 +59,20 @@ public class PastebinUploader extends Uploader<TextUpload> {
 	 */
 	private static final String API_AUTH_URL = "http://pastebin.com/api/api_login.php";
 
+	/**
+	 * The settings object used for this uploader
+	 */
+	private PastebinSettings settings;
+	
+	/**
+	 * Construct this uploader with the loaded settings
+	 * @param settings
+	 * 			The settings object
+	 */
+	public PastebinUploader(PastebinSettings settings) {
+		this.settings = settings;
+	}
+
 	@Override
 	public String getName() {
 		return "Pastebin.com";
@@ -71,29 +87,24 @@ public class PastebinUploader extends Uploader<TextUpload> {
 			.put("api_paste_code", contents.getText());
 		
 		// User signed in through API
-		if (settings.has("apikey")) {
-			data.put("api_user_key", settings.getString("apikey"));
+		if (settings.apikey != null && !settings.apikey.isEmpty()) {
+			data.put("api_user_key", settings.apikey);
 		}
 		
 		// Paste exposure is set.
-		if (settings.has("paste_exposure")) {
-			PastebinExposure exp = PastebinExposure.valueOf(settings
-					.getString("paste_exposure"));
-			if (exp != null) {
-				if (exp == PastebinExposure.Private
-						&& (!settings.has("apikey") || settings
-								.getString("apikey").equals(""))) {
-					throw new UploaderConfigurationException(
-							"Pastebin.com only supports private pastes while logged in!");
-				} else {
-					data.put("api_paste_private", exp.ordinal());
-				}
+		if (settings.paste_exposure != null) {
+			if (settings.paste_exposure == PastebinExposure.Private
+					&& (settings.apikey == null || settings.apikey.isEmpty())) {
+				throw new UploaderConfigurationException(
+						"Pastebin.com only supports private pastes while logged in!");
+			} else {
+				data.put("api_paste_private", settings.paste_exposure.ordinal());
 			}
 		}
 		
 		// Expiration, this'll probably be set.
-		if (settings.has("expiration")) {
-			String exp = settings.getString("expiration", "N");
+		if (settings.expiration != null) {
+			String exp = settings.expiration;
 			
 			if(exp.indexOf(' ') != -1) {
 				exp = exp.substring(0, exp.indexOf(' ')) + Character.toUpperCase(exp.charAt(exp.indexOf(' ')+1));
@@ -115,35 +126,47 @@ public class PastebinUploader extends Uploader<TextUpload> {
 	}
 
 	@Override
-	public boolean validateSettings(UploaderSettings settings)
-			throws UploaderConfigurationException {
-		if (settings.has("username")
-				&& settings.has("password")) {
-			String username = settings.getString("username"), password = settings
-					.getString("password");
-			if (!username.equals("") && !password.equals("")) {
-				// Validate the username and password, then get us a key.
-				RequestData data = new RequestData();
-				data.put("api_dev_key", API_KEY)
-					.put("api_user_name", username)
-					.put("api_user_password", password);
-				try {
-					String resp = HttpUtil.executePost(API_AUTH_URL, data);
-					if (resp.startsWith("Bad")) {
-						throw new UploaderConfigurationException(
-								resp.substring(resp.indexOf(',') + 2));
-					} else {
-						settings.set("apikey", resp);
-					}
-				} catch (IOException e) {
+	public boolean validateSettings() throws UploaderConfigurationException {
+		if (settings.username != null && settings.password != null && !settings.username.isEmpty() && !settings.password.isEmpty()) {
+			// Validate the username and password, then get us a key.
+			RequestData data = new RequestData();
+			data.put("api_dev_key", API_KEY)
+				.put("api_user_name", settings.username)
+				.put("api_user_password", settings.password);
+			try {
+				String resp = HttpUtil.executePost(API_AUTH_URL, data);
+				if (resp.startsWith("Bad")) {
 					throw new UploaderConfigurationException(
-							"Unable to verify username and password");
+							resp.substring(resp.indexOf(',') + 2));
+				} else {
+					settings.apikey = resp;
 				}
+			} catch (IOException e) {
+				throw new UploaderConfigurationException(
+						"Unable to verify username and password");
 			}
 		}
 		// We don't need to store the user's password since we get an application key
-		settings.remove("password");
+		settings.password = null;
 		return true;
+	}
+	
+	public static class PastebinSettings {
+		// "username", "password|password", "paste_exposure|combobox[Public,Unlisted,Private]", "expiration|combobox[Never,10 minutes,1 hour,1 day,1 week,2 weeks,1 month]"
+		@Setting(name = "Username", description = "Pastebin.com Account Username", optional = true)
+		public String username;
+		
+		@Setting(name = "Password", description = "Pastebin.com Account Password", type = PasswordSettingType.class, optional = true)
+		public String password;
+		
+		@Setting(name = "Paste Exposure", description = "Pastebin Paste Exposure")
+		public PastebinExposure paste_exposure = PastebinExposure.Public;
+		
+		@Setting(name = "Expiration", description = "Paste Expiration Time", type = ComboBoxSettingType.class, defaults = { "Never", "10 minutes", "1 hour", "1 day", "1 week", "2 weeks", "1 month" })
+		public String expiration;
+		
+		// The user API Key, this is automatically generated so it doesn't need a Setting annotation.
+		public String apikey;
 	}
 
 	/**

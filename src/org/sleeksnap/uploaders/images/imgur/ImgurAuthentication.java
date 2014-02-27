@@ -45,19 +45,19 @@ public class ImgurAuthentication {
 	 * @throws Exception
 	 */
 	public void addToConnection(URLConnection conn) throws Exception {
-		JSONObject account = parent.getSettings().getJSONObject("account");
-		if (account != null && account.has("access_token")) {
+		ImgurAuthenticationObject account = parent.getSettings().account;
+		if (account != null && account.getAccessToken() != null) {
 			// Check token validity
-			if(Util.currentTimeSeconds() > account.getLong("expiration_time", 0)) {
+			if(Util.currentTimeSeconds() > account.getExpirationTime()) {
 				logger.info("Token expired, requesting new token...");
 				requestNewAccessToken();
 				
 				// Refresh the object we have
-				account = parent.getSettings().getJSONObject("account");
+				account = parent.getSettings().account;
 			}
 			// If we have a good token, use it!
-			if(account != null && account.has("access_token")) {
-				conn.setRequestProperty("Authorization", "Bearer " + account.getString("access_token"));
+			if(account != null && account.getAccessToken() != null) {
+				conn.setRequestProperty("Authorization", "Bearer " + account.getAccessToken());
 				return;
 			}
 			throw new UploaderConfigurationException("Unable to renew access token!");
@@ -72,15 +72,15 @@ public class ImgurAuthentication {
 	 * 			If an error occurs during the request
 	 */
 	public void requestNewAccessToken() throws Exception {
-		JSONObject account = parent.getSettings().getJSONObject("account");
+		ImgurAuthenticationObject account = parent.getSettings().account;
 		
-		String refreshToken = account.getString("refresh_token", null);
+		String refreshToken = account.getRefreshToken();
 
 		if (refreshToken == null) {
 			throw new UploaderConfigurationException("No refresh token found.");
 		}
 		
-		account.remove("access_token");
+		account.setAccessToken(null);
 
 		HttpURLConnection conn = (HttpURLConnection) new URL(TOKEN_URL).openConnection();
 		conn.setReadTimeout(10000);
@@ -96,17 +96,14 @@ public class ImgurAuthentication {
 			try {
 				JSONObject obj = new JSONObject(response);
 				
-				// Remove extras
-				obj.remove("scope");
-				
 				// expires_in = seconds, update the counter
 				long expireTime = obj.getLong("expires_in");
 				
-				obj.put("expiration_time", Util.currentTimeSeconds() + expireTime);
+				account.setAccessToken(obj.getString("access_token"));
+				account.setExpirationTime(Util.currentTimeSeconds() + expireTime);
 				
 				// The object is the same as what we would have, so just keep it :D
-				parent.getSettings().set("account", obj);
-				parent.getSettings().save(ScreenSnapper.getSettingsFile(ImgurUploader.class));
+				parent.saveSettings(ScreenSnapper.getSettingsFile(ImgurUploader.class));
 			} catch(JSONException e) {
 				throw new UploaderConfigurationException("Unable to refresh access token from Imgur!");
 			}

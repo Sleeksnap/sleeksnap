@@ -22,9 +22,10 @@ import java.util.Map;
 
 import org.sleeksnap.http.MultipartPostMethod;
 import org.sleeksnap.upload.FileUpload;
-import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.uploaders.settings.Setting;
+import org.sleeksnap.uploaders.settings.SettingsClass;
 
 /**
  * An uploader for http://filebin.ca
@@ -33,13 +34,19 @@ import org.sleeksnap.uploaders.Uploader;
  * @author Nikki
  *
  */
-@Settings(required = {}, optional = { "api_key" })
+@SettingsClass(FilebinUploader.FilebinSettings.class)
 public class FilebinUploader extends Uploader<FileUpload> {
 	
 	/**
 	 * The Filebin API URL
 	 */
 	private static final String API_URL = "http://filebin.ca/upload.php";
+	
+	private FilebinSettings settings;
+	
+	public FilebinUploader(FilebinSettings settings) {
+		this.settings = settings;
+	}
 
 	@Override
 	public String getName() {
@@ -50,8 +57,8 @@ public class FilebinUploader extends Uploader<FileUpload> {
 	public String upload(FileUpload file) throws Exception {
 		MultipartPostMethod post = new MultipartPostMethod(API_URL);
 		post.setParameter("file", file.getFile());
-		if(settings.has("api_key")) {
-			post.setParameter("key", settings.getString("api_key"));
+		if(settings.apikey != null && !settings.apikey.isEmpty()) {
+			post.setParameter("key", settings.apikey);
 		}
 		post.execute();
 		String resp = post.getResponse();
@@ -71,4 +78,8 @@ public class FilebinUploader extends Uploader<FileUpload> {
 		return res.get("url");
 	}
 
+	public static class FilebinSettings {
+		@Setting(name = "API Key", description = "File Upload API Key", optional = true)
+		public String apikey;
+	}
 }

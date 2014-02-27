@@ -18,12 +18,13 @@
 package org.sleeksnap.uploaders;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 
+import org.sleeksnap.ScreenSnapper;
 import org.sleeksnap.upload.Upload;
-import org.sleeksnap.uploaders.settings.UploaderSettings;
+import org.sleeksnap.uploaders.settings.SettingsClass;
 
 /**
  * A basic uploader
@@ -34,16 +35,13 @@ import org.sleeksnap.uploaders.settings.UploaderSettings;
  *            The upload type
  */
 public abstract class Uploader<T extends Upload> {
-
-	/**
-	 * The properties instance
-	 */
-	protected UploaderSettings settings = new UploaderSettings();
 	
 	/**
 	 * The parent uploader, used if this is a sub uploader of another generic uploader
 	 */
 	protected Uploader<?> parent;
+	
+	private Object settingsInstance;
 	
 	public Uploader() {
 		
@@ -71,52 +69,16 @@ public abstract class Uploader<T extends Upload> {
 	 * @throws Exception
 	 */
 	public abstract String upload(T t) throws Exception;
-
-	/**
-	 * Load the settings from the specified file
-	 * 
-	 * @param file
-	 * 		The file to load from
-	 * @throws IOException
-	 *             If an error occurred while loading
-	 */
-	public void loadSettings(File file) throws IOException {
-		FileInputStream input = new FileInputStream(file);
-		try {
-			settings.load(file);
-		} finally {
-			input.close();
-		}
-	}
-
-	/**
-	 * Save the settings to the specified file
-	 * 
-	 * @param file
-	 *            The file to save to
-	 * @throws IOException
-	 *             If an error occurred while saving
-	 */
-	public void saveSettings(File file) throws IOException {
-		FileOutputStream out = new FileOutputStream(file);
-		try {
-			settings.saveTo(out);
-		} finally {
-			out.close();
-		}
-	}
 	
 	/**
 	 * Can be overridden by the uploader to validate the settings.
 	 * 
 	 * If invalid, either throw an UploaderConfigurationException or display your own message.
 	 * 
-	 * @param newSettings
-	 * 			The settings object
 	 * @return
 	 * 			true if valid, false if invalid.
 	 */
-	public boolean validateSettings(UploaderSettings newSettings) throws UploaderConfigurationException {
+	public boolean validateSettings() throws UploaderConfigurationException {
 		return true;
 	}
 	
@@ -128,25 +90,6 @@ public abstract class Uploader<T extends Upload> {
 		if(parent != null) {
 			parent.onActivation();
 		}
-	}
-
-	/**
-	 * Set this uploader's settings
-	 * 
-	 * @param settings
-	 *            The Properties object containing the settings
-	 */
-	public void setSettings(UploaderSettings settings) {
-		this.settings = settings;
-	}
-
-	/**
-	 * Get this uploader's properties
-	 * 
-	 * @return The properties
-	 */
-	public UploaderSettings getSettings() {
-		return settings;
 	}
 	
 	/**
@@ -163,16 +106,16 @@ public abstract class Uploader<T extends Upload> {
 	public boolean hasParent() {
 		return parent != null;
 	}
-	
+
 	/**
 	 * Check if this class directly has settings
 	 * @return
 	 * 		True if this class has settings
 	 */
 	public boolean hasDirectSettings() {
-		return getClass().isAnnotationPresent(Settings.class);
+		return getClass().isAnnotationPresent(SettingsClass.class);
 	}
-	
+
 	/**
 	 * Check if this uploader (or generic uploader parent) has settings
 	 * @return
@@ -187,12 +130,29 @@ public abstract class Uploader<T extends Upload> {
 	 * 
 	 * @return The settings, or null if it doesn't have any
 	 */
-	public Settings getSettingsAnnotation() {
-		Settings settings = getClass().getAnnotation(Settings.class);
-		
+	public SettingsClass getSettingsAnnotation() {
+		SettingsClass settings = getClass().getAnnotation(SettingsClass.class);
+
 		if (settings == null && parent != null) {
 			settings = parent.getSettingsAnnotation();
 		}
 		return settings;
+	}
+	
+	public void saveSettings(File file) throws IOException {
+		Writer writer = new FileWriter(file);
+		try {
+			ScreenSnapper.GSON.toJson(settingsInstance, writer);
+		} finally {
+			writer.close();
+		}
+	}
+	
+	public Object getSettingsInstance() {
+		return settingsInstance;
+	}
+
+	public void setSettingsInstance(Object settingsInstance) {
+		this.settingsInstance = settingsInstance;
 	}
 }

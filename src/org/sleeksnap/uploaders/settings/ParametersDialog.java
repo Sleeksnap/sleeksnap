@@ -21,31 +21,28 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 
-import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.uploaders.settings.types.AutoDetectSettingType;
 import org.sleeksnap.uploaders.settings.types.CheckBoxSettingType;
-import org.sleeksnap.uploaders.settings.types.ComboBoxSettingType;
+import org.sleeksnap.uploaders.settings.types.EnumComboBoxSettingType;
 import org.sleeksnap.uploaders.settings.types.NumberSpinnerSettingType;
-import org.sleeksnap.uploaders.settings.types.PasswordSettingType;
 import org.sleeksnap.uploaders.settings.types.TextSettingType;
-import org.sleeksnap.util.Util;
 
 /**
  * The dialog which shows the simulation's parameters before it is ran.
@@ -53,8 +50,6 @@ import org.sleeksnap.util.Util;
  * @author Graham Edgecombe
  * @author Nikki
  */
-@Settings(required = { "Username", "Password" }, optional = { "Optional 1",
-		"Optional 2" })
 public class ParametersDialog extends JDialog {
 
 	/**
@@ -83,11 +78,6 @@ public class ParametersDialog extends JDialog {
 	private final JButton btnCancel = new JButton("Cancel");
 
 	/**
-	 * The settings instance
-	 */
-	private Settings settings;
-
-	/**
 	 * The settings array length
 	 */
 	private int length;
@@ -96,11 +86,15 @@ public class ParametersDialog extends JDialog {
 	 * The action listener
 	 */
 	private ActionListener actionListener;
+	
+	private Field[] requiredSettings;
+	
+	private Field[] optionalSettings;
 
 	/**
 	 * The map of name => field
 	 */
-	private Map<String, UploaderSetting> fieldMap = new HashMap<String, UploaderSetting>();
+	private Map<Field, UploaderSetting> fieldMap = new HashMap<Field, UploaderSetting>();
 
 	/**
 	 * The uploader name
@@ -117,57 +111,73 @@ public class ParametersDialog extends JDialog {
 	 * 			The uploader for this settings dialog
 	 * @param settings
 	 * 			The settings annotation
+	 * @throws Exception 
 	 */
-	public ParametersDialog(JFrame parent, Uploader<?> uploader,
-			Settings settings) {
+	public ParametersDialog(JFrame parent, Uploader<?> uploader, Class<?> settingClass) throws Exception {
 		super(parent);
 		this.uploader = uploader;
-		this.settings = settings;
-		int requiredLength = settings.required().length;
-		int optionalLength = settings.optional().length;
-		length = requiredLength + optionalLength;
+		
+		List<Field> required = new ArrayList<Field>();
+		List<Field> optional = new ArrayList<Field>();
+		
+		for (Field field : settingClass.getFields()) {
+			Setting setting = field.getAnnotation(Setting.class);
+			
+			if (setting != null) {
+				if (setting.optional()) {
+					optional.add(field);
+				} else {
+					required.add(field);
+				}
+			}
+		}
+		
+		requiredSettings = required.toArray(new Field[required.size()]);
+		optionalSettings = optional.toArray(new Field[optional.size()]);
+		
+		length = requiredSettings.length + optionalSettings.length;
 		// Check the length for labels
-		if (requiredLength != 0) {
+		if (requiredSettings.length != 0) {
 			length++;
 		}
-		if (optionalLength != 0) {
+		if (optionalSettings.length != 0) {
 			length++;
 		}
 		this.labels = new JLabel[length];
-		this.components = createComponentArray();
+		this.components = createComponentArray(settingClass);
 
 		initComponents();
 	}
 
 	/**
 	 * Creates the component array from the parameters array.
+	 * @param settingClass 
 	 * 
 	 * @return The component array.
+	 * @throws Exception 
 	 */
-	private UploaderSetting[] createComponentArray() {
+	private UploaderSetting[] createComponentArray(Class<?> settingClass) throws Exception {
 		UploaderSetting[] components = new UploaderSetting[length];
 
-		UploaderSettings properties = uploader.getSettings();
-
 		int i = 0;
-		if (settings.required().length != 0) {
+		if (requiredSettings.length != 0) {
 			labels[i] = new JLabel("Required settings");
 			components[i] = new UploaderSetting(new JLabel(), null);
 			i++;
 
-			for (String s : settings.required()) {
-				initializeSetting(components, i, s, properties);
+			for (Field field : requiredSettings) {
+				initializeSetting(components, i, field, field.getAnnotation(Setting.class));
 				i++;
 			}
 		}
 
-		if (settings.optional().length != 0) {
+		if (optionalSettings.length != 0) {
 			labels[i] = new JLabel("Optional settings");
 			components[i] = new UploaderSetting(new JLabel(), null);
 			i++;
 
-			for (String s : settings.optional()) {
-				initializeSetting(components, i, s, properties);
+			for (Field field : optionalSettings) {
+				initializeSetting(components, i, field, field.getAnnotation(Setting.class));
 				i++;
 			}
 		}
@@ -176,13 +186,13 @@ public class ParametersDialog extends JDialog {
 	}
 	
 	@SuppressWarnings("serial")
-	private static Map<String, UploaderSettingType> settingTypes = new HashMap<String, UploaderSettingType>() {{
-		put("text", new TextSettingType());
-		put("password", new PasswordSettingType());
-		put("combobox", new ComboBoxSettingType());
-		put("checkbox", new CheckBoxSettingType());
-		put("numspinner", new NumberSpinnerSettingType());
+	private static Map<Class<?>, UploaderSettingType> settingTypes = new HashMap<Class<?>, UploaderSettingType>() {{
+		put(String.class, new TextSettingType());
+		put(boolean.class, new CheckBoxSettingType());
+		put(int.class, new NumberSpinnerSettingType());
 	}};
+	
+	private static Map<Class<?>, UploaderSettingType> cachedTypes = new HashMap<Class<?>, UploaderSettingType>();
 	
 	/**
 	 * Build the setting component/label
@@ -195,48 +205,64 @@ public class ParametersDialog extends JDialog {
 	 * @param properties
 	 * 			The current properties object
 	 */
-	public void initializeSetting(UploaderSetting[] components, int index, String name, UploaderSettings properties) {
-		JComponent component = null;
-		UploaderSettingType settingType = settingTypes.get("text");
-		if(name.contains("|")) {
-			//Could be a different type.
-			String type = name.substring(name.indexOf('|')+1);
-			String data = "";
+	@SuppressWarnings("unchecked")
+	public void initializeSetting(UploaderSetting[] components, int index, Field field, Setting setting) throws Exception {
+		Class<?> type = setting.type();
+		
+		Class<?> fieldType = field.getType();
+		
+		UploaderSettingType settingType = null;
+		
+		String[] defaults = setting.defaults();
+		
+		if (type == AutoDetectSettingType.class) {
+			// Get the setting type class from the map
 			
-			name = name.substring(0, name.indexOf('|'));
-
-			//Data for Combo box or default setting
-			if(type.indexOf('[') != -1 && type.indexOf(']') != -1) {
-				int firstIdx = type.indexOf('[');
-				data = type.substring(firstIdx+1, type.indexOf(']', firstIdx));
-				type = type.substring(0, firstIdx);
-			}
-			
-			//Parse out the setting type
-			UploaderSettingType newType = settingTypes.get(type);
-			if(newType != null) {
-				settingType = newType;
-				
-				component = newType.constructComponent(data);
+			if (fieldType == Enum.class || fieldType.getSuperclass() == Enum.class) {
+				settingType = new EnumComboBoxSettingType((Class<? extends Enum<?>>) field.getType());
+				// Set field data to enum value
+				List<String> list = new ArrayList<String>();
+				for(Object o : fieldType.getEnumConstants()) {
+					list.add(o.toString());
+				}
+				defaults = list.toArray(new String[list.size()]);
+			} else if (settingTypes.containsKey(fieldType)) {
+				settingType = settingTypes.get(field.getType());
+			} else if (fieldType.getSuperclass() != null && settingTypes.containsKey(fieldType.getSuperclass())) {
+				settingType = settingTypes.get(fieldType.getSuperclass());
 			} else {
-				//Unknown type, just create a text component
-				component = settingType.constructComponent(data);
+				throw new Exception("Unable to auto detect setting type for " + field.getType());
 			}
 		} else {
-			//Or revert to a simple text field
-			component = new JTextField();
+			// Other type
+			if (cachedTypes.containsKey(type)) {
+				settingType = cachedTypes.get(type);
+			} else {
+				cachedTypes.put(type, settingType = (UploaderSettingType) type.newInstance());
+			}
 		}
 		
-		labels[index] = new JLabel(settingName(name) + ": ");
+		JComponent component = settingType.constructComponent(defaults);
+		
+		if (!setting.description().isEmpty()) {
+			component.setToolTipText(setting.description());
+		}
+		
+		labels[index] = new JLabel(setting.name() + ": ");
 		components[index] = new UploaderSetting(component, settingType);
 		
-		if (properties.has(name)) {
-			settingType.setValue(component, properties.get(name));
+		try {
+			Object value = field.get(uploader.getSettingsInstance());
+			if (value != null) {
+				settingType.setValue(component, field.get(uploader.getSettingsInstance()));
+			}
+		} catch (Exception e) {
+			// Unable to get value
 		}
 		
 		component.setMinimumSize(new Dimension(200, 0));
 		
-		fieldMap.put(name, components[index]);
+		fieldMap.put(field, components[index]);
 	}
 
 	/**
@@ -401,12 +427,10 @@ public class ParametersDialog extends JDialog {
 	 * 		true if all settings are good
 	 */
 	public boolean validateProperties() {
-		for (String s : settings.required()) {
-			if(s.indexOf('|') != -1) {
-				s = s.substring(0, s.indexOf('|'));
-			}
-			Object object = getComponentValue(fieldMap.get(s));
-			if (object == null || object.toString().equals("")) {
+		for (Field field : requiredSettings) {
+			Object object = getComponentValue(fieldMap.get(field));
+			
+			if (object == null || object.toString().isEmpty()) {
 				return false;
 			}
 		}
@@ -414,58 +438,20 @@ public class ParametersDialog extends JDialog {
 	}
 	
 	/**
-	 * Export this dialog's settings to an UploaderSettings object
+	 * Export this dialog's settings to the settings class
 	 * @param uploaderSettings 
 	 * @return
 	 * 		The new UploaderSettings object
 	 */
-	public UploaderSettings toSettings(UploaderSettings uploaderSettings) {
-		UploaderSettings settings = new UploaderSettings();
-		for(Entry<String, UploaderSetting> entry : fieldMap.entrySet()) {
-			String s = entry.getKey();
-			if(s.indexOf('|') != -1) {
-				s = s.substring(0, s.indexOf('|'));
-			}
+	public void exportToSettingInstance() throws Exception {
+		for(Entry<Field, UploaderSetting> entry : fieldMap.entrySet()) {
+			Field field = entry.getKey();
 			UploaderSetting component = entry.getValue();
+			
 			Object value = getComponentValue(component);
-			if(component.getType() instanceof PasswordSettingType) {
-				settings.setPassword(s, value);
-			} else {
-				settings.set(s, value);
-			}
+			
+			field.set(uploader.getSettingsInstance(), value);
 		}
-		// Copy the original non-existant settings in
-		return settings;
-	}
-	
-	/**
-	 * Export this dialog's settings into an existing UploaderSettings object
-	 * This will eventually be a replacement for toSettings
-	 * 
-	 * @param settings
-	 * 			The object to export into
-	 */
-	public void exportTo(UploaderSettings settings) {
-		for(Entry<String, UploaderSetting> entry : fieldMap.entrySet()) {
-			UploaderSetting component = entry.getValue();
-			Object value = getComponentValue(component);
-			if(component.getType() instanceof PasswordSettingType) {
-				settings.setPassword(entry.getKey(), value);
-			} else {
-				settings.set(entry.getKey(), value);
-			}
-		}
-	}
-	
-	/**
-	 * Format the setting name for display
-	 * @param key
-	 * 			The setting key
-	 * @return
-	 * 			The formatted setting name (Words will be capitalized and _ replaced with space)
-	 */
-	public String settingName(String key) {
-		return Util.ucwords(key.replace('_', ' '));
 	}
 	
 	/**
@@ -491,28 +477,4 @@ public class ParametersDialog extends JDialog {
 		this.actionListener = actionListener;
 	}
 	
-	public enum SettingType {
-		TEXT(JTextField.class), PASSWORD(JPasswordField.class), CHECKBOX(JCheckBox.class), COMBOBOX(JComboBox.class);
-		
-		private Class<?> cl;
-		
-		private SettingType(Class<?> cl) {
-			this.cl = cl;
-		}
-		
-		public JComponent createComponent() {
-			try {
-				return (JComponent) cl.newInstance();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
-	}
-
-	public static void registerSettingType(String string, UploaderSettingType uploaderSettingType) {
-		settingTypes.put(string, uploaderSettingType);
-	}
 }

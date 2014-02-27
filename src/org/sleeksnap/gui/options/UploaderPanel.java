@@ -42,11 +42,9 @@ import org.sleeksnap.upload.ImageUpload;
 import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.upload.URLUpload;
 import org.sleeksnap.upload.Upload;
-import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
-import org.sleeksnap.uploaders.UploaderConfigurationException;
 import org.sleeksnap.uploaders.settings.ParametersDialog;
-import org.sleeksnap.uploaders.settings.UploaderSettings;
+import org.sleeksnap.uploaders.settings.SettingsClass;
 import org.sleeksnap.util.Util;
 import org.sleeksnap.util.Utils.SortingUtil;
 
@@ -426,14 +424,14 @@ public class UploaderPanel extends OptionSubPanel {
 		}
 	}
 
-	public void openSettings(Uploader<?> uploader) {
+	public void openSettings(Uploader<?> uploader) throws Exception {
 		final Uploader<?> actualUploader = getActualUploader(uploader);
 		
 		if(actualUploader == null) {
 			return;
 		}
 		
-		Settings settings = actualUploader.getSettingsAnnotation();
+		SettingsClass settings = actualUploader.getSettingsAnnotation();
 		
 		JFrame frame = null;
 		
@@ -441,29 +439,24 @@ public class UploaderPanel extends OptionSubPanel {
 			frame = (JFrame) this.getParent().getParent();
 		}
 		
-		final ParametersDialog dialog = new ParametersDialog(frame, actualUploader, settings);
+		final ParametersDialog dialog = new ParametersDialog(frame, actualUploader, settings.value());
 		dialog.setModal(true);
 		dialog.setOkAction(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UploaderSettings newSettings = dialog.toSettings(actualUploader.getSettings());
 				try {
-					if(actualUploader.validateSettings(newSettings)) {
-						//Close the window
+					dialog.exportToSettingInstance();
+					if(actualUploader.validateSettings()) {
 						dialog.closeWindow();
-						//Set the uploader's settings
-						actualUploader.setSettings(newSettings);
-						// Finally, save the settings
 						try {
 							actualUploader.saveSettings(ScreenSnapper.getSettingsFile(actualUploader.getClass()));
-						} catch (Exception ex) {
-							JOptionPane.showMessageDialog(null,
-									"Save failed! Caused by: " + ex, "Save failed",
+						} catch (IOException ex) {
+							JOptionPane.showMessageDialog(null, "Save failed! Caused by: " + ex, "Save failed",
 									JOptionPane.ERROR_MESSAGE);
 						}
 					}
-				} catch (UploaderConfigurationException e1) {
-					JOptionPane.showMessageDialog(dialog, "Uploader settings not saved due to error\nCause:\n"+e1.getMessage(), "Error saving settings", JOptionPane.ERROR_MESSAGE);
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
 			}
 		});
@@ -490,7 +483,12 @@ public class UploaderPanel extends OptionSubPanel {
 		public void actionPerformed(ActionEvent e) {
 			Object selected = comboBox.getSelectedItem();
 			if (selected instanceof UploaderWrapper) {
-				openSettings(((UploaderWrapper) selected).getUploader());
+				try {
+					openSettings(((UploaderWrapper) selected).getUploader());
+				} catch (Exception e1) {
+					JOptionPane.showMessageDialog(UploaderPanel.this, "Unable to open uploader settings. The uploader may be outdated.", "Settings error",
+							JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		}
 	}

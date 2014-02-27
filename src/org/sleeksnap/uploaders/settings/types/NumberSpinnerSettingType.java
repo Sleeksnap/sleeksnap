@@ -37,9 +37,9 @@ import org.sleeksnap.util.Util;
 public class NumberSpinnerSettingType implements UploaderSettingType {
 
 	@Override
-	public JComponent constructComponent(String data) {
+	public JComponent constructComponent(String[] defaults) {
 		SpinnerNumberModel model = new SpinnerNumberModel();
-		Map<String, String> m = Util.parseDataList(data);
+		Map<String, String> m = Util.parseDataList(defaults);
 		if(m.containsKey("default")) {
 			model.setValue(Integer.parseInt(m.get("default")));
 		}

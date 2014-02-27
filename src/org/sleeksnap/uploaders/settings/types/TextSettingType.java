@@ -31,8 +31,8 @@ import org.sleeksnap.uploaders.settings.UploaderSettingType;
 public class TextSettingType implements UploaderSettingType {
 
 	@Override
-	public JComponent constructComponent(String defaultValue) {
-		return new JTextField(defaultValue.toString());
+	public JComponent constructComponent(String[] defaults) {
+		return new JTextField(defaults.length > 0 ? defaults[0] : "");
 	}
 
 	@Override

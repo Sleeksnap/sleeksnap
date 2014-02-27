@@ -27,7 +27,7 @@ import javax.swing.JComponent;
  */
 public interface UploaderSettingType {
 
-	public JComponent constructComponent(String defaultValue);
+	public JComponent constructComponent(String[] defaults);
 	
 	public void setValue(JComponent component, Object value);
 	

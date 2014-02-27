@@ -30,9 +30,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
@@ -41,7 +43,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -92,6 +93,7 @@ import org.sleeksnap.uploaders.images.ImagebinUploader;
 import org.sleeksnap.uploaders.images.ImgurUploader;
 import org.sleeksnap.uploaders.images.ImmioUploader;
 import org.sleeksnap.uploaders.images.PuushUploader;
+import org.sleeksnap.uploaders.settings.SettingsClass;
 import org.sleeksnap.uploaders.text.Paste2Uploader;
 import org.sleeksnap.uploaders.text.PastebinUploader;
 import org.sleeksnap.uploaders.text.PastebincaUploader;
@@ -115,6 +117,7 @@ import org.sleeksnap.util.Utils.FileUtils;
 import org.sleeksnap.util.active.WindowUtilProvider;
 import org.sleeksnap.util.logging.LogPanelHandler;
 
+import com.google.gson.Gson;
 import com.sun.jna.Platform;
 
 /**
@@ -180,6 +183,8 @@ public class ScreenSnapper {
 		names.put(TextUpload.class, "Text");
 		names.put(URLUpload.class, "Urls");
 		names.put(FileUpload.class, "Files");
+		
+		// Register the Password serializer/deserializer
 	}
 
 	/**
@@ -798,104 +803,34 @@ public class ScreenSnapper {
 	 */
 	private void loadUploaders() throws Exception {
 		// Generic uploaders
-		registerUploader(new FTPUploader());
-		registerUploader(new LocalFileUploader());
+		registerUploaderClass(FTPUploader.class);
+		registerUploaderClass(LocalFileUploader.class);
 		// Image Uploaders
-		registerUploader(new ImgurUploader());
-		registerUploader(new ImmioUploader());
-		registerUploader(new PuushUploader());
-		registerUploader(new ImagebinUploader());
+		registerUploaderClass(ImgurUploader.class);
+		registerUploaderClass(ImmioUploader.class);
+		registerUploaderClass(PuushUploader.class);
+		registerUploaderClass(ImagebinUploader.class);
 		// Text uploaders
-		registerUploader(new Paste2Uploader());
-		registerUploader(new PasteeUploader());
-		registerUploader(new PastebinUploader());
-		registerUploader(new PastebincaUploader());
-		registerUploader(new PastieUploader());
-		registerUploader(new SlexyUploader());
-		registerUploader(new UpasteUploader());
+		registerUploaderClass(Paste2Uploader.class);
+		registerUploaderClass(PasteeUploader.class);
+		registerUploaderClass(PastebinUploader.class);
+		registerUploaderClass(PastebincaUploader.class);
+		registerUploaderClass(PastieUploader.class);
+		registerUploaderClass(SlexyUploader.class);
+		registerUploaderClass(UpasteUploader.class);
 		// URL Shorteners
-		registerUploader(new GoogleShortener());
-		registerUploader(new TinyURLShortener());
-		registerUploader(new TUrlShortener());
-		registerUploader(new IsgdShortener());
-		registerUploader(new PostShortener());
+		registerUploaderClass(GoogleShortener.class);
+		registerUploaderClass(TinyURLShortener.class);
+		registerUploaderClass(TUrlShortener.class);
+		registerUploaderClass(IsgdShortener.class);
+		registerUploaderClass(PostShortener.class);
 		// File uploaders
-		registerUploader(new FilebinUploader());
-		registerUploader(new UppitUploader());
+		registerUploaderClass(FilebinUploader.class);
+		registerUploaderClass(UppitUploader.class);
 
 		// Load custom uploaders
 		UploaderLoader loader = new UploaderLoader(this);
 		loader.load();
-	}
-
-	/**
-	 * Load the settings for an uploader
-	 * 
-	 * @param uploader
-	 *            The uploader
-	 */
-	private void loadUploaderSettings(Uploader<?> uploader) {
-		if(!uploader.hasSettings()) {
-			return;
-		}
-		File file = getSettingsFile(uploader.getClass());
-		if (!file.exists()) {
-			File old = getSettingsFile(uploader.getClass(), "xml");
-			if (old.exists()) {
-				logger.info("Converting old xml style file for " + uploader.getName() + " to json...");
-				Properties props = new Properties();
-				try {
-					FileInputStream input = new FileInputStream(old);
-					try {
-						props.loadFromXML(input);
-					} finally {
-						input.close();
-					}
-					try {
-						// Update the settings
-						setUploaderSettings(uploader, new JSONObject(new JSONTokener(input)));
-						// Save it
-						if(uploader.hasSettings())
-							uploader.getSettings().save(file);
-						else if(uploader.hasParent() && uploader.getParentUploader().hasSettings())
-							uploader.getParentUploader().getSettings().save(file);
-						// If everything went well, delete the old file
-						old.delete();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				} catch (IOException e) {
-					// It's invalid, don't try to use it
-					old.delete();
-				}
-			}
-		} else if (file.exists()) {
-			try {
-				FileInputStream input = new FileInputStream(file);
-				try {
-					setUploaderSettings(uploader, new JSONObject(new JSONTokener(input)));
-				} finally {
-					input.close();
-				}
-			} catch (Exception e) {
-				file.delete();
-			}
-		}
-	}
-	
-	/**
-	 * Set the uploader settings object
-	 * @param uploader
-	 * 			The uploader (or sub uploader) to set the object for
-	 * @param settings
-	 * 			The JSON settings object
-	 */
-	private void setUploaderSettings(Uploader<?> uploader, JSONObject settings) {
-		if(uploader.hasSettings()) {
-			uploader.getSettings().setBaseObject(settings);
-		} else if(uploader.hasParent() && uploader.getParentUploader().hasSettings()) {
-			uploader.getParentUploader().getSettings().setBaseObject(settings);
-		}
 	}
 
 	/**
@@ -978,29 +913,89 @@ public class ScreenSnapper {
 	/**
 	 * Register an uploader
 	 * 
-	 * @param uploader
-	 *            The uploader
+	 * @param cl
+	 *            The uploader class
+	 * @throws Exception 
+	 * 				If an error occurred while loading
 	 */
-	public void registerUploader(Uploader<?> uploader) {
+	public Uploader<?> registerUploaderClass(Class<? extends Uploader<?>> cl) throws Exception {
+		Uploader<?> uploader = initializeUploader(cl);
 		if (uploader instanceof GenericUploader) {
 			GenericUploader u = (GenericUploader) uploader;
-			loadUploaderSettings(u);
 			for (Uploader<?> up : u.getSubUploaders()) {
-				up.setParentUploader(u);
-				registerUploader(up);
+				Uploader<?> sub = registerUploader(up);
+				sub.setParentUploader(u);
 			}
-			return;
+			return u;
 		}
+		return registerUploader(uploader);
+	}
+	
+	/**
+	 * Register a normal uploader
+	 * 
+	 * @param uploader
+	 * 			The uploader to register
+	 * @return
+	 * 			The uploader instance
+	 */
+	public Uploader<?> registerUploader(Uploader<?> uploader) {
 		Class<? extends Upload> type = getUploaderType(uploader);
 		// Check for the current list of types
 		if (!uploaders.containsKey(type)) {
 			uploaders.put(type, new HashMap<String, Uploader<?>>());
 		}
-		// Load the settings, this method should only be called once per
-		// uploader, so it's the only place that is really 'right'
-		loadUploaderSettings(uploader);
 		uploader.onActivation();
 		uploaders.get(type).put(uploader.getClass().getName(), uploader);
+		return uploader;
+	}
+	
+	public static final Gson GSON = new Gson();
+	
+	/**
+	 * Initialize an uploader by class
+	 * 
+	 * @param uploaderClass
+	 * 			The Uploader class to initialize
+	 * @return
+	 * 			The new Uploader instance
+	 * @throws Exception
+	 * 			If the uploader cannot be created
+	 */
+	@SuppressWarnings("unchecked")
+	private Uploader<?> initializeUploader(Class<? extends Uploader<?>> uploaderClass) throws Exception {
+		SettingsClass c = uploaderClass.getAnnotation(SettingsClass.class);
+		
+		if (c != null) {
+			File file = getSettingsFile(uploaderClass);
+			
+			Object settingsInstance = null;
+			
+			if (file.exists()) {
+				Reader reader = new FileReader(file);
+				try {
+					settingsInstance = GSON.fromJson(reader, c.value());
+				} finally {
+					reader.close();
+				}
+			} else {
+				settingsInstance = c.value().newInstance();
+			}
+			
+			Constructor<Uploader<?>> constructor = (Constructor<Uploader<?>>) uploaderClass.getConstructor(c.value());
+			
+			if (constructor == null) {
+				throw new RuntimeException("Unable to find constructor with the defined setting type!");
+			}
+			
+			Uploader<?> uploader = constructor.newInstance(settingsInstance);
+			
+			uploader.setSettingsInstance(settingsInstance);
+			
+			return uploader;
+		}
+		
+		return uploaderClass.newInstance();
 	}
 
 	/**

@@ -352,15 +352,14 @@ public class Util {
 	
 	/**
 	 * A utility method used for parsing uploader data (like what is used in the Spinner type)
-	 * @param string
+	 * @param defaults
 	 * 			The string to parse
 	 * @return
 	 * 			The data map
 	 */
-	public static Map<String, String> parseDataList(String string) {
+	public static Map<String, String> parseDataList(String[] defaults) {
 		Map<String, String> ret = new HashMap<String, String>();
-		String[] split = string.split(",");
-		for(String s : split) {
+		for(String s : defaults) {
 			int idx = s.indexOf('=');
 			if(idx != -1) {
 				String key = s.substring(0, idx);

@@ -25,12 +25,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.sleeksnap.http.RequestData;
 import org.sleeksnap.upload.ImageUpload;
-import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.UploadException;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.images.imgur.ImgurAuthentication;
+import org.sleeksnap.uploaders.images.imgur.ImgurAuthenticationObject;
 import org.sleeksnap.uploaders.images.imgur.ImgurOAuthSettingType;
-import org.sleeksnap.uploaders.settings.ParametersDialog;
+import org.sleeksnap.uploaders.settings.Setting;
+import org.sleeksnap.uploaders.settings.SettingsClass;
 import org.sleeksnap.util.StreamUtils;
 import org.sleeksnap.util.Utils.ImageUtil;
 
@@ -42,17 +43,27 @@ import org.sleeksnap.util.Utils.ImageUtil;
  * @author Nikki
  * 
  */
-@Settings(required = {}, optional = { "account|imguroauth" })
+@SettingsClass(ImgurUploader.ImgurSettings.class)
 public class ImgurUploader extends Uploader<ImageUpload> {
 
 	public static final String CLIENT_ID = "b1793cd0a2c3844";
 	public static final String CLIENT_SECRET = "e4027881760afb6bb0e5da5e224827963089c727";
 
-	static {
-		ParametersDialog.registerSettingType("imguroauth", new ImgurOAuthSettingType());
-	}
-
 	private ImgurAuthentication auth = new ImgurAuthentication(this);
+
+	/**
+	 * The settings object used for this uploader
+	 */
+	private ImgurSettings settings;
+	
+	/**
+	 * Construct this uploader with the loaded settings
+	 * @param settings
+	 * 			The settings object
+	 */
+	public ImgurUploader(ImgurSettings settings) {
+		this.settings = settings;
+	}
 
 	@Override
 	public String getName() {
@@ -110,5 +121,14 @@ public class ImgurUploader extends Uploader<ImageUpload> {
 		} finally {
 			connection.disconnect();
 		}
+	}
+
+	public ImgurSettings getSettings() {
+		return settings;
+	}
+	
+	public static class ImgurSettings {
+		@Setting(name = "Account", description = "Imgur Account", type = ImgurOAuthSettingType.class)
+		public ImgurAuthenticationObject account;
 	}
 }

@@ -21,8 +21,9 @@ import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.RequestData;
 import org.sleeksnap.http.ResponseType;
 import org.sleeksnap.upload.TextUpload;
-import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.uploaders.settings.Setting;
+import org.sleeksnap.uploaders.settings.SettingsClass;
 
 /**
  * An uploader for Pastie.org
@@ -30,10 +31,27 @@ import org.sleeksnap.uploaders.Uploader;
  * @author Nikki
  * 
  */
-@Settings(required = {}, optional = { "privacy|combobox[Public,Private]" })
+@SettingsClass(PastieUploader.PastieSettings.class)
 public class PastieUploader extends Uploader<TextUpload> {
 
+	/**
+	 * The submission url
+	 */
 	private static final String PASTIE_URL = "http://pastie.org/pastes";
+	
+	/**
+	 * The settings object used for this uploader
+	 */
+	private PastieSettings settings;
+	
+	/**
+	 * Construct this uploader with the loaded settings
+	 * @param settings
+	 * 			The settings object
+	 */
+	public PastieUploader(PastieSettings settings) {
+		this.settings = settings;
+	}
 
 	@Override
 	public String getName() {
@@ -47,8 +65,17 @@ public class PastieUploader extends Uploader<TextUpload> {
 		data.put("paste[parser]", "plain_text")
 			.put("paste[body]", t.getText())
 			.put("paste[authorization]", "burger")
-			.put("paste[restricted]", settings.getString("privacy", "Public").equals("Private") ? 1 : 0);
+			.put("paste[restricted]", settings.privacy == PastiePrivacy.Private ? 1 : 0);
 		
 		return HttpUtil.executePost(PASTIE_URL, data, ResponseType.REDIRECT_URL);
+	}
+	
+	public static class PastieSettings {
+		@Setting(name = "Privacy", description = "Paste Privacy")
+		public PastiePrivacy privacy = PastiePrivacy.Public;
+	}
+	
+	private enum PastiePrivacy {
+		Public, Private
 	}
 }

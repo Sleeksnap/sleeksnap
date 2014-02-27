@@ -17,32 +17,50 @@
  */
 package org.sleeksnap.uploaders.settings.types;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JPasswordField;
 
 import org.sleeksnap.uploaders.settings.UploaderSettingType;
 
 /**
- * A basic setting type for Passwords
+ * A basic setting type for Enums which are populated into a JComboBox
  * 
  * @author Nikki
  *
  */
-public class PasswordSettingType implements UploaderSettingType {
+@SuppressWarnings({ "rawtypes", "unchecked" })
+public class EnumComboBoxSettingType implements UploaderSettingType {
+	
+	private Class<? extends Enum> enumType;
+
+	public EnumComboBoxSettingType(Class<? extends Enum> enumType) {
+		this.enumType = enumType;
+	}
 
 	@Override
 	public JComponent constructComponent(String[] defaults) {
-		return new JPasswordField(defaults.length > 0 ? defaults[0] : "");
+		JComboBox box = new JComboBox();
+		if(defaults.length > 0) {
+			box.setModel(new DefaultComboBoxModel(defaults));
+		}
+		return box;
 	}
 
 	@Override
 	public void setValue(JComponent component, Object value) {
-		((JPasswordField) component).setText(value.toString());
+		((JComboBox) component).setSelectedItem(value);
 	}
 
 	@Override
 	public Object getValue(JComponent component) {
-		return new String(((JPasswordField) component).getPassword());
+		String selected = (String) ((JComboBox) component).getSelectedItem();
+		for (Enum o : enumType.getEnumConstants()) {
+			if (o.name().equals(selected)) {
+				return o;
+			}
+		}
+		return null;
 	}
-	
+
 }

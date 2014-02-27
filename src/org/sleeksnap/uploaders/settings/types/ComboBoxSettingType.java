@@ -33,14 +33,10 @@ import org.sleeksnap.uploaders.settings.UploaderSettingType;
 public class ComboBoxSettingType implements UploaderSettingType {
 
 	@Override
-	public JComponent constructComponent(String defaultValue) {
+	public JComponent constructComponent(String[] defaults) {
 		JComboBox box = new JComboBox();
-		if(!defaultValue.equals("")) {
-			String[] split = defaultValue.split(",");
-			for(int i = 0; i < split.length; i++) {
-				split[i] = split[i].trim();
-			}
-			box.setModel(new DefaultComboBoxModel(split));
+		if(defaults.length > 0) {
+			box.setModel(new DefaultComboBoxModel(defaults));
 		}
 		return box;
 	}

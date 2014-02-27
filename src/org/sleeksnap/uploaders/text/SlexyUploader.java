@@ -21,8 +21,10 @@ import org.sleeksnap.http.HttpUtil;
 import org.sleeksnap.http.RequestData;
 import org.sleeksnap.http.ResponseType;
 import org.sleeksnap.upload.TextUpload;
-import org.sleeksnap.uploaders.Settings;
 import org.sleeksnap.uploaders.Uploader;
+import org.sleeksnap.uploaders.settings.Setting;
+import org.sleeksnap.uploaders.settings.SettingsClass;
+import org.sleeksnap.uploaders.settings.types.ComboBoxSettingType;
 import org.sleeksnap.util.Utils.FormatUtil;
 
 /**
@@ -31,23 +33,40 @@ import org.sleeksnap.util.Utils.FormatUtil;
  * @author Nikki
  *
  */
-@Settings(required = {}, optional = { "author", "description", "visibility|combobox[Public,Private]", "line_numbers|checkbox[true]", "expiration|combobox[No expiration,5 minutes,15 minutes,30 minutes,1 hour,6 hours,12 hours,1 day,3 days,5 days,10 days,15 days,1 month,3 months,6 months]" })
+@SettingsClass(SlexyUploader.SlexySettings.class)
 public class SlexyUploader extends Uploader<TextUpload> {
 	
+	/**
+	 * The Slexy submit url
+	 */
 	private static final String APIURL = "http://slexy.org/index.php/submit";
+	
+	/**
+	 * The settings object used for this uploader
+	 */
+	private SlexySettings settings;
+	
+	/**
+	 * Construct this uploader with the loaded settings
+	 * @param settings
+	 * 			The settings object
+	 */
+	public SlexyUploader(SlexySettings settings) {
+		this.settings = settings;
+	}
 
 	@Override
 	public String upload(TextUpload t) throws Exception {
 		RequestData data = new RequestData();
 		
 		data.put("raw_paste", t.getText())
-			.put("author", settings.getString("author", ""))
+			.put("author", settings.author != null ? settings.author : "")
 			.put("comment", "")
-			.put("desc", settings.getString("description", ""))
-			.put("expire", FormatUtil.formattedTimeToSeconds(settings.getString("expiration", "0")))
+			.put("desc", settings.description != null ? settings.description : "")
+			.put("expire", FormatUtil.formattedTimeToSeconds(settings.expiration != null && !settings.expiration.isEmpty() ? settings.expiration : "0"))
 			.put("language", "text")
-			.put("linenumbers", settings.getBoolean("line_numbers", true))
-			.put("permissions", settings.getString("visibility").equals("Private") ? 1 : 0)
+			.put("linenumbers", settings.line_numbers)
+			.put("permissions", settings.privacy == GenericPastePrivacy.Public ? 1 : 0)
 			.put("submit", "Submit Paste")
 			.put("tabbing", "true")
 			.put("tabtype", "real");
@@ -58,5 +77,24 @@ public class SlexyUploader extends Uploader<TextUpload> {
 	@Override
 	public String getName() {
 		return "Slexy.org";
+	}
+	
+	public static class SlexySettings {
+		//@Settings(required = {}, optional = { "author", "description", "visibility|combobox[Public,Private]", "line_numbers|checkbox[true]", "expiration|combobox[No expiration,5 minutes,15 minutes,30 minutes,1 hour,6 hours,12 hours,1 day,3 days,5 days,10 days,15 days,1 month,3 months,6 months]" })
+
+		@Setting(name = "Author", description = "Paste Author", optional = true)
+		public String author;
+		
+		@Setting(name = "Description", description = "Paste Description", optional = true)
+		public String description;
+		
+		@Setting(name = "Privacy", description = "Paste Privacy", optional = true)
+		public GenericPastePrivacy privacy;
+		
+		@Setting(name = "Line Numbers", description = "Show Line Numbers", defaults = "true", optional = true)
+		public boolean line_numbers;
+		
+		@Setting(name = "Expiration", description = "Paste Expiration", type = ComboBoxSettingType.class, defaults = { "No expiration", "5 minutes", "15 minutes", "30 minutes", "1 hour", "6 hours", "12 hours", "1 day", "3 days", "5 days", "10 days", "15 days", "1 month", "3 months", "6 months" }, optional = true)
+		public String expiration;
 	}
 }
