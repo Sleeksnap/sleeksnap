@@ -21,9 +21,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 /**
  * A simple class to wrap a History entry
  * 
@@ -91,16 +88,6 @@ public class HistoryEntry {
 	}
 
 	/**
-	 * Constructs a new HistoryEntry object from the specified JSON Object
-	 * 
-	 * @param object
-	 * 			The JSON Object to read from
-	 */
-	public HistoryEntry(JSONObject object) {
-		this(object.getString("url"), object.getString("uploader"), new Date(object.getLong("date")));
-	}
-
-	/**
 	 * Get the upload date
 	 * 
 	 * @return The date
@@ -160,19 +147,5 @@ public class HistoryEntry {
 	@Override
 	public String toString() {
 		return format.format(date) + " - " + url;
-	}
-
-	/**
-	 * Export this history entry into a JSON Object
-	 * @return
-	 * 			The JSON object containing this entry's data
-	 * @throws JSONException
-	 */
-	public JSONObject toJSONObject() {
-		JSONObject object = new JSONObject();
-		object.put("url", url);
-		object.put("uploader", uploader);
-		object.put("date", date.getTime());
-		return object;
 	}
 }

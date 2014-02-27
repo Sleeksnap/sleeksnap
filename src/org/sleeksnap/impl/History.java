@@ -18,17 +18,28 @@
 package org.sleeksnap.impl;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
+import java.lang.reflect.Type;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.sleeksnap.util.StreamUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * A basic history manager loading and saving to YAML
@@ -37,6 +48,11 @@ import org.sleeksnap.util.StreamUtils;
  * 
  */
 public class History {
+	
+	/**
+	 * The History Gson instance. It is different because we need a different Date serializer to keep the old history files working.
+	 */
+	private Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new DateSerializer()).create();
 
 	/**
 	 * The history storage class
@@ -107,18 +123,13 @@ public class History {
 	 * 
 	 * @throws IOException
 	 *             If an error occurs reading the file
-	 * @throws JSONException 
 	 */
 	public void load() throws IOException {
-		InputStream input = new FileInputStream(file);
+		Reader reader = new FileReader(file);
 		try {
-			history = new LinkedList<HistoryEntry>();
-			JSONArray array = new JSONArray(StreamUtils.readContents(input));
-			for(int i = 0; i < array.length(); i++) {
-				history.add(new HistoryEntry(array.getJSONObject(i)));
-			}
+			history = gson.fromJson(reader, new TypeToken<LinkedList<HistoryEntry>>() { }.getType());
 		} finally {
-			input.close();
+			reader.close();
 		}
 	}
 
@@ -127,18 +138,33 @@ public class History {
 	 * 
 	 * @throws IOException
 	 *             If an error occurs saving the file
-	 * @throws JSONException 
 	 */
 	private void save() throws IOException {
-		OutputStream output = new FileOutputStream(file);
+		Writer writer = new FileWriter(file);
 		try {
-			JSONArray array = new JSONArray();
-			for(HistoryEntry e : history) {
-				array.put(e.toJSONObject());
-			}
-			output.write(array.toString().getBytes());
+			gson.toJson(history, writer);
 		} finally {
-			output.close();
+			writer.close();
 		}
+	}
+	
+	/**
+	 * A temporary serialization class to work with the old HistoryEntry JSON Files
+	 * 
+	 * @author Nikki
+	 *
+	 */
+	public class DateSerializer implements JsonSerializer<Date>, JsonDeserializer<Date> {
+
+		@Override
+		public Date deserialize(JsonElement element, Type type, JsonDeserializationContext context) throws JsonParseException {
+			return new Date(element.getAsLong());
+		}
+
+		@Override
+		public JsonElement serialize(Date date, Type type, JsonSerializationContext context) {
+			return new JsonPrimitive(date.getTime());
+		}
+		
 	}
 }
