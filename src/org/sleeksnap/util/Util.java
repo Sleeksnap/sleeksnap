@@ -309,7 +309,7 @@ public class Util {
 	 * A list of popular browsers
 	 */
 	private static final String[] BROWSERS = new String[] {
-		"google-chrome", "firefox", "opera",  "epiphany", "konqueror", "conkeror", "midori", "kazehakase", "mozilla"
+		"xdg-open", "google-chrome", "chromium", "firefox", "opera", "epiphany", "konqueror", "conkeror", "midori", "kazehakase", "mozilla"
 	};
 	
 	/**
