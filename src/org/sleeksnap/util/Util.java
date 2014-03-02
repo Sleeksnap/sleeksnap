@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JFrame;
+import javax.swing.UIManager;
 
 import org.sleeksnap.Constants;
 import org.sleeksnap.Constants.Application;
@@ -419,5 +420,34 @@ public class Util {
 			}
 		}
 		return builder.toString();
+	}
+
+	/**
+	 * Gets the class name of the Swing look and feel which emulates the native
+	 * style of the operating system.
+	 * @return The system look and feel class name.
+	 */
+	public static String getSystemLookAndFeelClassName() {
+		OperatingSystem platform = getPlatform();
+		String clazz = UIManager.getSystemLookAndFeelClassName();
+		
+		/*
+		 * On Linux, Java only attempts to use the GTK+ style if the desktop
+		 * environment is GNOME. Otherwise, it falls back to the cross-platform
+		 * style.
+		 * 
+		 * However, many other desktop environments use GTK+ (e.g. XFCE, LXDE,
+		 * Unity, etc.) and even ones that don't (e.g. KDE) usually have some
+		 * GTK+ compatibility so it still looks better than the cross-platform
+		 * theme.
+		 * 
+		 * Therefore on Linux we override Java's choice and attempt to use GTK+
+		 * if the cross-platform style was chosen.
+		 */
+		if (platform == OperatingSystem.LINUX && clazz.equals(UIManager.getCrossPlatformLookAndFeelClassName())) {
+			clazz = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
+		}
+		
+		return clazz;
 	}
 }
