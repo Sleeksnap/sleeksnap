@@ -301,7 +301,7 @@ public class ScreenSnapper {
 		}
 		// Set the UI skin
 		try {
-			UIManager.setLookAndFeel(releaseInfo.getString("uiClass", UIManager.getSystemLookAndFeelClassName()));
+			UIManager.setLookAndFeel(releaseInfo.getString("uiClass", Util.getSystemLookAndFeelClassName()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
