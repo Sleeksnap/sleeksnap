@@ -320,7 +320,7 @@ public class Util {
 	 * 			If an error occurs attempting to open the url
 	 */
 	public static void openURL(URL url) throws Exception {
-		Desktop desktop = Desktop.getDesktop();
+		Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
 		if(desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
 			desktop.browse(url.toURI());
 		} else {
@@ -337,7 +337,7 @@ public class Util {
 			default:
 				String browser = null;
 				for(String b : BROWSERS) {
-					Process p = Runtime.getRuntime().exec(new String[] { "which", browser });
+					Process p = Runtime.getRuntime().exec(new String[] { "which", b });
 					if(p.waitFor() == 0) {
 						browser = b;
 						break;
