@@ -25,6 +25,7 @@ import org.sleeksnap.upload.TextUpload;
 import org.sleeksnap.uploaders.Uploader;
 import org.sleeksnap.uploaders.settings.Setting;
 import org.sleeksnap.uploaders.settings.SettingsClass;
+import org.sleeksnap.uploaders.text.PasteeUploader.PasteeSettings.PasteeExpiration;
 import org.sleeksnap.util.Utils.FormatUtil;
 
 /**
@@ -67,7 +68,7 @@ public class PasteeUploader extends Uploader<TextUpload> {
 		if(settings.expireViews > 0) {
 			data.put("expire", "views;" + settings.expireViews);
 		} else {
-			data.put("expire", FormatUtil.formattedTimeToMinutes(settings.expiration.toString()));
+			data.put("expire", FormatUtil.formattedTimeToMinutes(settings.expiration != null ? settings.expiration.toString() : PasteeExpiration.NO_EXPIRATION.toString()));
 		}
 		
 		return HttpUtil.executePost("http://paste.ee/api", data);

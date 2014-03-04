@@ -89,7 +89,7 @@ public class SlexyUploader extends Uploader<TextUpload> {
 		public String description;
 		
 		@Setting(name = "Privacy", description = "Paste Privacy", optional = true)
-		public GenericPastePrivacy privacy;
+		public GenericPastePrivacy privacy = GenericPastePrivacy.Public;
 		
 		@Setting(name = "Line Numbers", description = "Show Line Numbers", defaults = "true", optional = true)
 		public boolean line_numbers;

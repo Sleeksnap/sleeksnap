@@ -98,7 +98,7 @@ public class UpasteUploader extends Uploader<TextUpload> {
 		public String name;
 		
 		@Setting(name = "Privacy", description = "Paste Privacy", optional = true)
-		public GenericPastePrivacy privacy;
+		public GenericPastePrivacy privacy = GenericPastePrivacy.Public;
 		
 		@Setting(name = "Expiration", description = "Paste Expiration", type = ComboBoxSettingType.class, defaults = { "No expiration", "5 minutes", "15 minutes", "30 minutes", "1 hour", "6 hours", "12 hours", "1 day", "3 days", "5 days", "10 days", "15 days", "1 month", "3 months", "6 months" })
 		public String expiration;
