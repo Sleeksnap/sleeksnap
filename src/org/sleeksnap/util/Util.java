@@ -313,6 +313,32 @@ public class Util {
 	};
 	
 	/**
+	 * A list of popular file managers
+	 */
+	private static final String[] FILE_MANAGERS = new String[] {
+		"xdg-open", "nautilus", "dolphin", "thunar", "pcmanfm", "konqueror"
+	};
+	
+	/**
+	 * Finds the first supported program in the list (for UNIX-like platforms
+	 * only).
+	 * @param kind The kind of program, used in the exception message if no
+	 * suitable program could be found.
+	 * @param names The array of program names to try.
+	 * @return The first supported program from the array of names.
+	 * @throws Exception if no supported program could be found.
+	 */
+	private static String findSupportedProgram(String kind, String[] names) throws Exception {
+		for (String name : names) {
+			Process process = Runtime.getRuntime().exec(new String[] { "which", name });
+			if (process.waitFor() == 0)
+				return name;
+		}
+
+		throw new Exception("Unable to find supported " + kind);
+	}
+	
+	/**
 	 * Open a URL using java.awt.Desktop or a couple different manual methods
 	 * @param url
 	 * 			The URL to open
@@ -321,32 +347,48 @@ public class Util {
 	 */
 	public static void openURL(URL url) throws Exception {
 		Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-		if(desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+		if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
 			desktop.browse(url.toURI());
 		} else {
 			OperatingSystem system = Util.getPlatform();
-			switch(system) {
+			switch (system) {
 			case MAC:
 				Class.forName("com.apple.eio.FileManager").getDeclaredMethod(
-		                  "openURL", new Class[] {String.class}).invoke(null,
-		                  new Object[] {url.toString()});
+		                  "openURL", new Class[] { String.class }).invoke(null,
+		                  new Object[] { url.toString() });
 				break;
 			case WINDOWS:
 				Runtime.getRuntime().exec(new String[] { "rundll32", "url.dll,FileProtocolHandler", url.toString() });
 				break;
 			default:
-				String browser = null;
-				for(String b : BROWSERS) {
-					Process p = Runtime.getRuntime().exec(new String[] { "which", b });
-					if(p.waitFor() == 0) {
-						browser = b;
-						break;
-					}
-				}
-				if(browser != null)
-					Runtime.getRuntime().exec(new String[] { browser, url.toString() });
-				else
-					throw new Exception("Unable to find browser");
+				String browser = findSupportedProgram("browser", BROWSERS);
+				Runtime.getRuntime().exec(new String[] { browser, url.toString() });
+				break;
+			}
+		}
+	}
+	
+	/**
+	 * Open a file using {@link Desktop} if supported, or a manual
+	 * platform-specific method if not.
+	 * @param file The file to open.
+	 * @throws Exception if the file could not be opened.
+	 */
+	public static void openFile(File file) throws Exception {
+		Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+		if (desktop != null && desktop.isSupported(Desktop.Action.OPEN)) {
+			desktop.open(file);
+		} else {
+			OperatingSystem system = Util.getPlatform();
+			switch (system) {
+			case MAC:
+			case WINDOWS:
+				openURL(file.toURI().toURL());
+				break;
+			default:
+				String fileManager = findSupportedProgram("file manager", FILE_MANAGERS);
+				Runtime.getRuntime().exec(new String[] { fileManager, file.getAbsolutePath() });
+				break;
 			}
 		}
 	}
