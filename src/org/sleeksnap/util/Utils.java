@@ -602,18 +602,20 @@ public class Utils {
 		 * @return The screen size
 		 */
 		public static Rectangle getRealScreenSize() {
-			GraphicsEnvironment ge = GraphicsEnvironment
-					.getLocalGraphicsEnvironment();
+			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			GraphicsDevice[] screens = ge.getScreenDevices();
 
 			Rectangle allScreenBounds = new Rectangle();
 			for (GraphicsDevice screen : screens) {
-				Rectangle screenBounds = screen.getDefaultConfiguration()
-						.getBounds();
+				Rectangle screenBounds = screen.getDefaultConfiguration().getBounds();
 
 				allScreenBounds.width += screenBounds.width;
-				allScreenBounds.height = Math.max(allScreenBounds.height,
-						screenBounds.height);
+				allScreenBounds.height = Math.max(allScreenBounds.height, screenBounds.height);
+
+				if (screenBounds.x < allScreenBounds.y || screenBounds.y < allScreenBounds.y) {
+					allScreenBounds.x = Math.min(allScreenBounds.x, screenBounds.x);
+					allScreenBounds.y = Math.min(allScreenBounds.y, screenBounds.y);
+				}
 			}
 			return allScreenBounds;
 		}
