@@ -316,9 +316,8 @@ public class UploaderPanel extends OptionSubPanel {
 
 	private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		try {
-			Desktop.getDesktop().open(
-					new File(Util.getWorkingDirectory(), "uploaders"));
-		} catch (IOException e1) {
+			Util.openFile(new File(Util.getWorkingDirectory(), "plugins/uploaders"));
+		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
 	}
