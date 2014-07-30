@@ -60,7 +60,7 @@ public class Constants {
 	public static class Version {
 		public static final int MAJOR = 1;
 		public static final int MINOR = 4;
-		public static final int PATCH = 6;
+		public static final int PATCH = 7;
 		
 		private static String versionString = null;
 		

@@ -17,6 +17,7 @@
  */
 package org.sleeksnap.gui.options;
 
+import java.awt.Desktop;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -38,7 +39,6 @@ import javax.swing.event.ListSelectionListener;
 import org.sleeksnap.gui.OptionPanel;
 import org.sleeksnap.impl.History;
 import org.sleeksnap.impl.HistoryEntry;
-import org.sleeksnap.util.Util;
 import org.sleeksnap.util.Utils.ClipboardUtil;
 
 /**
@@ -210,8 +210,12 @@ public class HistoryPanel extends OptionSubPanel {
 		String text = linkField.getText();
 		if (!text.equals("")) {
 			try {
-				Util.openURL(new URL(text));
-			} catch (Exception e) {
+				Desktop.getDesktop().browse(new URL(text).toURI());
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
 		}

@@ -17,6 +17,7 @@
  */
 package org.sleeksnap.gui.options;
 
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -315,8 +316,9 @@ public class UploaderPanel extends OptionSubPanel {
 
 	private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		try {
-			Util.openFile(new File(Util.getWorkingDirectory(), "plugins/uploaders"));
-		} catch (Exception e1) {
+			Desktop.getDesktop().open(
+					new File(Util.getWorkingDirectory(), "uploaders"));
+		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 	}
