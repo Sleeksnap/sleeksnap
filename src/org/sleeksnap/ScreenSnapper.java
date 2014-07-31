@@ -89,6 +89,7 @@ import org.sleeksnap.uploaders.generic.FTPUploader;
 import org.sleeksnap.uploaders.generic.GenericUploader;
 import org.sleeksnap.uploaders.generic.LocalFileUploader;
 import org.sleeksnap.uploaders.generic.LocalFileUploader.ImageLocalFileUploader;
+import org.sleeksnap.uploaders.images.ImageScriptUploader;
 import org.sleeksnap.uploaders.images.ImagebinUploader;
 import org.sleeksnap.uploaders.images.ImgurUploader;
 import org.sleeksnap.uploaders.images.ImmioUploader;
@@ -202,7 +203,7 @@ public class ScreenSnapper {
 	/**
 	 * A map which contains uploader classes -> a list of available uploaders
 	 */
-	private HashMap<Class<? extends Upload>, Map<String, Uploader<?>>> uploaders = new HashMap<Class<? extends Upload>, Map<String, Uploader<?>>>();
+	private HashMap<Class<? extends Upload>, Map<String, Uploader<? extends Upload>>> uploaders = new HashMap<Class<? extends Upload>, Map<String, Uploader<? extends Upload>>>();
 
 	/**
 	 * A map which contains the current uploader settings
@@ -811,6 +812,7 @@ public class ScreenSnapper {
 		registerUploaderClass(ImmioUploader.class);
 		registerUploaderClass(PuushUploader.class);
 		registerUploaderClass(ImagebinUploader.class);
+		registerUploaderClass(ImageScriptUploader.class);
 		// Text uploaders
 		registerUploaderClass(LaravelUploader.class);
 		registerUploaderClass(Paste2Uploader.class);
@@ -945,7 +947,7 @@ public class ScreenSnapper {
 		Class<? extends Upload> type = getUploaderType(uploader);
 		// Check for the current list of types
 		if (!uploaders.containsKey(type)) {
-			uploaders.put(type, new HashMap<String, Uploader<?>>());
+			uploaders.put(type, new HashMap<String, Uploader<? extends Upload>>());
 		}
 		uploader.onActivation();
 		uploaders.get(type).put(uploader.getClass().getName(), uploader);
